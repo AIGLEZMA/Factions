@@ -16,12 +16,11 @@ import com.massivecraft.factions.event.FactionsPluginRegistrationTimeEvent;
 import com.massivecraft.factions.integration.ClipPlaceholderAPIManager;
 import com.massivecraft.factions.integration.Econ;
 import com.massivecraft.factions.integration.Essentials;
-import com.massivecraft.factions.integration.IWorldguard;
 import com.massivecraft.factions.integration.IntegrationManager;
 import com.massivecraft.factions.integration.LWC;
 import com.massivecraft.factions.integration.LuckPerms;
 import com.massivecraft.factions.integration.VaultPerms;
-import com.massivecraft.factions.integration.Worldguard7;
+import com.massivecraft.factions.integration.Worldguard;
 import com.massivecraft.factions.integration.dynmap.EngineDynmap;
 import com.massivecraft.factions.integration.permcontext.ContextManager;
 import com.massivecraft.factions.landraidcontrol.LandRaidControl;
@@ -33,8 +32,7 @@ import com.massivecraft.factions.listeners.FactionsPlayerListener;
 import com.massivecraft.factions.listeners.OneEightPlusListener;
 import com.massivecraft.factions.listeners.OneFourteenPlusListener;
 import com.massivecraft.factions.listeners.versionspecific.PortalHandler;
-import com.massivecraft.factions.listeners.versionspecific.PortalListenerLegacy;
-import com.massivecraft.factions.listeners.versionspecific.PortalListener_114;
+import com.massivecraft.factions.listeners.versionspecific.PortalListener;
 import com.massivecraft.factions.perms.PermSelector;
 import com.massivecraft.factions.perms.PermSelectorRegistry;
 import com.massivecraft.factions.perms.PermSelectorTypeAdapter;
@@ -173,7 +171,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
 
     private SeeChunkUtil seeChunkUtil;
     private ParticleProvider<?> particleProvider;
-    private IWorldguard worldguard;
+    private Worldguard worldguard;
     private LandRaidControl landRaidControl;
     private boolean luckPermsSetup;
     private IntegrationManager integrationManager;
@@ -202,12 +200,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     public void onLoad() {
         IntegrationManager.onLoad(this);
         this.tryEssXMigrationOnLoad();
-        try {
-            Class.forName("com.sk89q.worldguard.WorldGuard");
-            Worldguard7.onLoad();
-        } catch (Exception ignored) {
-            // eh
-        }
     }
 
     private void tryEssXMigrationOnLoad() {
@@ -358,8 +350,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         getLogger().info("Factions UUID!");
         getLogger().info("Version " + this.getDescription().getVersion());
         getLogger().info("");
-        getLogger().info("Need support? https://factions.support/help/");
-        getLogger().info("");
         Integer versionInteger = null;
         if (versionMatcher.find()) {
             try {
@@ -375,7 +365,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         if (versionInteger == null) {
             getLogger().warning("");
             getLogger().warning("Could not identify version. Going with least supported version, 1.7.10.");
-            getLogger().warning("Please visit our support live chat for help - https://factions.support/help/");
             getLogger().warning("");
             versionInteger = 710;
             this.mcVersionString = this.getServer().getVersion();
@@ -508,9 +497,9 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
 
         // Version specific portal listener check.
         if (mcVersion >= 1400) { // Starting with 1.14
-            getServer().getPluginManager().registerEvents(new PortalListener_114(this), this);
+            //getServer().getPluginManager().registerEvents(new PortalListener_114(this), this);
         } else {
-            getServer().getPluginManager().registerEvents(new PortalListenerLegacy(new PortalHandler()), this);
+            getServer().getPluginManager().registerEvents(new PortalListener(new PortalHandler()), this);
         }
 
         // since some other plugins execute commands directly through this command interface, provide it
@@ -661,7 +650,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         this.metricsSimplePie("luckperms_contexts", () -> "" + this.luckPermsSetup);
 
         // WorldGuard
-        IWorldguard wg = this.getWorldguard();
+        Worldguard wg = this.getWorldguard();
         String wgVersion = wg == null ? "nope" : wg.getVersion();
         this.metricsDrillPie("worldguard", () -> this.metricsInfo(wg, () -> wgVersion));
 
@@ -740,7 +729,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         return map;
     }
 
-    public void setWorldGuard(IWorldguard wg) {
+    public void setWorldGuard(Worldguard wg) {
         this.worldguard = wg;
     }
 
@@ -977,7 +966,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         return this.landRaidControl;
     }
 
-    public IWorldguard getWorldguard() {
+    public Worldguard getWorldguard() {
         return this.worldguard;
     }
 

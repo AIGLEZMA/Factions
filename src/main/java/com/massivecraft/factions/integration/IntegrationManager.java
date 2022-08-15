@@ -52,7 +52,7 @@ public class IntegrationManager implements Listener {
                 f.setWorldGuard(new Worldguard6(plugin));
                 f.getLogger().info("Found support for WorldGuard version " + version);
             } else if (version.startsWith("7")) {
-                f.setWorldGuard(new Worldguard7());
+                f.setWorldGuard(new Worldguard());
                 f.getLogger().info("Found support for WorldGuard version " + version);
             } else {
                 f.log(Level.WARNING, "Found WorldGuard but couldn't support this version: " + version);
