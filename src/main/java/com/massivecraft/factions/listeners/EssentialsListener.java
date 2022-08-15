@@ -45,15 +45,9 @@ public class EssentialsListener implements Listener {
         for (String homeName : user.getHomes()) {
 
             Location loc;
-            try {
-                loc = user.getHome(homeName);
-                if (loc == null) { // Newer EssX just returns null on invalid world
-                    FactionsPlugin.getInstance().getLogger().warning("Tried to check on home \"" + homeName + "\" for user \"" + event.getfPlayer().getName() + "\" but Essentials could not load that home (invalid world?). Skipping it.");
-                    continue;
-                }
-            } catch (InvalidWorldException e) {
-                // Older EssX pukes out an exception on invalid world
-                FactionsPlugin.getInstance().getLogger().warning("Tried to check on home \"" + homeName + "\" for user \"" + event.getfPlayer().getName() + "\" but Essentials said world \"" + e.getWorld() + "\" does not exist. Skipping it.");
+            loc = user.getHome(homeName);
+            if (loc == null) { // Newer EssX just returns null on invalid world
+                FactionsPlugin.getInstance().getLogger().warning("Tried to check on home \"" + homeName + "\" for user \"" + event.getfPlayer().getName() + "\" but Essentials could not load that home (invalid world?). Skipping it.");
                 continue;
             }
             FLocation floc = new FLocation(loc);
