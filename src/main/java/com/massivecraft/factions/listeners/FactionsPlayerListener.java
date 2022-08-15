@@ -360,18 +360,11 @@ public class FactionsPlayerListener extends AbstractListener {
         boolean check = false;
         switch (event.getRightClicked().getType()) {
             case ITEM_FRAME:
-            case GLOW_ITEM_FRAME:
                 if (!canPlayerUseBlock(event.getPlayer(), Material.ITEM_FRAME, event.getRightClicked().getLocation(), false)) {
                     event.setCancelled(true);
                 }
                 break;
             case HORSE:
-            case SKELETON_HORSE:
-            case ZOMBIE_HORSE:
-            case DONKEY:
-            case MULE:
-            case LLAMA:
-            case TRADER_LLAMA:
             case PIG:
             case LEASH_HITCH:
             case MINECART_CHEST:
@@ -406,10 +399,6 @@ public class FactionsPlayerListener extends AbstractListener {
 
         if (block == null) {
             return;  // clicked in air, apparently
-        }
-
-        if (Graves.allowAnyway(block)) {
-            return;
         }
 
         if (event.getAction() == Action.PHYSICAL && block.getType().name().contains("SOIL")) {
@@ -449,13 +438,12 @@ public class FactionsPlayerListener extends AbstractListener {
             boolean ohNo = false;
             switch (item.getType()) {
                 case ARMOR_STAND:
-                case END_CRYSTAL:
                 case MINECART:
-                case CHEST_MINECART:
-                case COMMAND_BLOCK_MINECART:
-                case FURNACE_MINECART:
+                case STORAGE_MINECART:
+                case COMMAND_MINECART:
+                case POWERED_MINECART:
                 case HOPPER_MINECART:
-                case TNT_MINECART:
+                case EXPLOSIVE_MINECART:
                     ohNo = true;
             }
             if (ohNo &&
