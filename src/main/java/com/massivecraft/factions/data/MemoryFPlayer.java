@@ -970,10 +970,6 @@ public abstract class MemoryFPlayer implements FPlayer {
             Econ.modifyMoney(payee, FactionsPlugin.getInstance().conf().economy().getOverclaimRewardMultiplier(), TL.CLAIM_TOOVERCLAIM.toString(), TL.CLAIM_FOROVERCLAIM.toString());
         }
 
-        if (LWC.getEnabled() && forFaction.isNormal() && FactionsPlugin.getInstance().conf().lwc().isResetLocksOnCapture()) {
-            LWC.clearOtherLocks(flocation, this.getFaction());
-        }
-
         // announce success
         Set<FPlayer> informTheseFPlayers = new HashSet<>();
         informTheseFPlayers.add(this);

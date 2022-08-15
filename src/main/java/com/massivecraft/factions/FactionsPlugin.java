@@ -20,7 +20,6 @@ import com.massivecraft.factions.integration.IntegrationManager;
 import com.massivecraft.factions.integration.LuckPerms;
 import com.massivecraft.factions.integration.VaultPerms;
 import com.massivecraft.factions.integration.Worldguard;
-import com.massivecraft.factions.integration.dynmap.EngineDynmap;
 import com.massivecraft.factions.integration.permcontext.ContextManager;
 import com.massivecraft.factions.landraidcontrol.LandRaidControl;
 import com.massivecraft.factions.listeners.FactionsBlockListener;
@@ -610,18 +609,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
             this.metricsSimplePie("essentials_home_teleport", () -> "" + this.conf().factions().homes().isTeleportCommandEssentialsIntegration());
         }
 
-        // LWC
-        Plugin lwc = LWC.getLWC();
-        this.metricsDrillPie("lwc", () -> this.metricsPluginInfo(lwc));
-        if (lwc != null) {
-            boolean enabled = conf().lwc().isEnabled();
-            this.metricsSimplePie("lwc_integration", () -> "" + enabled);
-            if (enabled) {
-                this.metricsSimplePie("lwc_reset_locks_unclaim", () -> "" + conf().lwc().isResetLocksOnUnclaim());
-                this.metricsSimplePie("lwc_reset_locks_capture", () -> "" + conf().lwc().isResetLocksOnCapture());
-            }
-        }
-
         // Vault
         Plugin vault = Bukkit.getServer().getPluginManager().getPlugin("Vault");
         this.metricsDrillPie("vault", () -> this.metricsPluginInfo(vault));
@@ -643,17 +630,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         Worldguard wg = this.getWorldguard();
         String wgVersion = wg == null ? "nope" : wg.getVersion();
         this.metricsDrillPie("worldguard", () -> this.metricsInfo(wg, () -> wgVersion));
-
-        // Dynmap
-        String dynmapVersion = EngineDynmap.getInstance().getVersion();
-        boolean dynmapEnabled = EngineDynmap.getInstance().isRunning();
-        this.metricsDrillPie("dynmap", () -> {
-            Map<String, Map<String, Integer>> map = new HashMap<>();
-            Map<String, Integer> entry = new HashMap<>();
-            entry.put(dynmapVersion == null ? "none" : dynmapVersion, 1);
-            map.put(dynmapEnabled ? "enabled" : "disabled", entry);
-            return map;
-        });
 
         // Clip Placeholder
         Plugin clipPlugin = getServer().getPluginManager().getPlugin("PlaceholderAPI");

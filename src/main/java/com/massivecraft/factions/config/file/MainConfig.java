@@ -2786,33 +2786,6 @@ public class MainConfig {
         }
     }
 
-    public class LWC {
-        private boolean enabled = true;
-        private boolean resetLocksOnUnclaim = false;
-        private boolean resetLocksOnCapture = false;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public boolean isResetLocksOnUnclaim() {
-            return resetLocksOnUnclaim;
-        }
-
-        public boolean isResetLocksOnCapture() {
-            return resetLocksOnCapture;
-        }
-    }
-
-    public class MagicPlugin {
-        @Comment("If true, magic mobs will follow whatever pvp allowed/disallowed setting is present for the territory they're attacking into.")
-        private boolean usePVPSettingForMagicMobs = false;
-
-        public boolean isUsePVPSettingForMagicMobs() {
-            return usePVPSettingForMagicMobs;
-        }
-    }
-
     public class Paper {
         @Comment("Utilize Paper's async teleportation if available (Paper 1.9+).")
         private boolean asyncTeleport = true;
@@ -2823,31 +2796,7 @@ public class MainConfig {
     }
 
     public class Plugins {
-        public class Graves {
-            @Comment("If true, will allow any Graves plugin graves to be opened by anyone, regardless of permissions")
-            private boolean allowAnyoneToOpenGraves = false;
-            private boolean preventGravesInSafezone = false;
-            private boolean preventGravesInWarzone = false;
 
-            public boolean isAllowAnyoneToOpenGraves() {
-                return allowAnyoneToOpenGraves;
-            }
-
-            public boolean isPreventGravesInSafezone() {
-                return preventGravesInSafezone;
-            }
-
-            public boolean isPreventGravesInWarzone() {
-                return preventGravesInWarzone;
-            }
-        }
-
-        @Comment("Ranull's Graves plugin")
-        private Graves graves = new Graves();
-
-        public Graves graves() {
-            return graves;
-        }
     }
 
     public class PlayerVaults {
@@ -2940,13 +2889,6 @@ public class MainConfig {
     private Data data = new Data();
     private RestrictWorlds restrictWorlds = new RestrictWorlds();
     private Scoreboard scoreboard = new Scoreboard();
-    @Comment("LWC integration\n" +
-            "This support targets the modern fork of LWC, called LWC Extended.\n" +
-            "You can find it here: https://www.spigotmc.org/resources/lwc-extended.69551/\n" +
-            "Note: Modern LWC is no longer supported, and its former maintainer now runs LWC Extended")
-    private LWC lwc = new LWC();
-    @Comment("Integration with the Magic plugin")
-    private MagicPlugin magicPlugin = new MagicPlugin();
     @Comment("Paper features, when accessible.")
     private Paper paper = new Paper();
     @Comment("Lists plugin integrations. Some other plugins (PVX, LWC, Magic, WG, WB) are currently\n" +
@@ -3005,10 +2947,6 @@ public class MainConfig {
         return scoreboard;
     }
 
-    public MagicPlugin magicPlugin() {
-        return magicPlugin;
-    }
-
     public Paper paper() {
         return paper;
     }
@@ -3023,10 +2961,6 @@ public class MainConfig {
 
     public WorldGuard worldGuard() {
         return worldGuard;
-    }
-
-    public LWC lwc() {
-        return lwc;
     }
 
     public WorldBorder worldBorder() {
