@@ -53,7 +53,6 @@ import com.massivecraft.factions.util.TextUtil;
 import com.massivecraft.factions.util.TitleAPI;
 import com.massivecraft.factions.util.WorldUtil;
 import com.massivecraft.factions.util.material.MaterialDb;
-import com.massivecraft.factions.util.particle.BukkitParticleProvider;
 import com.massivecraft.factions.util.particle.PacketParticleProvider;
 import com.massivecraft.factions.util.particle.ParticleProvider;
 import com.mojang.authlib.GameProfile;
@@ -468,11 +467,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         startAutoLeaveTask(false);
 
         // Run before initializing listeners to handle reloads properly.
-        if (mcVersion < 1300) { // Before 1.13
-            particleProvider = new PacketParticleProvider();
-        } else {
-            particleProvider = new BukkitParticleProvider();
-        }
+        particleProvider = new PacketParticleProvider();
         getLogger().info(txt.parse("Using %1s as a particle provider", particleProvider.name()));
 
         if (conf().commands().seeChunk().isParticles()) {
