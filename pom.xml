@@ -485,10 +485,6 @@
             <id>sonatype-repo</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
-        <repository>
-            <id>enginehub-repo</id>
-            <url>https://maven.enginehub.org/repo/</url>
-        </repository>
     </repositories>
 
     <build>
