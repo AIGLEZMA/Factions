@@ -17,7 +17,6 @@ import com.massivecraft.factions.integration.ClipPlaceholderAPIManager;
 import com.massivecraft.factions.integration.Econ;
 import com.massivecraft.factions.integration.Essentials;
 import com.massivecraft.factions.integration.IntegrationManager;
-import com.massivecraft.factions.integration.LWC;
 import com.massivecraft.factions.integration.LuckPerms;
 import com.massivecraft.factions.integration.VaultPerms;
 import com.massivecraft.factions.integration.Worldguard;
