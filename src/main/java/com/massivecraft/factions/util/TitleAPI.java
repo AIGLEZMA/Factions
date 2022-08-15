@@ -3,6 +3,7 @@ package com.massivecraft.factions.util;
 import com.massivecraft.factions.FactionsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.github.paperspigot.Title;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -17,11 +18,9 @@ import java.util.logging.Level;
 public class TitleAPI {
 
     private static TitleAPI instance;
+    private final Map<String, Class<?>> classCache = new HashMap<>();
     private boolean supportsAPI = false;
     private boolean bailOut = false;
-
-    private final Map<String, Class<?>> classCache = new HashMap<>();
-
     private Method methodChatTitle;
     private Method methodGetHandle;
     private Method methodSendPacket;
@@ -40,7 +39,7 @@ public class TitleAPI {
         }
 
         try {
-            Player.class.getMethod("sendTitle", String.class, String.class, int.class, int.class, int.class);
+            Player.class.getMethod("sendTitle", Title.class);
             supportsAPI = true;
             FactionsPlugin.getInstance().getLogger().info("Found API support for sending player titles :D");
         } catch (NoSuchMethodException e) {
@@ -56,6 +55,10 @@ public class TitleAPI {
                 FactionsPlugin.getInstance().getLogger().log(Level.SEVERE, "Didn't find API support for sending titles, and failed to use reflection. Title support disabled.", ex);
             }
         }
+    }
+
+    public static TitleAPI getInstance() {
+        return instance;
     }
 
     /**
@@ -74,7 +77,7 @@ public class TitleAPI {
         }
 
         if (supportsAPI) {
-            player.sendTitle(title, subtitle, fadeInTime, showTime, fadeOutTime);
+            player.sendTitle(Title.builder().title(title).subtitle(subtitle).fadeIn(fadeInTime).fadeOut(fadeOutTime).build());
             return;
         }
 
@@ -131,9 +134,5 @@ public class TitleAPI {
         Class<?> clazz = Class.forName(versionName);
         classCache.put(name, clazz);
         return clazz;
-    }
-
-    public static TitleAPI getInstance() {
-        return instance;
     }
 }
