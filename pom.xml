@@ -51,6 +51,16 @@
             <version>${dependency.guava.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jsr305</artifactId>
+                    <groupId>com.google.code.findbugs</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>checker-qual</artifactId>
+                    <groupId>org.checkerframework</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -89,6 +99,16 @@
             <version>${dependency.adventure-platform-bukkit.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <artifactId>checker-qual</artifactId>
+                    <groupId>org.checkerframework</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
@@ -96,6 +116,16 @@
             <version>${dependency.adventure-text-minimessage.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <artifactId>checker-qual</artifactId>
+                    <groupId>org.checkerframework</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -317,6 +347,14 @@
                     <groupId>org.spigotmc</groupId>
                 </exclusion>
                 <exclusion>
+                    <artifactId>gson</artifactId>
+                    <groupId>com.google.code.gson</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>configurate-core</artifactId>
                     <groupId>org.spongepowered</groupId>
                 </exclusion>
@@ -340,6 +378,22 @@
             <version>${dependency.essentialsx.version}</version>
             <scope>provided</scope>
             <exclusions>
+                <exclusion>
+                    <artifactId>bukkit</artifactId>
+                    <groupId>org.bukkit</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>lombok</artifactId>
+                    <groupId>org.projectlombok</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>Essentials</artifactId>
+                    <groupId>net.ess3</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>EssentialsX</artifactId>
+                    <groupId>net.ess3</groupId>
+                </exclusion>
                 <exclusion>
                     <artifactId>bstats-bukkit</artifactId>
                     <groupId>org.bstats</groupId>
@@ -402,6 +456,12 @@
             <artifactId>MVdWPlaceholderAPI</artifactId>
             <version>${dependency.mvdwplaceholderapi.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>spigot</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.darkblade12</groupId>
@@ -492,6 +552,72 @@
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <outputFile>${output.file}</outputFile>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.darkblade12.particleeffect</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.com.darkblade12.particleeffect</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.com.google</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.typesafe.config</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.com.typesafe.config</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.typesafe.config</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.com.typesafe.config</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>javax.annotation</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.javax.annotation</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>kotlin</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.kotlin</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>mkremins.fanciful</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.mkremins.fanciful</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.amoebaman.util</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.net.amoebaman.util</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.kyori</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.net.kyori</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>ninja.leaping.configurate</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.ninja.leaping.configurate</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.checkerframework</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.org.checkerframework</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.intellij.lang.annotations</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.org.intellij.lang.annotations</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.jetbrains.annotations</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.org.jetbrains.annotations</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.kitteh.pastegg</pattern>
+                            <shadedPattern>com.massivecraft.factions.shade.org.kitteh.pastegg</shadedPattern>
+                        </relocation>
+                    </relocations>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
                 </configuration>
                 <executions>
                     <execution>
@@ -499,35 +625,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-maven-plugin</artifactId>
-                <version>${plugin.kotlin.version}</version>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirs>
-                                <sourceDir>${project.basedir}/src/main/java</sourceDir>
-                            </sourceDirs>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>test-compile</id>
-                        <goals>
-                            <goal>test-compile</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirs>
-                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
-                            </sourceDirs>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -561,9 +658,38 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>16</source>
+                    <target>16</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${plugin.kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>${project.basedir}/src/main/java</sourceDir>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
