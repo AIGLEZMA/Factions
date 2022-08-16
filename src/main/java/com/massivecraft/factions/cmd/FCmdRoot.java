@@ -99,7 +99,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public final CmdClaimLine cmdClaimLine = new CmdClaimLine();
     public final CmdClaimFill cmdClaimFill = new CmdClaimFill();
     public final CmdUnclaimfill cmdUnclaimfill = new CmdUnclaimfill();
-    public final CmdTop cmdTop = new CmdTop();
     public final CmdAHome cmdAHome = new CmdAHome();
     public final CmdPerm cmdPerm = new CmdPerm();
     public final CmdPromote cmdPromote = new CmdPromote();
@@ -230,8 +229,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public void done() {
         if (Bukkit.getServer().getPluginManager().isPluginEnabled("FactionsTop")) {
             FactionsPlugin.getInstance().getLogger().info("Found FactionsTop plugin. Disabling our own /f top command.");
-        } else {
-            this.addSubCommand(this.cmdTop);
         }
         if (Bukkit.getServer().getPluginManager().isPluginEnabled("PlayerVaults")) {
             FactionsPlugin.getInstance().getLogger().info("Found PlayerVaults hook, adding /f vault and /f setmaxvault commands.");

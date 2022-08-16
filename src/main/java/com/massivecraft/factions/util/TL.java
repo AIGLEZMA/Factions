@@ -622,11 +622,6 @@ public enum TL {
     COMMAND_TOGGLEALLIANCECHAT_IGNORE("Alliance chat is now ignored"),
     COMMAND_TOGGLEALLIANCECHAT_UNIGNORE("Alliance chat is no longer ignored"),
 
-    COMMAND_TOP_DESCRIPTION("Sort Factions to see the top of some criteria."),
-    COMMAND_TOP_TOP("Top Factions by %s. Page %d/%d"),
-    COMMAND_TOP_LINE("%d. &6%s: &c%s"), // Rank. Faction: Value
-    COMMAND_TOP_INVALID("Could not sort by %s. Try balance, online, members, power or land."),
-
     COMMAND_UNBAN_DESCRIPTION("Unban someone from your Faction"),
     COMMAND_UNBAN_NOTBANNED("&7%s &cisn't banned. Not doing anything."),
     COMMAND_UNBAN_UNBANNED("&e%1$s &cunbanned &7%2$s"),
