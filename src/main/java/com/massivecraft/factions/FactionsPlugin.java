@@ -18,6 +18,7 @@ import com.massivecraft.factions.integration.VaultPerms;
 import com.massivecraft.factions.integration.Worldguard;
 import com.massivecraft.factions.integration.permcontext.ContextManager;
 import com.massivecraft.factions.landraidcontrol.LandRaidControl;
+import com.massivecraft.factions.landraidcontrol.PowerControl;
 import com.massivecraft.factions.listeners.FactionsBlockListener;
 import com.massivecraft.factions.listeners.FactionsChatListener;
 import com.massivecraft.factions.listeners.FactionsEntityListener;
@@ -372,7 +373,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
             getLogger().info("Using space efficient (less readable) storage.");
         }
 
-        this.landRaidControl = LandRaidControl.getByName(this.conf().factions().landRaidControl().getSystem());
+        this.landRaidControl = new PowerControl();
 
         File dataFolder = new File(this.getDataFolder(), "data");
         if (!dataFolder.exists()) {

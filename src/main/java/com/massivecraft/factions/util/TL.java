@@ -204,13 +204,6 @@ public enum TL {
     COMMAND_DISBAND_HOLDINGS("&eYou have been given the disbanded faction's bank, totaling %1$s."),
     COMMAND_DISBAND_DESCRIPTION("Disband a faction"),
 
-    COMMAND_DTR_TOSHOW("to show faction DTR info"),
-    COMMAND_DTR_FORSHOW("for showing faction DTR info"),
-    COMMAND_DTR_DTR("%1$s&6 - DTR / Max DTR: &e%2$s / %3$s"),
-    COMMAND_DTR_DESCRIPTION("Show faction DTR info"),
-    COMMAND_DTR_MODIFY_DESCRIPTION("Modify faction DTR"),
-    COMMAND_DTR_MODIFY_DONE("&eSet DTR for %s&e to %s"),
-
     COMMAND_FLY_DESCRIPTION("Enter or leave Faction flight mode"),
     COMMAND_FLY_CHANGE("&eFaction flight &d%1$s"),
     COMMAND_FLY_DAMAGE("&eFaction flight &ddisabled&e due to entering combat"),
@@ -701,7 +694,6 @@ public enum TL {
     CLAIM_SAFEZONE("&cYou can not claim a safe zone."),
     CLAIM_WARZONE("&cYou can not claim a war zone."),
     CLAIM_POWER("&cYou can't claim more land! You need more power!"),
-    CLAIM_DTR_LAND("&cYou can't claim more land!"),
     CLAIM_LIMIT("&cLimit reached. You can't claim more land!"),
     CLAIM_ALLY("&cYou can't claim the land of your allies."),
     CLAIM_CONTIGIOUS("&cYou can only claim additional land which is connected to your first claim or controlled by another faction!"),
@@ -1004,16 +996,6 @@ public enum TL {
     WARMUPS_NOTIFY_TELEPORT("&eYou will teleport to &d%1$s &ein &d%2$d &eseconds."),
     WARMUPS_ALREADY("&cYou are already warming up."),
     WARMUPS_CANCELLED("&cYou have cancelled your warmup."),
-    /**
-     * DTR
-     */
-    DTR_CANNOT_FROZEN("&cAction denied due to frozen DTR"),
-    DTR_KICK_PENALTY("&cPenalty DTR lost due to kicking with frozen DTR"),
-    DTR_FROZEN_STATUS_MESSAGE("%s"),
-    DTR_FROZEN_STATUS_TRUE("Frozen"),
-    DTR_FROZEN_STATUS_FALSE("Not frozen"),
-    DTR_FROZEN_TIME_MESSAGE("%s"),
-    DTR_FROZEN_TIME_NOTFROZEN(""),
     ;
 
     public static SimpleDateFormat sdf;

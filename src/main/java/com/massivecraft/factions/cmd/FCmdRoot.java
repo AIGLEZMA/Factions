@@ -19,7 +19,6 @@ import com.massivecraft.factions.cmd.relations.CmdRelationNeutral;
 import com.massivecraft.factions.cmd.relations.CmdRelationTruce;
 import com.massivecraft.factions.cmd.role.CmdDemote;
 import com.massivecraft.factions.cmd.role.CmdPromote;
-import com.massivecraft.factions.landraidcontrol.DTRControl;
 import com.massivecraft.factions.landraidcontrol.PowerControl;
 import com.massivecraft.factions.util.TL;
 import org.bukkit.Bukkit;
@@ -69,7 +68,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public final CmdPermanentPower cmdPermanentPower = new CmdPermanentPower();
     public final CmdPowerBoost cmdPowerBoost = new CmdPowerBoost();
     public final CmdPower cmdPower = new CmdPower();
-    public final CmdDTR cmdDTR = new CmdDTR();
     public final CmdRelationAlly cmdRelationAlly = new CmdRelationAlly();
     public final CmdRelationEnemy cmdRelationEnemy = new CmdRelationEnemy();
     public final CmdRelationNeutral cmdRelationNeutral = new CmdRelationNeutral();
@@ -210,9 +208,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
             this.addSubCommand(this.cmdPower);
             this.addSubCommand(this.cmdPowerBoost);
             this.addSubCommand(this.cmdModifyPower);
-        } else if (FactionsPlugin.getInstance().getLandRaidControl() instanceof DTRControl) {
-            FactionsPlugin.getInstance().getLogger().info("Using DTR for land/raid control. Enabling DTR commands.");
-            this.addSubCommand(this.cmdDTR);
         }
         if (FactionsPlugin.getInstance().conf().commands().tnt().isEnable()) {
             this.addSubCommand(this.cmdTNT);

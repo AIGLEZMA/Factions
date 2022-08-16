@@ -14,8 +14,6 @@ import com.massivecraft.factions.event.FactionNewAdminEvent;
 import com.massivecraft.factions.iface.EconomyParticipator;
 import com.massivecraft.factions.iface.RelationParticipator;
 import com.massivecraft.factions.integration.Econ;
-import com.massivecraft.factions.landraidcontrol.DTRControl;
-import com.massivecraft.factions.landraidcontrol.LandRaidControl;
 import com.massivecraft.factions.perms.PermSelector;
 import com.massivecraft.factions.perms.PermissibleAction;
 import com.massivecraft.factions.perms.Relation;
@@ -81,9 +79,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     protected Role defaultRole;
     protected LinkedHashMap<PermSelector, Map<String, Boolean>> permissions = new LinkedHashMap<>();
     protected Set<BanInfo> bans = new HashSet<>();
-    protected double dtr;
-    protected long lastDTRUpdateTime;
-    protected long frozenDTRUntilTime;
     protected int tntBank;
     protected transient OfflinePlayer offlinePlayer;
     private long lastDeath;
@@ -114,7 +109,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         this.foundedDate = System.currentTimeMillis();
         this.maxVaults = FactionsPlugin.getInstance().conf().playerVaults().getDefaultMaxVaults();
         this.defaultRole = FactionsPlugin.getInstance().conf().factions().other().getDefaultRole();
-        this.dtr = FactionsPlugin.getInstance().conf().factions().landRaidControl().dtr().getStartingDTR();
 
         resetPerms(); // Reset on new Faction so it has default values.
     }
@@ -147,7 +141,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         invites = old.invites;
         announcements = old.announcements;
         this.defaultRole = old.defaultRole;
-        this.dtr = old.dtr;
 
         resetPerms(); // Reset on new Faction so it has default values.
     }
@@ -667,42 +660,41 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
 
     @Override
     public double getDTR() {
-        LandRaidControl lrc = FactionsPlugin.getInstance().getLandRaidControl();
-        if (lrc instanceof DTRControl) {
-            ((DTRControl) lrc).updateDTR(this);
-        }
-        return this.dtr;
+        return 0.0;
     }
 
+    @Deprecated
     @Override
     public void setDTR(double dtr) {
-        this.dtr = dtr;
-        this.lastDTRUpdateTime = System.currentTimeMillis();
     }
 
+    @Deprecated
     @Override
     public double getDTRWithoutUpdate() {
-        return this.dtr;
+        return 0.0;
     }
 
+    @Deprecated
     @Override
     public long getLastDTRUpdateTime() {
-        return this.lastDTRUpdateTime;
+        return 0L;
     }
 
+    @Deprecated
     @Override
     public long getFrozenDTRUntilTime() {
-        return this.frozenDTRUntilTime;
+        return 0L;
     }
 
+    @Deprecated
     @Override
     public boolean isFrozenDTR() {
-        return System.currentTimeMillis() < this.frozenDTRUntilTime;
+        return false;
     }
 
+    @Deprecated
     @Override
     public void setFrozenDTR(long time) {
-        this.frozenDTRUntilTime = time;
     }
 
     // ----------------------------------------------//

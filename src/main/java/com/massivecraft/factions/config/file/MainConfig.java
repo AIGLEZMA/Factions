@@ -8,7 +8,6 @@ import com.massivecraft.factions.util.MiscUtil;
 import com.massivecraft.factions.util.material.MaterialDb;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
@@ -812,7 +811,6 @@ public class MainConfig {
         public class LandRaidControl {
             @Comment("Sets the mode of land/raid control")
             private String system = "power";
-            private DTR dtr = new DTR();
             @Comment("Controls the power system of land/raid control\nSet the 'system' value to 'power' to use this system")
             private Power power = new Power();
 
@@ -820,119 +818,8 @@ public class MainConfig {
                 return system;
             }
 
-            public DTR dtr() {
-                return this.dtr;
-            }
-
             public Power power() {
                 return power;
-            }
-
-            public class DTR {
-                private double startingDTR = 2.0;
-                private double maxDTR = 10.0;
-                private double minDTR = -3.0;
-                private double perPlayer = 1;
-                private double regainPerMinutePerPlayer = 0.05;
-                private double regainPerMinuteMaxRate = 0.1;
-                private double lossPerDeath = 1;
-                @Comment("Time, in seconds, to freeze DTR regeneration after a faction member dies")
-                private int freezeTime = 0;
-                private boolean freezePreventsJoin = true;
-                private boolean freezePreventsLeave = true;
-                private boolean freezePreventsDisband = true;
-                private double freezeKickPenalty = 0.5;
-                private String freezeTimeFormat = "H:mm:ss";
-                @Comment("Additional claims allowed for each player in the faction")
-                private int landPerPlayer = 3;
-                @Comment("Claims the faction starts with.\n" +
-                        "Note: A faction of one player has this many PLUS the perPlayer amount.")
-                private int landStarting = 6;
-                private int decimalDigits = 2;
-                private Map<String, Number> worldDeathModifiers = new HashMap<String, Number>() {
-                    {
-                        this.put("world_nether", 0.5D);
-                        this.put("world_the_end", 0.25D);
-                    }
-                };
-
-                public int getDecimalDigits() {
-                    return decimalDigits;
-                }
-
-                public int getLandPerPlayer() {
-                    return landPerPlayer;
-                }
-
-                public int getLandStarting() {
-                    return landStarting;
-                }
-
-                public int getFreezeTime() {
-                    return freezeTime;
-                }
-
-                public String getFreezeTimeFormat() {
-                    return freezeTimeFormat;
-                }
-
-                public boolean isFreezePreventsJoin() {
-                    return freezePreventsJoin;
-                }
-
-                public boolean isFreezePreventsLeave() {
-                    return freezePreventsLeave;
-                }
-
-                public boolean isFreezePreventsDisband() {
-                    return freezePreventsDisband;
-                }
-
-                public double getFreezeKickPenalty() {
-                    return freezeKickPenalty;
-                }
-
-                public double getMinDTR() {
-                    return minDTR;
-                }
-
-                public double getPerPlayer() {
-                    return perPlayer;
-                }
-
-                public double getRegainPerMinutePerPlayer() {
-                    return regainPerMinutePerPlayer;
-                }
-
-                public double getRegainPerMinuteMaxRate() {
-                    return regainPerMinuteMaxRate;
-                }
-
-                public double getMaxDTR() {
-                    return maxDTR;
-                }
-
-                public double getStartingDTR() {
-                    return startingDTR;
-                }
-
-                /**
-                 * Not used directly by the plugin, as it uses the helper method.
-                 *
-                 * @return loss per death
-                 * @see #getLossPerDeath(World)
-                 */
-                @SuppressWarnings("unused")
-                public double getLossPerDeathBase() {
-                    return this.lossPerDeath;
-                }
-
-                public double getLossPerDeath(World world) {
-                    if (this.worldDeathModifiers == null) {
-                        this.worldDeathModifiers = new HashMap<>();
-                    }
-                    return this.lossPerDeath * this.worldDeathModifiers.getOrDefault(world.getName(), 1D).doubleValue();
-                }
             }
 
             public class Power {
@@ -2461,7 +2348,6 @@ public class MainConfig {
         private double costPower = 0.0;
         private double costShow = 0.0;
         private double costStuck = 0.0;
-        private double costDTR = 0.0;
         private double costOpen = 0.0;
         private double costAlly = 0.0;
         private double costTruce = 0.0;
@@ -2489,10 +2375,6 @@ public class MainConfig {
 
         public String getDefaultWorld() {
             return defaultWorld;
-        }
-
-        public double getCostDTR() {
-            return costDTR;
         }
 
         public String getUniverseAccount() {

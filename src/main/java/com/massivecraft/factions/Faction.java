@@ -270,18 +270,25 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     int getRelationCount(Relation relation);
 
+    @Deprecated
     double getDTR();
 
+    @Deprecated
     void setDTR(double dtr);
 
+    @Deprecated
     double getDTRWithoutUpdate();
 
+    @Deprecated
     long getLastDTRUpdateTime();
 
+    @Deprecated
     long getFrozenDTRUntilTime();
 
+    @Deprecated
     boolean isFrozenDTR();
 
+    @Deprecated
     void setFrozenDTR(long time);
 
     // ----------------------------------------------//

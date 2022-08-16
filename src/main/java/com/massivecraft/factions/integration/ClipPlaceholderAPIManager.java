@@ -6,7 +6,6 @@ import com.massivecraft.factions.FPlayers;
 import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.FactionsPlugin;
-import com.massivecraft.factions.landraidcontrol.DTRControl;
 import com.massivecraft.factions.perms.Relation;
 import com.massivecraft.factions.tag.FactionTag;
 import com.massivecraft.factions.tag.Tag;
@@ -118,21 +117,12 @@ public class ClipPlaceholderAPIManager extends PlaceholderExpansion implements R
             case "faction_powermax":
                 return String.valueOf(faction.getPowerMaxRounded());
             case "faction_dtr":
-                return (fPlayer.hasFaction() || territory) ? DTRControl.round(faction.getDTR()) : "";
+                return "";
             case "faction_dtrmax":
-                if ((fPlayer.hasFaction() || territory) && FactionsPlugin.getInstance().getLandRaidControl() instanceof DTRControl) {
-                    return DTRControl.round(((DTRControl) FactionsPlugin.getInstance().getLandRaidControl()).getMaxDTR(faction));
-                }
                 return "";
             case "faction_dtr_frozen":
-                if ((fPlayer.hasFaction() || territory) && FactionsPlugin.getInstance().getLandRaidControl() instanceof DTRControl) {
-                    return FactionTag.DTR_FROZEN.replace(FactionTag.DTR_FROZEN.getTag(), faction);
-                }
                 return "";
             case "faction_dtr_frozen_time":
-                if ((fPlayer.hasFaction() || territory) && FactionsPlugin.getInstance().getLandRaidControl() instanceof DTRControl) {
-                    return FactionTag.DTR_FROZEN_TIME.replace(FactionTag.DTR_FROZEN_TIME.getTag(), faction);
-                }
                 return "";
             case "faction_maxclaims":
                 return (fPlayer.hasFaction() || territory) ? String.valueOf(FactionsPlugin.getInstance().getLandRaidControl().getLandLimit(faction)) : "";
