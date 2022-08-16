@@ -9,13 +9,9 @@ import com.massivecraft.factions.config.ConfigManager;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.config.file.TranslationsConfig;
 import com.massivecraft.factions.data.SaveTask;
-import com.massivecraft.factions.event.FactionCreateEvent;
-import com.massivecraft.factions.event.FactionEvent;
-import com.massivecraft.factions.event.FactionRelationEvent;
 import com.massivecraft.factions.event.FactionsPluginRegistrationTimeEvent;
 import com.massivecraft.factions.integration.ClipPlaceholderAPIManager;
 import com.massivecraft.factions.integration.Econ;
-import com.massivecraft.factions.integration.Essentials;
 import com.massivecraft.factions.integration.IntegrationManager;
 import com.massivecraft.factions.integration.LuckPerms;
 import com.massivecraft.factions.integration.VaultPerms;
@@ -40,7 +36,6 @@ import com.massivecraft.factions.util.EnumTypeAdapter;
 import com.massivecraft.factions.util.FlightUtil;
 import com.massivecraft.factions.util.LazyLocation;
 import com.massivecraft.factions.util.MapFLocToStringSetTypeAdapter;
-import com.massivecraft.factions.util.Metrics;
 import com.massivecraft.factions.util.MyLocationTypeAdapter;
 import com.massivecraft.factions.util.PermUtil;
 import com.massivecraft.factions.util.Persist;
@@ -96,10 +91,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -148,7 +141,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     private LandRaidControl landRaidControl;
     private boolean luckPermsSetup;
     private IntegrationManager integrationManager;
-    private Metrics metrics;
     private String updateMessage;
     private int buildNumber = -1;
     private UUID serverUUID;
@@ -529,7 +521,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
                 vaultPerms = new VaultPerms();
                 cmdBase.done();
                 // Grand metrics adventure!
-                setupMetrics();
                 getLogger().removeHandler(handler);
                 startupLog = startupBuilder.toString();
                 startupExceptionLog = startupExceptionBuilder.toString();
@@ -562,95 +553,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         }
     }
 
-    private void setupMetrics() {
-        this.metrics = new Metrics(this);
-
-        // Version
-        String verString = this.getDescription().getVersion().replace("${build.number}", "selfbuilt");
-        Pattern verPattern = Pattern.compile("U([\\d.]+)-b(.*)");
-        Matcher matcher = verPattern.matcher(verString);
-        final String fuuidVersion;
-        final String fuuidBuild;
-        if (matcher.find()) {
-            fuuidVersion = matcher.group(1);
-            fuuidBuild = matcher.group(2) + ((likesCats || matcher.group(2).equals("selfbuilt")) ? "" : "p");
-        } else {
-            fuuidVersion = "Unknown";
-            fuuidBuild = verString;
-        }
-        this.metricsDrillPie("fuuid_version", () -> {
-            Map<String, Map<String, Integer>> map = new HashMap<>();
-            Map<String, Integer> entry = new HashMap<>();
-            entry.put(fuuidBuild, 1);
-            map.put(fuuidVersion, entry);
-            return map;
-        });
-
-        this.metricsDrillPie("fuuid_version_mc", () -> {
-            Map<String, Map<String, Integer>> map = new HashMap<>();
-            Map<String, Integer> entry = new HashMap<>();
-            entry.put(this.mcVersionString, 1);
-            map.put(fuuidVersion, entry);
-            return map;
-        });
-
-        // Essentials
-        Plugin ess = Essentials.getEssentials();
-        this.metricsDrillPie("essentials", () -> this.metricsPluginInfo(ess));
-        if (ess != null) {
-            this.metricsSimplePie("essentials_delete_homes", () -> "" + conf().factions().other().isDeleteEssentialsHomes());
-            this.metricsSimplePie("essentials_home_teleport", () -> "" + this.conf().factions().homes().isTeleportCommandEssentialsIntegration());
-        }
-
-        // Vault
-        Plugin vault = Bukkit.getServer().getPluginManager().getPlugin("Vault");
-        this.metricsDrillPie("vault", () -> this.metricsPluginInfo(vault));
-        if (vault != null) {
-            this.metricsDrillPie("vault_perms", () -> this.metricsInfo(vaultPerms.getPerms(), () -> vaultPerms.getName()));
-            this.metricsDrillPie("vault_econ", () -> {
-                Map<String, Map<String, Integer>> map = new HashMap<>();
-                Map<String, Integer> entry = new HashMap<>();
-                entry.put(Econ.getEcon() == null ? "none" : Econ.getEcon().getName(), 1);
-                map.put((this.conf().economy().isEnabled() && Econ.getEcon() != null) ? "enabled" : "disabled", entry);
-                return map;
-            });
-        }
-
-        // LuckPerms
-        this.metricsSimplePie("luckperms_contexts", () -> "" + this.luckPermsSetup);
-
-        // WorldGuard
-        Worldguard wg = this.getWorldguard();
-        String wgVersion = wg == null ? "nope" : wg.getVersion();
-        this.metricsDrillPie("worldguard", () -> this.metricsInfo(wg, () -> wgVersion));
-
-        // Clip Placeholder
-        Plugin clipPlugin = getServer().getPluginManager().getPlugin("PlaceholderAPI");
-        this.metricsDrillPie("clipplaceholder", () -> this.metricsPluginInfo(clipPlugin));
-
-        // MVdW Placeholder
-        Plugin mvdw = getServer().getPluginManager().getPlugin("MVdWPlaceholderAPI");
-        this.metricsDrillPie("mvdwplaceholder", () -> this.metricsPluginInfo(mvdw));
-
-        // Overall stats
-        this.metricsLine("factions", () -> Factions.getInstance().getAllFactions().size() - 3);
-        this.metricsSimplePie("scoreboard", () -> "" + conf().scoreboard().constant().isEnabled());
-
-        // Event listeners
-        this.metricsDrillPie("event_listeners", () -> {
-            Set<Plugin> pluginsListening = this.getPlugins(FactionEvent.getHandlerList(), FactionCreateEvent.getHandlerList(), FactionRelationEvent.getHandlerList());
-            Map<String, Map<String, Integer>> map = new HashMap<>();
-            for (Plugin plugin : pluginsListening) {
-                if (plugin.getName().equalsIgnoreCase("factions")) {
-                    continue;
-                }
-                Map<String, Integer> entry = new HashMap<>();
-                entry.put(plugin.getDescription().getVersion(), 1);
-                map.put(plugin.getName(), entry);
-            }
-            return map;
-        });
-    }
 
     private Set<Plugin> getPlugins(HandlerList... handlerLists) {
         Set<Plugin> plugins = new HashSet<>();
@@ -662,30 +564,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
 
     private Set<Plugin> getPlugins(HandlerList handlerList) {
         return Arrays.stream(handlerList.getRegisteredListeners()).map(RegisteredListener::getPlugin).collect(Collectors.toSet());
-    }
-
-    private void metricsLine(String name, Callable<Integer> callable) {
-        this.metrics.addCustomChart(new Metrics.SingleLineChart(name, callable));
-    }
-
-    private void metricsDrillPie(String name, Callable<Map<String, Map<String, Integer>>> callable) {
-        this.metrics.addCustomChart(new Metrics.DrilldownPie(name, callable));
-    }
-
-    private void metricsSimplePie(String name, Callable<String> callable) {
-        this.metrics.addCustomChart(new Metrics.SimplePie(name, callable));
-    }
-
-    private Map<String, Map<String, Integer>> metricsPluginInfo(Plugin plugin) {
-        return this.metricsInfo(plugin, () -> plugin.getDescription().getVersion());
-    }
-
-    private Map<String, Map<String, Integer>> metricsInfo(Object plugin, Supplier<String> versionGetter) {
-        Map<String, Map<String, Integer>> map = new HashMap<>();
-        Map<String, Integer> entry = new HashMap<>();
-        entry.put(plugin == null ? "nope" : versionGetter.get(), 1);
-        map.put(plugin == null ? "absent" : "present", entry);
-        return map;
     }
 
     public void setWorldGuard(Worldguard wg) {
