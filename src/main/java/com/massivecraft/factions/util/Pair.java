@@ -3,6 +3,7 @@ package com.massivecraft.factions.util;
 public class Pair<Left, Right> {
     private final Left left;
     private final Right right;
+
     private Pair(Left left, Right right) {
         this.left = left;
         this.right = right;

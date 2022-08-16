@@ -12,9 +12,9 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class FactionSelector extends AbstractSelector {
     public static final String NAME = "faction";
-    private static final String delimiter = "¤";    public static final Descriptor DESCRIPTOR = new BasicDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().faction()::getDisplayName, FactionSelector::new)
+    private static final String delimiter = "¤";
+    private final int id;    public static final Descriptor DESCRIPTOR = new BasicDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().faction()::getDisplayName, FactionSelector::new)
             .withInstructions(FactionsPlugin.getInstance().tl().permissions().selectors().faction()::getInstructions);
-    private final int id;
     private final String lastKnown;
     public FactionSelector(String str) {
         super(DESCRIPTOR);
@@ -61,6 +61,8 @@ public class FactionSelector extends AbstractSelector {
                 MiniMessage.miniMessage().deserialize(FactionsPlugin.getInstance().tl().permissions().selectors().faction().getDisbandedValue(), Placeholder.unparsed("lastknown", this.lastKnown)) :
                 LegacyComponentSerializer.legacySection().deserialize(faction.getTag(context));
     }
+
+
 
 
 }

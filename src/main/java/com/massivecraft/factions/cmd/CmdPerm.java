@@ -4,7 +4,11 @@ import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.config.file.PermissionsConfig;
 import com.massivecraft.factions.config.file.TranslationsConfig;
 import com.massivecraft.factions.data.MemoryFaction;
-import com.massivecraft.factions.perms.*;
+import com.massivecraft.factions.perms.PermSelector;
+import com.massivecraft.factions.perms.PermSelectorRegistry;
+import com.massivecraft.factions.perms.PermissibleAction;
+import com.massivecraft.factions.perms.PermissibleActionRegistry;
+import com.massivecraft.factions.perms.Role;
 import com.massivecraft.factions.perms.selector.UnknownSelector;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.util.TL;
@@ -17,7 +21,13 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CmdPerm extends FCommand {

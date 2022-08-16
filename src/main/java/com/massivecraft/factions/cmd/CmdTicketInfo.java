@@ -170,6 +170,7 @@ public class CmdTicketInfo extends FCommand {
             private String name;
             private UUID uuid;
             private List<PermInfo> permissions;
+
             public PlayerInfo(Player player) {
                 this.name = player.getName();
                 this.uuid = player.getUniqueId();

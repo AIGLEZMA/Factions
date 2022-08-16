@@ -5,14 +5,17 @@ import com.massivecraft.factions.perms.Relation;
 
 public class RelationSingleSelector extends AbstractRelationSelector {
     public static final String NAME = "relation-single";
+
     public RelationSingleSelector(Relation relation) {
         super(DESCRIPTOR, relation);
-    }    public static final Descriptor DESCRIPTOR = new RelationDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().relationSingle()::getDisplayName, RelationSingleSelector::new);
+    }
 
     @Override
     public boolean test(Relation relation) {
         return relation == this.relation;
-    }
+    }    public static final Descriptor DESCRIPTOR = new RelationDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().relationSingle()::getDisplayName, RelationSingleSelector::new);
+
+
 
 
 }

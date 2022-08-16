@@ -5,14 +5,17 @@ import com.massivecraft.factions.perms.Role;
 
 public class RoleAtMostSelector extends AbstractRoleSelector {
     public static final String NAME = "role-atmost";
+
     public RoleAtMostSelector(Role role) {
         super(DESCRIPTOR, role);
-    }    public static final Descriptor DESCRIPTOR = new AbstractRoleSelector.RoleDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().roleAtMost()::getDisplayName, RoleAtMostSelector::new);
+    }
 
     @Override
     public boolean test(Role role) {
         return role != null && role.isAtMost(this.role);
-    }
+    }    public static final Descriptor DESCRIPTOR = new AbstractRoleSelector.RoleDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().roleAtMost()::getDisplayName, RoleAtMostSelector::new);
+
+
 
 
 }

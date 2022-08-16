@@ -5,14 +5,17 @@ import com.massivecraft.factions.perms.Role;
 
 public class RoleAtLeastSelector extends AbstractRoleSelector {
     public static final String NAME = "role-atleast";
+
     public RoleAtLeastSelector(Role role) {
         super(DESCRIPTOR, role);
-    }    public static final Descriptor DESCRIPTOR = new AbstractRoleSelector.RoleDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().roleAtLeast()::getDisplayName, RoleAtLeastSelector::new);
+    }
 
     @Override
     public boolean test(Role role) {
         return role != null && role.isAtLeast(this.role);
-    }
+    }    public static final Descriptor DESCRIPTOR = new AbstractRoleSelector.RoleDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().roleAtLeast()::getDisplayName, RoleAtLeastSelector::new);
+
+
 
 
 }

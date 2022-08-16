@@ -1,6 +1,11 @@
 package com.massivecraft.factions.listeners;
 
-import com.massivecraft.factions.*;
+import com.massivecraft.factions.Board;
+import com.massivecraft.factions.FLocation;
+import com.massivecraft.factions.FPlayer;
+import com.massivecraft.factions.FPlayers;
+import com.massivecraft.factions.Faction;
+import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.perms.PermissibleAction;
 import com.massivecraft.factions.perms.PermissibleActions;
@@ -12,7 +17,13 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.entity.Wither;
+import org.bukkit.entity.WitherSkull;
 import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Listener;
@@ -108,10 +119,11 @@ public abstract class AbstractListener implements Listener {
                 (faction.isSafeZone() && protection.isSafeZoneBlockTNT()))) {
             // TNT which needs prevention
             return true;
-        } else return (faction.isWilderness() && protection.isWildernessBlockOtherExplosions() && !protection.getWorldsNoWildernessProtection().contains(location.getWorldName())) ||
-                (faction.isNormal() && (online ? protection.isTerritoryBlockOtherExplosions() : protection.isTerritoryBlockOtherExplosionsWhenOffline())) ||
-                (faction.isWarZone() && protection.isWarZoneBlockOtherExplosions()) ||
-                (faction.isSafeZone() && protection.isSafeZoneBlockOtherExplosions());
+        } else
+            return (faction.isWilderness() && protection.isWildernessBlockOtherExplosions() && !protection.getWorldsNoWildernessProtection().contains(location.getWorldName())) ||
+                    (faction.isNormal() && (online ? protection.isTerritoryBlockOtherExplosions() : protection.isTerritoryBlockOtherExplosionsWhenOffline())) ||
+                    (faction.isWarZone() && protection.isWarZoneBlockOtherExplosions()) ||
+                    (faction.isSafeZone() && protection.isSafeZoneBlockOtherExplosions());
     }
 
     public static boolean canUseBlock(Player player, Material material, Location location, boolean justCheck) {

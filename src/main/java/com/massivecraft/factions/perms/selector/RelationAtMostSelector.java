@@ -5,14 +5,17 @@ import com.massivecraft.factions.perms.Relation;
 
 public class RelationAtMostSelector extends AbstractRelationSelector {
     public static final String NAME = "relation-atmost";
+
     public RelationAtMostSelector(Relation relation) {
         super(DESCRIPTOR, relation);
-    }    public static final Descriptor DESCRIPTOR = new RelationDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().relationAtMost()::getDisplayName, RelationAtMostSelector::new);
+    }
 
     @Override
     public boolean test(Relation relation) {
         return relation != null && relation != Relation.MEMBER && relation.isAtMost(this.relation);
-    }
+    }    public static final Descriptor DESCRIPTOR = new RelationDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().relationAtMost()::getDisplayName, RelationAtMostSelector::new);
+
+
 
 
 }

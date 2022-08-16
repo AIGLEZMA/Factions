@@ -13,7 +13,14 @@ import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "InnerClassMayBeStatic", "BooleanMethodIsAlwaysInverted", "MismatchedQueryAndUpdateOfCollection"})
 public class MainConfig {
@@ -1595,6 +1602,7 @@ public class MainConfig {
             private Set<String> customContainers = new HashSet<>();
             @WipeOnReload
             private transient Set<Material> customContainersMat;
+
             private Protection() {
                 protectUsage("FIRE_CHARGE");
                 protectUsage("FLINT_AND_STEEL");
