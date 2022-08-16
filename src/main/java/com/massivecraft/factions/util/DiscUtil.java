@@ -3,11 +3,7 @@ package com.massivecraft.factions.util;
 import com.massivecraft.factions.FactionsPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
@@ -22,6 +18,8 @@ public class DiscUtil {
     // -------------------------------------------- //
 
 
+    private static final HashMap<String, Lock> locks = new HashMap<>();
+
     public static byte[] readBytes(File file) throws IOException {
         int length = (int) file.length();
         byte[] output = new byte[length];
@@ -34,6 +32,10 @@ public class DiscUtil {
         return output;
     }
 
+    // -------------------------------------------- //
+    // STRING
+    // -------------------------------------------- //
+
     public static void writeBytes(File file, byte[] bytes) throws IOException {
         if (!file.exists()) {
             file.createNewFile();
@@ -43,23 +45,17 @@ public class DiscUtil {
         out.close();
     }
 
-    // -------------------------------------------- //
-    // STRING
-    // -------------------------------------------- //
-
     public static void write(File file, String content) throws IOException {
         writeBytes(file, content.getBytes(StandardCharsets.UTF_8));
-    }
-
-    public static String read(File file) throws IOException {
-        return new String(readBytes(file), StandardCharsets.UTF_8);
     }
 
     // -------------------------------------------- //
     // CATCH
     // -------------------------------------------- //
 
-    private static final HashMap<String, Lock> locks = new HashMap<>();
+    public static String read(File file) throws IOException {
+        return new String(readBytes(file), StandardCharsets.UTF_8);
+    }
 
     public static boolean writeCatch(final File file, final String content, boolean sync) {
         String name = file.getName();

@@ -8,6 +8,15 @@ import java.util.Set;
 public abstract class Factions {
     protected static Factions instance = getFactionsImpl();
 
+    public static Factions getInstance() {
+        return instance;
+    }
+
+    private static Factions getFactionsImpl() {
+        // TODO switch on configuration backend
+        return new JSONFactions();
+    }
+
     public abstract Faction getFactionById(String id);
 
     public abstract Faction getByTag(String str);
@@ -40,15 +49,6 @@ public abstract class Factions {
     public abstract void forceSave();
 
     public abstract void forceSave(boolean sync);
-
-    public static Factions getInstance() {
-        return instance;
-    }
-
-    private static Factions getFactionsImpl() {
-        // TODO switch on configuration backend
-        return new JSONFactions();
-    }
 
     public abstract int load();
 }

@@ -1,16 +1,7 @@
 package com.massivecraft.factions.perms;
 
 import com.massivecraft.factions.FactionsPlugin;
-import com.massivecraft.factions.perms.selector.AllSelector;
-import com.massivecraft.factions.perms.selector.FactionSelector;
-import com.massivecraft.factions.perms.selector.PlayerSelector;
-import com.massivecraft.factions.perms.selector.RelationAtLeastSelector;
-import com.massivecraft.factions.perms.selector.RelationAtMostSelector;
-import com.massivecraft.factions.perms.selector.RelationSingleSelector;
-import com.massivecraft.factions.perms.selector.RoleAtLeastSelector;
-import com.massivecraft.factions.perms.selector.RoleAtMostSelector;
-import com.massivecraft.factions.perms.selector.RoleSingleSelector;
-import com.massivecraft.factions.perms.selector.UnknownSelector;
+import com.massivecraft.factions.perms.selector.*;
 
 import java.util.Map;
 import java.util.Set;
@@ -18,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class PermSelectorRegistry {
-    private static boolean closed = false;
     private static final Map<String, PermSelector.Descriptor> registry = new ConcurrentHashMap<>();
+    private static boolean closed = false;
 
     static {
         register(AllSelector.DESCRIPTOR);

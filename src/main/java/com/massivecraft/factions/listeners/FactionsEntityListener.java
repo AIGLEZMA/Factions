@@ -1,40 +1,17 @@
 package com.massivecraft.factions.listeners;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FLocation;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.perms.PermissibleActions;
 import com.massivecraft.factions.perms.Relation;
 import com.massivecraft.factions.util.TL;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Enderman;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Silverfish;
-import org.bukkit.entity.TNTPrimed;
-import org.bukkit.entity.Wither;
+import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
@@ -51,206 +28,11 @@ import java.util.UUID;
 
 public class FactionsEntityListener extends AbstractListener {
 
+    private static final Set<PotionEffectType> badPotionEffects = new LinkedHashSet<>(Arrays.asList(PotionEffectType.BLINDNESS, PotionEffectType.CONFUSION, PotionEffectType.HARM, PotionEffectType.HUNGER, PotionEffectType.POISON, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.WEAKNESS, PotionEffectType.WITHER));
     public final FactionsPlugin plugin;
 
     public FactionsEntityListener(FactionsPlugin plugin) {
         this.plugin = plugin;
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onEntityDeath(EntityDeathEvent event) {
-        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
-            return;
-        }
-
-        Entity entity = event.getEntity();
-        if (entity instanceof Player) {
-            FactionsPlugin.getInstance().getLandRaidControl().onDeath((Player) entity);
-        }
-    }
-
-    /**
-     * Who can I hurt? I can never hurt members or allies. I can always hurt enemies. I can hurt neutrals as long as
-     * they are outside their own territory.
-     */
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onEntityDamage(EntityDamageEvent event) {
-        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
-            return;
-        }
-
-        if (event instanceof EntityDamageByEntityEvent) {
-            EntityDamageByEntityEvent sub = (EntityDamageByEntityEvent) event;
-            if (!this.canDamagerHurtDamagee(sub, true)) {
-                event.setCancelled(true);
-            }
-        } else if (FactionsPlugin.getInstance().conf().factions().protection().isSafeZonePreventAllDamageToPlayers() && isPlayerInSafeZone(event.getEntity())) {
-            // Players can not take any damage in a Safe Zone
-            event.setCancelled(true);
-        } else if (event.getCause() == EntityDamageEvent.DamageCause.FALL && event.getEntity() instanceof Player) {
-            Player player = (Player) event.getEntity();
-            FPlayer fPlayer = FPlayers.getInstance().getByPlayer(player);
-            if (fPlayer != null && !fPlayer.shouldTakeFallDamage()) {
-                event.setCancelled(true); // Falling after /f fly
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityDamageMonitor(EntityDamageEvent event) {
-        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
-            return;
-        }
-
-        Entity damagee = event.getEntity();
-        boolean playerHurt = damagee instanceof Player;
-
-        if (event instanceof EntityDamageByEntityEvent) {
-            Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
-
-            if (damager instanceof Projectile) {
-                Projectile projectile = (Projectile) damager;
-
-                if (projectile.getShooter() instanceof Entity) {
-                    damager = (Entity) projectile.getShooter();
-                }
-            }
-
-            if (playerHurt) {
-                cancelFStuckTeleport((Player) damagee);
-                if ((damager instanceof Player) || plugin.conf().commands().fly().isDisableOnHurtByMobs()) {
-                    cancelFFly((Player) damagee);
-                }
-            }
-            if (damager instanceof Player) {
-                cancelFStuckTeleport((Player) damager);
-                if ((playerHurt && plugin.conf().commands().fly().isDisableOnHurtingPlayers()) ||
-                        (!playerHurt && plugin.conf().commands().fly().isDisableOnHurtingMobs())) {
-                    cancelFFly((Player) damager);
-                }
-            }
-        }
-
-        // entity took generic damage?
-        if (playerHurt) {
-            Player player = (Player) damagee;
-            FPlayer me = FPlayers.getInstance().getByPlayer(player);
-            cancelFStuckTeleport(player);
-            if (plugin.conf().commands().fly().isDisableOnGenericDamage()) {
-                cancelFFly(player);
-            }
-            if (me.isWarmingUp()) {
-                me.clearWarmup();
-                me.msg(TL.WARMUPS_CANCELLED);
-            }
-        }
-    }
-
-    private void cancelFFly(Player player) {
-        if (player == null) {
-            return;
-        }
-
-        FPlayer fPlayer = FPlayers.getInstance().getByPlayer(player);
-        if (fPlayer.isFlying()) {
-            fPlayer.setFlying(false, true);
-            if (fPlayer.isAutoFlying()) {
-                fPlayer.setAutoFlying(false);
-            }
-        }
-    }
-
-    public void cancelFStuckTeleport(Player player) {
-        if (player == null) {
-            return;
-        }
-        UUID uuid = player.getUniqueId();
-        if (FactionsPlugin.getInstance().getStuckMap().containsKey(uuid)) {
-            FPlayers.getInstance().getByPlayer(player).msg(TL.COMMAND_STUCK_CANCELLED);
-            FactionsPlugin.getInstance().getStuckMap().remove(uuid);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onEntityExplode(EntityExplodeEvent event) {
-        this.handleExplosion(event.getLocation(), event.getEntity(), event, event.blockList());
-    }
-
-    // mainly for flaming arrows; don't want allies or people in safe zones to be ignited even after damage event is cancelled
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onEntityCombustByEntity(EntityCombustByEntityEvent event) {
-        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
-            return;
-        }
-
-        EntityDamageByEntityEvent sub = new EntityDamageByEntityEvent(event.getCombuster(), event.getEntity(), EntityDamageEvent.DamageCause.FIRE, 0d);
-        if (!this.canDamagerHurtDamagee(sub, false)) {
-            event.setCancelled(true);
-        }
-    }
-
-    private static final Set<PotionEffectType> badPotionEffects = new LinkedHashSet<>(Arrays.asList(PotionEffectType.BLINDNESS, PotionEffectType.CONFUSION, PotionEffectType.HARM, PotionEffectType.HUNGER, PotionEffectType.POISON, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.WEAKNESS, PotionEffectType.WITHER));
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPotionSplashEvent(PotionSplashEvent event) {
-        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
-            return;
-        }
-
-        // see if the potion has a harmful effect
-        boolean badjuju = false;
-        for (PotionEffect effect : event.getPotion().getEffects()) {
-            if (badPotionEffects.contains(effect.getType())) {
-                badjuju = true;
-                break;
-            }
-        }
-        if (!badjuju) {
-            return;
-        }
-
-        ProjectileSource thrower = event.getPotion().getShooter();
-        if (!(thrower instanceof Entity)) {
-            return;
-        }
-
-        if (thrower instanceof Player) {
-            Player player = (Player) thrower;
-            FPlayer fPlayer = FPlayers.getInstance().getByPlayer(player);
-            if (fPlayer.getFaction().isPeaceful()) {
-                if (event.getPotion().getEffects().stream().allMatch(e -> e.getType().equals(PotionEffectType.WEAKNESS))) {
-                    for (LivingEntity target : event.getAffectedEntities()) {
-                        event.setIntensity(target, 0);
-                    }
-                    return;
-                }
-                event.setCancelled(true);
-                return;
-            }
-        }
-
-        // scan through affected entities to make sure they're all valid targets
-        for (LivingEntity target : event.getAffectedEntities()) {
-            EntityDamageByEntityEvent sub = new EntityDamageByEntityEvent((Entity) thrower, target, EntityDamageEvent.DamageCause.CUSTOM, 0);
-            if (!this.canDamagerHurtDamagee(sub, true)) {
-                event.setIntensity(target, 0.0);  // affected entity list doesn't accept modification (so no iter.remove()), but this works
-            }
-        }
-    }
-
-    public boolean isPlayerInSafeZone(Entity damagee) {
-        if (!(damagee instanceof Player)) {
-            return false;
-        }
-        return Board.getInstance().getFactionAt(new FLocation(damagee.getLocation())).isSafeZone();
-    }
-
-    public boolean canDamagerHurtDamagee(EntityDamageByEntityEvent sub) {
-        return canDamagerHurtDamagee(sub, true);
-    }
-
-    public boolean canDamagerHurtDamagee(EntityDamageByEntityEvent sub, boolean notify) {
-        return canDamage(sub.getDamager(), sub.getEntity(), notify);
     }
 
     public static boolean canDamage(Entity damager, Entity damagee, boolean notify) {
@@ -258,8 +40,7 @@ public class FactionsEntityListener extends AbstractListener {
         Faction defLocFaction = Board.getInstance().getFactionAt(defLoc);
 
         // for damage caused by projectiles, getDamager() returns the projectile... what we need to know is the source
-        if (damager instanceof Projectile) {
-            Projectile projectile = (Projectile) damager;
+        if (damager instanceof Projectile projectile) {
 
             if (!(projectile.getShooter() instanceof Entity)) {
                 return true;
@@ -279,8 +60,7 @@ public class FactionsEntityListener extends AbstractListener {
             }
         }
 
-        if (damager instanceof Player) {
-            Player player = (Player) damager;
+        if (damager instanceof Player player) {
             Material material = null;
             switch (damagee.getType()) {
                 case ITEM_FRAME:
@@ -471,6 +251,196 @@ public class FactionsEntityListener extends AbstractListener {
         } */
 
         return true;
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onEntityDeath(EntityDeathEvent event) {
+        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
+            return;
+        }
+
+        Entity entity = event.getEntity();
+        if (entity instanceof Player) {
+            FactionsPlugin.getInstance().getLandRaidControl().onDeath((Player) entity);
+        }
+    }
+
+    /**
+     * Who can I hurt? I can never hurt members or allies. I can always hurt enemies. I can hurt neutrals as long as
+     * they are outside their own territory.
+     */
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
+            return;
+        }
+
+        if (event instanceof EntityDamageByEntityEvent sub) {
+            if (!this.canDamagerHurtDamagee(sub, true)) {
+                event.setCancelled(true);
+            }
+        } else if (FactionsPlugin.getInstance().conf().factions().protection().isSafeZonePreventAllDamageToPlayers() && isPlayerInSafeZone(event.getEntity())) {
+            // Players can not take any damage in a Safe Zone
+            event.setCancelled(true);
+        } else if (event.getCause() == EntityDamageEvent.DamageCause.FALL && event.getEntity() instanceof Player player) {
+            FPlayer fPlayer = FPlayers.getInstance().getByPlayer(player);
+            if (fPlayer != null && !fPlayer.shouldTakeFallDamage()) {
+                event.setCancelled(true); // Falling after /f fly
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDamageMonitor(EntityDamageEvent event) {
+        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
+            return;
+        }
+
+        Entity damagee = event.getEntity();
+        boolean playerHurt = damagee instanceof Player;
+
+        if (event instanceof EntityDamageByEntityEvent) {
+            Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+
+            if (damager instanceof Projectile projectile) {
+
+                if (projectile.getShooter() instanceof Entity) {
+                    damager = (Entity) projectile.getShooter();
+                }
+            }
+
+            if (playerHurt) {
+                cancelFStuckTeleport((Player) damagee);
+                if ((damager instanceof Player) || plugin.conf().commands().fly().isDisableOnHurtByMobs()) {
+                    cancelFFly((Player) damagee);
+                }
+            }
+            if (damager instanceof Player) {
+                cancelFStuckTeleport((Player) damager);
+                if ((playerHurt && plugin.conf().commands().fly().isDisableOnHurtingPlayers()) ||
+                        (!playerHurt && plugin.conf().commands().fly().isDisableOnHurtingMobs())) {
+                    cancelFFly((Player) damager);
+                }
+            }
+        }
+
+        // entity took generic damage?
+        if (playerHurt) {
+            Player player = (Player) damagee;
+            FPlayer me = FPlayers.getInstance().getByPlayer(player);
+            cancelFStuckTeleport(player);
+            if (plugin.conf().commands().fly().isDisableOnGenericDamage()) {
+                cancelFFly(player);
+            }
+            if (me.isWarmingUp()) {
+                me.clearWarmup();
+                me.msg(TL.WARMUPS_CANCELLED);
+            }
+        }
+    }
+
+    private void cancelFFly(Player player) {
+        if (player == null) {
+            return;
+        }
+
+        FPlayer fPlayer = FPlayers.getInstance().getByPlayer(player);
+        if (fPlayer.isFlying()) {
+            fPlayer.setFlying(false, true);
+            if (fPlayer.isAutoFlying()) {
+                fPlayer.setAutoFlying(false);
+            }
+        }
+    }
+
+    public void cancelFStuckTeleport(Player player) {
+        if (player == null) {
+            return;
+        }
+        UUID uuid = player.getUniqueId();
+        if (FactionsPlugin.getInstance().getStuckMap().containsKey(uuid)) {
+            FPlayers.getInstance().getByPlayer(player).msg(TL.COMMAND_STUCK_CANCELLED);
+            FactionsPlugin.getInstance().getStuckMap().remove(uuid);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityExplode(EntityExplodeEvent event) {
+        this.handleExplosion(event.getLocation(), event.getEntity(), event, event.blockList());
+    }
+
+    // mainly for flaming arrows; don't want allies or people in safe zones to be ignited even after damage event is cancelled
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityCombustByEntity(EntityCombustByEntityEvent event) {
+        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
+            return;
+        }
+
+        EntityDamageByEntityEvent sub = new EntityDamageByEntityEvent(event.getCombuster(), event.getEntity(), EntityDamageEvent.DamageCause.FIRE, 0d);
+        if (!this.canDamagerHurtDamagee(sub, false)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPotionSplashEvent(PotionSplashEvent event) {
+        if (!plugin.worldUtil().isEnabled(event.getEntity().getWorld())) {
+            return;
+        }
+
+        // see if the potion has a harmful effect
+        boolean badjuju = false;
+        for (PotionEffect effect : event.getPotion().getEffects()) {
+            if (badPotionEffects.contains(effect.getType())) {
+                badjuju = true;
+                break;
+            }
+        }
+        if (!badjuju) {
+            return;
+        }
+
+        ProjectileSource thrower = event.getPotion().getShooter();
+        if (!(thrower instanceof Entity)) {
+            return;
+        }
+
+        if (thrower instanceof Player player) {
+            FPlayer fPlayer = FPlayers.getInstance().getByPlayer(player);
+            if (fPlayer.getFaction().isPeaceful()) {
+                if (event.getPotion().getEffects().stream().allMatch(e -> e.getType().equals(PotionEffectType.WEAKNESS))) {
+                    for (LivingEntity target : event.getAffectedEntities()) {
+                        event.setIntensity(target, 0);
+                    }
+                    return;
+                }
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        // scan through affected entities to make sure they're all valid targets
+        for (LivingEntity target : event.getAffectedEntities()) {
+            EntityDamageByEntityEvent sub = new EntityDamageByEntityEvent((Entity) thrower, target, EntityDamageEvent.DamageCause.CUSTOM, 0);
+            if (!this.canDamagerHurtDamagee(sub, true)) {
+                event.setIntensity(target, 0.0);  // affected entity list doesn't accept modification (so no iter.remove()), but this works
+            }
+        }
+    }
+
+    public boolean isPlayerInSafeZone(Entity damagee) {
+        if (!(damagee instanceof Player)) {
+            return false;
+        }
+        return Board.getInstance().getFactionAt(new FLocation(damagee.getLocation())).isSafeZone();
+    }
+
+    public boolean canDamagerHurtDamagee(EntityDamageByEntityEvent sub) {
+        return canDamagerHurtDamagee(sub, true);
+    }
+
+    public boolean canDamagerHurtDamagee(EntityDamageByEntityEvent sub, boolean notify) {
+        return canDamage(sub.getDamager(), sub.getEntity(), notify);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

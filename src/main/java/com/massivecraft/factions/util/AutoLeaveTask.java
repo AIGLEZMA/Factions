@@ -33,10 +33,10 @@ public class AutoLeaveTask implements Runnable {
     }
 
     public static abstract class AutoLeaveProcessor<T extends Selectable> extends BukkitRunnable {
+        protected final transient double toleranceMillis = FactionsPlugin.getInstance().conf().factions().other().getAutoLeaveAfterDaysOfInactivity() * 24 * 60 * 60 * 1000;
         protected transient boolean readyToGo = true;
         protected transient boolean finished;
         protected transient ListIterator<T> iterator;
-        protected final transient double toleranceMillis = FactionsPlugin.getInstance().conf().factions().other().getAutoLeaveAfterDaysOfInactivity() * 24 * 60 * 60 * 1000;
         protected long now;
 
         // we're done, shut down

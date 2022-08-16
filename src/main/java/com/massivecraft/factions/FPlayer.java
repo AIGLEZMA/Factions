@@ -32,11 +32,11 @@ public interface FPlayer extends EconomyParticipator, Selectable {
 
     Faction getFaction();
 
+    void setFaction(Faction faction);
+
     String getFactionId();
 
     boolean hasFaction();
-
-    void setFaction(Faction faction);
 
     boolean willAutoLeave();
 
@@ -88,17 +88,17 @@ public interface FPlayer extends EconomyParticipator, Selectable {
 
     void setIsAdminBypassing(boolean val);
 
-    void setChatMode(ChatMode chatMode);
-
     ChatMode getChatMode();
 
-    void setIgnoreAllianceChat(boolean ignore);
+    void setChatMode(ChatMode chatMode);
 
     boolean isIgnoreAllianceChat();
 
-    void setSpyingChat(boolean chatSpying);
+    void setIgnoreAllianceChat(boolean ignore);
 
     boolean isSpyingChat();
+
+    void setSpyingChat(boolean chatSpying);
 
     boolean showScoreboard();
 
@@ -231,6 +231,8 @@ public interface FPlayer extends EconomyParticipator, Selectable {
 
     String getId();
 
+    void setId(String id);
+
     Player getPlayer();
 
     boolean isOnline();
@@ -252,8 +254,6 @@ public interface FPlayer extends EconomyParticipator, Selectable {
     void remove();
 
     boolean isOffline();
-
-    void setId(String id);
 
     void flightCheck();
 

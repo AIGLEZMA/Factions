@@ -9,17 +9,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Plugin-agnostic registration of contexts. Other plugins can hook into this.
  */
 public class ContextManager implements Listener {
     private static Multimap<String, Context> registeredContexts;
+
+    private ContextManager() {
+        // Honk!
+    }
 
     /**
      * Should be called by FactionsUUID only.
@@ -71,10 +71,6 @@ public class ContextManager implements Listener {
         }
 
         registeredContexts.put(JavaPlugin.getProvidingPlugin(context.getClass()).getName(), context);
-    }
-
-    private ContextManager() {
-        // Honk!
     }
 
     @EventHandler

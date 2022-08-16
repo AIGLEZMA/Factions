@@ -15,6 +15,38 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class IntegrationManager implements Listener {
+    public IntegrationManager(FactionsPlugin plugin) {
+        for (Integration integration : Integration.values()) {
+            Plugin plug = plugin.getServer().getPluginManager().getPlugin(integration.pluginName);
+            if (plug != null && plug.isEnabled()) {
+                try {
+                    integration.startup.accept(plug);
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.WARNING, "Failed to start " + integration.pluginName + " integration", e);
+                }
+            }
+        }
+    }
+
+    public static void onLoad(FactionsPlugin plugin) {
+        try {
+            Field depGraph = SimplePluginManager.class.getDeclaredField("dependencyGraph");
+            depGraph.setAccessible(true);
+            Object graph = depGraph.get(plugin.getServer().getPluginManager());
+            Method putEdge = graph.getClass().getDeclaredMethod("putEdge", Object.class, Object.class);
+            putEdge.setAccessible(true);
+            for (String depend : Integration.STARTUP_MAP.keySet()) {
+                putEdge.invoke(graph, plugin.getDescription().getName(), depend);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    @EventHandler
+    public void onPluginEnabled(PluginEnableEvent event) {
+        Integration.getStartup(event.getPlugin().getName()).accept(event.getPlugin());
+    }
+
     @SuppressWarnings("Convert2MethodRef")
     private enum Integration {
         ESS("Essentials", Essentials::setup),
@@ -58,14 +90,6 @@ public class IntegrationManager implements Listener {
             }
         }
 
-        static Consumer<Plugin> getStartup(String pluginName) {
-            return STARTUP_MAP.getOrDefault(pluginName, Integration::omNomNom);
-        }
-
-        private static void omNomNom(Plugin plugin) {
-            // NOOP
-        }
-
         private final String pluginName;
         private final Consumer<Plugin> startup;
 
@@ -73,37 +97,13 @@ public class IntegrationManager implements Listener {
             this.pluginName = pluginName;
             this.startup = startup;
         }
-    }
 
-    public static void onLoad(FactionsPlugin plugin) {
-        try {
-            Field depGraph = SimplePluginManager.class.getDeclaredField("dependencyGraph");
-            depGraph.setAccessible(true);
-            Object graph = depGraph.get(plugin.getServer().getPluginManager());
-            Method putEdge = graph.getClass().getDeclaredMethod("putEdge", Object.class, Object.class);
-            putEdge.setAccessible(true);
-            for (String depend : Integration.STARTUP_MAP.keySet()) {
-                putEdge.invoke(graph, plugin.getDescription().getName(), depend);
-            }
-        } catch (Exception ignored) {
+        static Consumer<Plugin> getStartup(String pluginName) {
+            return STARTUP_MAP.getOrDefault(pluginName, Integration::omNomNom);
         }
-    }
 
-    public IntegrationManager(FactionsPlugin plugin) {
-        for (Integration integration : Integration.values()) {
-            Plugin plug = plugin.getServer().getPluginManager().getPlugin(integration.pluginName);
-            if (plug != null && plug.isEnabled()) {
-                try {
-                    integration.startup.accept(plug);
-                } catch (Exception e) {
-                    plugin.getLogger().log(Level.WARNING, "Failed to start " + integration.pluginName + " integration", e);
-                }
-            }
+        private static void omNomNom(Plugin plugin) {
+            // NOOP
         }
-    }
-
-    @EventHandler
-    public void onPluginEnabled(PluginEnableEvent event) {
-        Integration.getStartup(event.getPlugin().getName()).accept(event.getPlugin());
     }
 }

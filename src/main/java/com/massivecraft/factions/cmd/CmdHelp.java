@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class CmdHelp extends FCommand {
 
+    public ArrayList<ArrayList<String>> helpPages;
+
     public CmdHelp() {
         super();
         this.aliases.add("help");
@@ -22,6 +24,10 @@ public class CmdHelp extends FCommand {
 
         this.requirements = new CommandRequirements.Builder(Permission.HELP).noDisableOnLock().build();
     }
+
+    //----------------------------------------------//
+    // Build the help pages
+    //----------------------------------------------//
 
     @Override
     public void perform(CommandContext context) {
@@ -53,12 +59,6 @@ public class CmdHelp extends FCommand {
             context.sendMessage(FactionsPlugin.getInstance().txt().parse(helpLine));
         }
     }
-
-    //----------------------------------------------//
-    // Build the help pages
-    //----------------------------------------------//
-
-    public ArrayList<ArrayList<String>> helpPages;
 
     public void updateHelp(CommandContext context) {
         helpPages = new ArrayList<>();

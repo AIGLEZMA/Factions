@@ -10,11 +10,7 @@ import com.massivecraft.factions.util.QuadFunction;
 import mkremins.fanciful.FancyMessage;
 import org.bukkit.ChatColor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public enum FancyTag implements Tag {
     ALLIES_LIST("allies-list", (target, fme, prefix, gm) -> processRelation(prefix, target, fme, Relation.ALLY)),
@@ -64,6 +60,11 @@ public enum FancyTag implements Tag {
 
     private final String tag;
     private final QuadFunction<Faction, FPlayer, String, Map<UUID, String>, List<FancyMessage>> function;
+
+    FancyTag(String tag, QuadFunction<Faction, FPlayer, String, Map<UUID, String>, List<FancyMessage>> function) {
+        this.tag = '{' + tag + '}';
+        this.function = function;
+    }
 
     private static List<FancyMessage> processRelation(String prefix, Faction faction, FPlayer fPlayer, Relation relation) {
         List<FancyMessage> fancyMessages = new ArrayList<>();
@@ -156,11 +157,6 @@ public enum FancyTag implements Tag {
             lines.add(ChatColor.translateAlternateColorCodes('&', string));
         }
         return lines;
-    }
-
-    FancyTag(String tag, QuadFunction<Faction, FPlayer, String, Map<UUID, String>, List<FancyMessage>> function) {
-        this.tag = '{' + tag + '}';
-        this.function = function;
     }
 
     @Override

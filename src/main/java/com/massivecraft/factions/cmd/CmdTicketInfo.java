@@ -40,68 +40,6 @@ public class CmdTicketInfo extends FCommand {
         this.requirements = new CommandRequirements.Builder(Permission.DEBUG).build();
     }
 
-    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "MismatchedQueryAndUpdateOfCollection", "unused"})
-    private static class Info {
-        private UUID uuid;
-        private String pluginVersion;
-        private String javaVersion;
-        private String serverVersion;
-        private String serverName;
-        private String userName;
-        private boolean likesCats;
-        private UUID userUUID;
-        private String online;
-        private int num;
-        private List<PlayerInfo> permissions;
-        private List<PluginInfo> plugins;
-
-        private static class PlayerInfo {
-            private static class PermInfo {
-                private String node;
-                private boolean has;
-
-                public PermInfo(String node, boolean has) {
-                    this.node = node;
-                    this.has = has;
-                }
-            }
-
-            private String name;
-            private UUID uuid;
-            private List<PermInfo> permissions;
-
-            public PlayerInfo(Player player) {
-                this.name = player.getName();
-                this.uuid = player.getUniqueId();
-                this.permissions = new ArrayList<>();
-                for (Permission permission : Permission.values()) {
-                    this.permissions.add(new PermInfo(permission.toString(), player.hasPermission(permission.toString())));
-                }
-            }
-        }
-
-        private static class PluginInfo {
-            private String name;
-            private String version;
-            private List<String> authors;
-            private List<String> depend;
-            private List<String> softdepend;
-            private List<String> loadBefore;
-            private boolean enabled;
-
-            PluginInfo(Plugin plugin) {
-                this.name = plugin.getName();
-                PluginDescriptionFile desc = plugin.getDescription();
-                this.version = desc.getVersion();
-                this.authors = desc.getAuthors();
-                this.depend = desc.getDepend().isEmpty() ? null : desc.getDepend();
-                this.softdepend = desc.getSoftDepend().isEmpty() ? null : desc.getSoftDepend();
-                this.loadBefore = desc.getLoadBefore().isEmpty() ? null : desc.getLoadBefore();
-                this.enabled = plugin.isEnabled();
-            }
-        }
-    }
-
     @Override
     public void perform(CommandContext context) {
         FactionsPlugin plugin = FactionsPlugin.getInstance();
@@ -211,5 +149,66 @@ public class CmdTicketInfo extends FCommand {
     @Override
     public TL getUsageTranslation() {
         return TL.COMMAND_TICKETINFO_DESCRIPTION;
+    }
+
+    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "MismatchedQueryAndUpdateOfCollection", "unused"})
+    private static class Info {
+        private UUID uuid;
+        private String pluginVersion;
+        private String javaVersion;
+        private String serverVersion;
+        private String serverName;
+        private String userName;
+        private boolean likesCats;
+        private UUID userUUID;
+        private String online;
+        private int num;
+        private List<PlayerInfo> permissions;
+        private List<PluginInfo> plugins;
+
+        private static class PlayerInfo {
+            private String name;
+            private UUID uuid;
+            private List<PermInfo> permissions;
+            public PlayerInfo(Player player) {
+                this.name = player.getName();
+                this.uuid = player.getUniqueId();
+                this.permissions = new ArrayList<>();
+                for (Permission permission : Permission.values()) {
+                    this.permissions.add(new PermInfo(permission.toString(), player.hasPermission(permission.toString())));
+                }
+            }
+
+            private static class PermInfo {
+                private String node;
+                private boolean has;
+
+                public PermInfo(String node, boolean has) {
+                    this.node = node;
+                    this.has = has;
+                }
+            }
+        }
+
+        private static class PluginInfo {
+            private String name;
+            private String version;
+            private List<String> authors;
+            private List<String> depend;
+            private List<String> softdepend;
+            private List<String> loadBefore;
+            private boolean enabled;
+
+            PluginInfo(Plugin plugin) {
+                this.name = plugin.getName();
+                PluginDescriptionFile desc = plugin.getDescription();
+                this.version = desc.getVersion();
+                this.authors = desc.getAuthors();
+                this.depend = desc.getDepend().isEmpty() ? null : desc.getDepend();
+                this.softdepend = desc.getSoftDepend().isEmpty() ? null : desc.getSoftDepend();
+                this.loadBefore = desc.getLoadBefore().isEmpty() ? null : desc.getLoadBefore();
+                this.enabled = plugin.isEnabled();
+            }
+        }
     }
 }

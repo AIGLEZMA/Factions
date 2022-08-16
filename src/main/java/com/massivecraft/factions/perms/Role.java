@@ -29,14 +29,6 @@ public enum Role implements Permissible {
         this.translation = translation;
     }
 
-    public boolean isAtLeast(Role role) {
-        return this.value >= role.value;
-    }
-
-    public boolean isAtMost(Role role) {
-        return this.value <= role.value;
-    }
-
     public static Role getRelative(Role role, int relative) {
         return Role.getByValue(role.value + relative);
     }
@@ -77,6 +69,14 @@ public enum Role implements Permissible {
         }
 
         return null;
+    }
+
+    public boolean isAtLeast(Role role) {
+        return this.value >= role.value;
+    }
+
+    public boolean isAtMost(Role role) {
+        return this.value <= role.value;
     }
 
     @Override

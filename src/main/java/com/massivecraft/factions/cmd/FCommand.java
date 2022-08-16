@@ -8,7 +8,6 @@ import com.massivecraft.factions.util.TL;
 import com.massivecraft.factions.util.TextUtil;
 import org.bukkit.ChatColor;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,23 +15,24 @@ import java.util.Map;
 
 
 public abstract class FCommand {
-    public enum CommandVisibility {
-        VISIBLE, // Visible commands are visible to anyone. Even those who don't have permission to use it or is of invalid sender type.
-        SECRET, // Secret commands are visible only to those who can use the command. These commands are usually some kind of admin commands.
-        INVISIBLE // Invisible commands are invisible to everyone, even those who can use the command.
-    }
-
     public final FactionsPlugin plugin;
-
     // Command Aliases
     public final List<String> aliases;
-
     // Information on the args
     public final List<String> requiredArgs;
     public final LinkedHashMap<String, String> optionalArgs;
-
+    /*
+        Subcommands
+     */
+    public final List<FCommand> subCommands;
+    /*
+        Help
+     */
+    public final List<String> helpLong;
+    public final CommandVisibility visibility;
     // Requirements to execute this command
     public CommandRequirements requirements;
+    private String helpShort;
 
     public FCommand() {
         plugin = FactionsPlugin.getInstance();
@@ -109,25 +109,8 @@ public abstract class FCommand {
         return true;
     }
 
-    /*
-        Subcommands
-     */
-    public final List<FCommand> subCommands;
-
     public void addSubCommand(FCommand subCommand) {
         this.subCommands.add(subCommand);
-    }
-
-    /*
-        Help
-     */
-    public final List<String> helpLong;
-    public final CommandVisibility visibility;
-
-    private String helpShort;
-
-    public void setHelpShort(String val) {
-        this.helpShort = val;
     }
 
     public String getHelpShort() {
@@ -136,6 +119,10 @@ public abstract class FCommand {
         }
 
         return this.helpShort;
+    }
+
+    public void setHelpShort(String val) {
+        this.helpShort = val;
     }
 
     public abstract TL getUsageTranslation();
@@ -205,6 +192,12 @@ public abstract class FCommand {
 
     public String getUsageTemplate(CommandContext context) {
         return getUsageTemplate(context, false);
+    }
+
+    public enum CommandVisibility {
+        VISIBLE, // Visible commands are visible to anyone. Even those who don't have permission to use it or is of invalid sender type.
+        SECRET, // Secret commands are visible only to those who can use the command. These commands are usually some kind of admin commands.
+        INVISIBLE // Invisible commands are invisible to everyone, even those who can use the command.
     }
 
 }

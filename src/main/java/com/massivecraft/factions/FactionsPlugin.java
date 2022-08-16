@@ -13,21 +13,10 @@ import com.massivecraft.factions.event.FactionCreateEvent;
 import com.massivecraft.factions.event.FactionEvent;
 import com.massivecraft.factions.event.FactionRelationEvent;
 import com.massivecraft.factions.event.FactionsPluginRegistrationTimeEvent;
-import com.massivecraft.factions.integration.ClipPlaceholderAPIManager;
-import com.massivecraft.factions.integration.Econ;
-import com.massivecraft.factions.integration.Essentials;
-import com.massivecraft.factions.integration.IntegrationManager;
-import com.massivecraft.factions.integration.LuckPerms;
-import com.massivecraft.factions.integration.VaultPerms;
-import com.massivecraft.factions.integration.Worldguard;
+import com.massivecraft.factions.integration.*;
 import com.massivecraft.factions.integration.permcontext.ContextManager;
 import com.massivecraft.factions.landraidcontrol.LandRaidControl;
-import com.massivecraft.factions.listeners.FactionsBlockListener;
-import com.massivecraft.factions.listeners.FactionsChatListener;
-import com.massivecraft.factions.listeners.FactionsEntityListener;
-import com.massivecraft.factions.listeners.FactionsExploitListener;
-import com.massivecraft.factions.listeners.FactionsPlayerListener;
-import com.massivecraft.factions.listeners.OneEightPlusListener;
+import com.massivecraft.factions.listeners.*;
 import com.massivecraft.factions.listeners.versionspecific.PortalHandler;
 import com.massivecraft.factions.listeners.versionspecific.PortalListener;
 import com.massivecraft.factions.perms.PermSelector;
@@ -35,20 +24,7 @@ import com.massivecraft.factions.perms.PermSelectorRegistry;
 import com.massivecraft.factions.perms.PermSelectorTypeAdapter;
 import com.massivecraft.factions.perms.PermissibleActionRegistry;
 import com.massivecraft.factions.struct.ChatMode;
-import com.massivecraft.factions.util.AutoLeaveTask;
-import com.massivecraft.factions.util.EnumTypeAdapter;
-import com.massivecraft.factions.util.FlightUtil;
-import com.massivecraft.factions.util.LazyLocation;
-import com.massivecraft.factions.util.MapFLocToStringSetTypeAdapter;
-import com.massivecraft.factions.util.Metrics;
-import com.massivecraft.factions.util.MyLocationTypeAdapter;
-import com.massivecraft.factions.util.PermUtil;
-import com.massivecraft.factions.util.Persist;
-import com.massivecraft.factions.util.SeeChunkUtil;
-import com.massivecraft.factions.util.TL;
-import com.massivecraft.factions.util.TextUtil;
-import com.massivecraft.factions.util.TitleAPI;
-import com.massivecraft.factions.util.WorldUtil;
+import com.massivecraft.factions.util.*;
 import com.massivecraft.factions.util.material.MaterialDb;
 import com.massivecraft.factions.util.particle.PacketParticleProvider;
 import com.massivecraft.factions.util.particle.ParticleProvider;
@@ -69,15 +45,7 @@ import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -86,16 +54,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -113,6 +72,55 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     // Single 4 life.
     private static FactionsPlugin instance;
     private static int mcVersion;
+    public final boolean likesCats = Arrays.stream(FactionsPlugin.class.getDeclaredMethods()).anyMatch(m -> m.isSynthetic() && m.getName().startsWith("loadCon") && m.getName().endsWith("0"));
+    // holds f stuck start times
+    private final Map<UUID, Long> timers = new HashMap<>();
+    //holds f stuck taskids
+    private final Map<UUID, Integer> stuckMap = new HashMap<>();
+    private final Set<String> pluginsHandlingChat = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Pattern factionsVersionPattern = Pattern.compile("b(\\d{1,4})");
+    private final List<RuntimeException> grumpyExceptions = new ArrayList<>();
+    // These are not supposed to be used directly.
+    // They are loaded and used through the TextUtil instance for the plugin.
+    private final Map<String, String> rawTags = new LinkedHashMap<>();
+    private ConfigManager configManager;
+    private Integer saveTask = null;
+    private boolean autoSave = true;
+    private boolean loadSuccessful = false;
+    // Some utils
+    private Persist persist;
+    private TextUtil txt;
+    private WorldUtil worldUtil;
+    private PermUtil permUtil;
+    // Persist related
+    private Gson gson;
+    // Persistence related
+    private boolean locked = false;
+
+    private Integer autoLeaveTask = null;
+
+    private ClipPlaceholderAPIManager clipPlaceholderAPIManager;
+    private boolean mvdwPlaceholderAPIManager = false;
+    private SeeChunkUtil seeChunkUtil;
+    private ParticleProvider<?> particleProvider;
+    private Worldguard worldguard;
+    private LandRaidControl landRaidControl;
+    private boolean luckPermsSetup;
+    private IntegrationManager integrationManager;
+    private Metrics metrics;
+    private String updateMessage;
+    private int buildNumber = -1;
+    private UUID serverUUID;
+    private String startupLog;
+    private String startupExceptionLog;
+    private VaultPerms vaultPerms;
+    private boolean gottaSlapEssentials;
+    private Method getOffline;
+    private BukkitAudiences adventure;
+    private String mcVersionString;
+    public FactionsPlugin() {
+        instance = this;
+    }
 
     public static FactionsPlugin getInstance() {
         return instance;
@@ -121,17 +129,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     public static int getMCVersion() {
         return mcVersion;
     }
-
-    private ConfigManager configManager;
-
-    private Integer saveTask = null;
-    private boolean autoSave = true;
-    private boolean loadSuccessful = false;
-
-    // Some utils
-    private Persist persist;
-    private TextUtil txt;
-    private WorldUtil worldUtil;
 
     public TextUtil txt() {
         return txt;
@@ -143,52 +140,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
 
     public void grumpException(RuntimeException e) {
         this.grumpyExceptions.add(e);
-    }
-
-    private PermUtil permUtil;
-
-    // Persist related
-    private Gson gson;
-
-    // holds f stuck start times
-    private final Map<UUID, Long> timers = new HashMap<>();
-
-    //holds f stuck taskids
-    private final Map<UUID, Integer> stuckMap = new HashMap<>();
-
-    // Persistence related
-    private boolean locked = false;
-
-    private Integer autoLeaveTask = null;
-
-    private ClipPlaceholderAPIManager clipPlaceholderAPIManager;
-    private boolean mvdwPlaceholderAPIManager = false;
-    private final Set<String> pluginsHandlingChat = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-    private SeeChunkUtil seeChunkUtil;
-    private ParticleProvider<?> particleProvider;
-    private Worldguard worldguard;
-    private LandRaidControl landRaidControl;
-    private boolean luckPermsSetup;
-    private IntegrationManager integrationManager;
-
-    private Metrics metrics;
-    private final Pattern factionsVersionPattern = Pattern.compile("b(\\d{1,4})");
-    private String updateMessage;
-    private int buildNumber = -1;
-    private UUID serverUUID;
-    private String startupLog;
-    private String startupExceptionLog;
-    private final List<RuntimeException> grumpyExceptions = new ArrayList<>();
-    private VaultPerms vaultPerms;
-    public final boolean likesCats = Arrays.stream(FactionsPlugin.class.getDeclaredMethods()).anyMatch(m -> m.isSynthetic() && m.getName().startsWith("loadCon") && m.getName().endsWith("0"));
-    private boolean gottaSlapEssentials;
-    private Method getOffline;
-    private BukkitAudiences adventure;
-    private String mcVersionString;
-
-    public FactionsPlugin() {
-        instance = this;
     }
 
     // Everything is pain.
@@ -296,7 +247,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
                     PrintWriter printWriter = new PrintWriter(stringWriter);
                     record.getThrown().printStackTrace(printWriter);
                     startupExceptionBuilder.append('[').append(record.getLevel().getName()).append("] ").append(record.getMessage()).append('\n')
-                            .append(stringWriter.toString()).append('\n');
+                            .append(stringWriter).append('\n');
                 }
             }
 
@@ -824,17 +775,13 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         return seeChunkUtil;
     }
 
-    public ParticleProvider getParticleProvider() {
-        return particleProvider;
-    }
-
     // -------------------------------------------- //
     // LANG AND TAGS
     // -------------------------------------------- //
 
-    // These are not supposed to be used directly.
-    // They are loaded and used through the TextUtil instance for the plugin.
-    private final Map<String, String> rawTags = new LinkedHashMap<>();
+    public ParticleProvider getParticleProvider() {
+        return particleProvider;
+    }
 
     private void addRawTags() {
         this.rawTags.put("l", "<green>"); // logo

@@ -38,6 +38,10 @@ public class SimpleItem {
         this.enchant = item.enchant;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public ItemStack get() {
         if (isValid()) {
             ItemStack itemStack = new ItemStack(material);
@@ -127,10 +131,6 @@ public class SimpleItem {
 
     public void setEnchant(boolean enchant) {
         this.enchant = enchant;
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     public static class Builder {

@@ -1,17 +1,7 @@
 package com.massivecraft.factions.cmd;
 
 import com.massivecraft.factions.FactionsPlugin;
-import com.massivecraft.factions.cmd.claim.CmdAutoClaim;
-import com.massivecraft.factions.cmd.claim.CmdAutoUnclaim;
-import com.massivecraft.factions.cmd.claim.CmdClaim;
-import com.massivecraft.factions.cmd.claim.CmdClaimAt;
-import com.massivecraft.factions.cmd.claim.CmdClaimFill;
-import com.massivecraft.factions.cmd.claim.CmdClaimLine;
-import com.massivecraft.factions.cmd.claim.CmdSafeunclaimall;
-import com.massivecraft.factions.cmd.claim.CmdUnclaim;
-import com.massivecraft.factions.cmd.claim.CmdUnclaimall;
-import com.massivecraft.factions.cmd.claim.CmdUnclaimfill;
-import com.massivecraft.factions.cmd.claim.CmdWarunclaimall;
+import com.massivecraft.factions.cmd.claim.*;
 import com.massivecraft.factions.cmd.money.CmdMoney;
 import com.massivecraft.factions.cmd.relations.CmdRelationAlly;
 import com.massivecraft.factions.cmd.relations.CmdRelationEnemy;
@@ -22,7 +12,6 @@ import com.massivecraft.factions.cmd.role.CmdPromote;
 import com.massivecraft.factions.landraidcontrol.DTRControl;
 import com.massivecraft.factions.landraidcontrol.PowerControl;
 import com.massivecraft.factions.util.TL;
-import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -35,13 +24,7 @@ import java.util.Collections;
 public class FCmdRoot extends FCommand implements CommandExecutor {
 
     private static FCmdRoot cmdBase;
-
-    public static FCmdRoot getInstance() {
-        return cmdBase;
-    }
-
     public final CmdAutoHelp cmdAutoHelp = new CmdAutoHelp();
-
     public final CmdAdmin cmdAdmin = new CmdAdmin();
     public final CmdAutoClaim cmdAutoClaim = new CmdAutoClaim();
     public final CmdAutoUnclaim cmdAutoUnclaim = new CmdAutoUnclaim();
@@ -126,7 +109,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public final CmdTicketInfo cmdTicketInfo = new CmdTicketInfo();
     public final CmdTNT cmdTNT = new CmdTNT();
     public final CmdListClaims cmdListClaims = new CmdListClaims();
-
     public FCmdRoot() {
         super();
 
@@ -235,6 +217,10 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
             FactionsPlugin.getInstance().getLogger().info("Faction flight set to false in main.conf. Not enabling /f fly command.");
         }
 
+    }
+
+    public static FCmdRoot getInstance() {
+        return cmdBase;
     }
 
     public void done() {

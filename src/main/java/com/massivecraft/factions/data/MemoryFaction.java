@@ -1,12 +1,6 @@
 package com.massivecraft.factions.data;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FLocation;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.Factions;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.config.file.PermissionsConfig;
 import com.massivecraft.factions.event.FactionAutoDisbandEvent;
 import com.massivecraft.factions.event.FactionNewAdminEvent;
@@ -15,11 +9,7 @@ import com.massivecraft.factions.iface.RelationParticipator;
 import com.massivecraft.factions.integration.Econ;
 import com.massivecraft.factions.landraidcontrol.DTRControl;
 import com.massivecraft.factions.landraidcontrol.LandRaidControl;
-import com.massivecraft.factions.perms.PermSelector;
-import com.massivecraft.factions.perms.PermissibleAction;
-import com.massivecraft.factions.perms.Relation;
-import com.massivecraft.factions.perms.Role;
-import com.massivecraft.factions.perms.Selectable;
+import com.massivecraft.factions.perms.*;
 import com.massivecraft.factions.struct.BanInfo;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.util.LazyLocation;
@@ -32,15 +22,8 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -65,7 +48,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     protected HashMap<String, List<String>> announcements = new HashMap<>();
     protected ConcurrentHashMap<String, LazyLocation> warps = new ConcurrentHashMap<>();
     protected ConcurrentHashMap<String, String> warpPasswords = new ConcurrentHashMap<>();
-    private long lastDeath;
     protected int maxVaults;
     protected Role defaultRole;
     protected LinkedHashMap<PermSelector, Map<String, Boolean>> permissions = new LinkedHashMap<>();
@@ -75,6 +57,55 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     protected long frozenDTRUntilTime;
     protected int tntBank;
     protected transient OfflinePlayer offlinePlayer;
+    private long lastDeath;
+
+    // -------------------------------------------- //
+    // Construct
+    // -------------------------------------------- //
+    protected MemoryFaction() {
+    }
+
+    public MemoryFaction(String id) {
+        this.id = id;
+        this.open = FactionsPlugin.getInstance().conf().factions().other().isNewFactionsDefaultOpen();
+        this.tag = "???";
+        this.description = TL.GENERIC_DEFAULTDESCRIPTION.toString();
+        this.lastPlayerLoggedOffTime = 0;
+        this.peaceful = FactionsPlugin.getInstance().conf().factions().other().isNewFactionsDefaultPeaceful();
+        this.peacefulExplosionsEnabled = false;
+        this.permanent = false;
+        this.powerBoost = 0.0;
+        this.foundedDate = System.currentTimeMillis();
+        this.maxVaults = FactionsPlugin.getInstance().conf().playerVaults().getDefaultMaxVaults();
+        this.defaultRole = FactionsPlugin.getInstance().conf().factions().other().getDefaultRole();
+        this.dtr = FactionsPlugin.getInstance().conf().factions().landRaidControl().dtr().getStartingDTR();
+
+        resetPerms(); // Reset on new Faction so it has default values.
+    }
+
+    public MemoryFaction(MemoryFaction old) {
+        id = old.id;
+        peacefulExplosionsEnabled = old.peacefulExplosionsEnabled;
+        permanent = old.permanent;
+        tag = old.tag;
+        description = old.description;
+        open = old.open;
+        foundedDate = old.foundedDate;
+        peaceful = old.peaceful;
+        permanentPower = old.permanentPower;
+        home = old.home;
+        lastPlayerLoggedOffTime = old.lastPlayerLoggedOffTime;
+        powerBoost = old.powerBoost;
+        relationWish = old.relationWish;
+        claimOwnership = old.claimOwnership;
+        fplayers = new HashSet<>();
+        invites = old.invites;
+        announcements = old.announcements;
+        this.defaultRole = old.defaultRole;
+        this.dtr = old.dtr;
+
+        resetPerms(); // Reset on new Faction so it has default values.
+    }
 
     public HashMap<String, List<String>> getAnnouncements() {
         return this.announcements;
@@ -211,12 +242,12 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         this.peaceful = isPeaceful;
     }
 
-    public void setPeacefulExplosionsEnabled(boolean val) {
-        peacefulExplosionsEnabled = val;
-    }
-
     public boolean getPeacefulExplosionsEnabled() {
         return this.peacefulExplosionsEnabled;
+    }
+
+    public void setPeacefulExplosionsEnabled(boolean val) {
+        peacefulExplosionsEnabled = val;
     }
 
     public boolean noExplosionsInTerritory() {
@@ -235,6 +266,13 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         return this.tag;
     }
 
+    public void setTag(String str) {
+        if (FactionsPlugin.getInstance().conf().factions().other().isTagForceUpperCase()) {
+            str = str.toUpperCase();
+        }
+        this.tag = str;
+    }
+
     public String getTag(String prefix) {
         return prefix + this.tag;
     }
@@ -251,13 +289,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
             return getTag();
         }
         return this.getTag(this.getColorTo(otherFplayer).toString());
-    }
-
-    public void setTag(String str) {
-        if (FactionsPlugin.getInstance().conf().factions().other().isTagForceUpperCase()) {
-            str = str.toUpperCase();
-        }
-        this.tag = str;
     }
 
     public String getComparisonTag() {
@@ -283,10 +314,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         this.link = value;
     }
 
-    public void setHome(Location home) {
-        this.home = new LazyLocation(home);
-    }
-
     public void delHome() {
         this.home = null;
     }
@@ -298,6 +325,10 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     public Location getHome() {
         confirmValidHome();
         return (this.home != null) ? this.home.getLocation() : null;
+    }
+
+    public void setHome(Location home) {
+        this.home = new LazyLocation(home);
     }
 
     public long getFoundedDate() {
@@ -331,12 +362,16 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         return this.offlinePlayer;
     }
 
-    public void setLastDeath(long time) {
-        this.lastDeath = time;
-    }
-
     public long getLastDeath() {
         return this.lastDeath;
+    }
+
+    // -------------------------------------------- //
+    // F Permissions stuff
+    // -------------------------------------------- //
+
+    public void setLastDeath(long time) {
+        this.lastDeath = time;
     }
 
     public int getKills() {
@@ -356,10 +391,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
 
         return deaths;
     }
-
-    // -------------------------------------------- //
-    // F Permissions stuff
-    // -------------------------------------------- //
 
     public boolean hasAccess(Selectable selectable, PermissibleAction permissibleAction, FLocation location) {
         if (selectable == null || permissibleAction == null) {
@@ -431,54 +462,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
 
     public void setDefaultRole(Role role) {
         this.defaultRole = role;
-    }
-
-    // -------------------------------------------- //
-    // Construct
-    // -------------------------------------------- //
-    protected MemoryFaction() {
-    }
-
-    public MemoryFaction(String id) {
-        this.id = id;
-        this.open = FactionsPlugin.getInstance().conf().factions().other().isNewFactionsDefaultOpen();
-        this.tag = "???";
-        this.description = TL.GENERIC_DEFAULTDESCRIPTION.toString();
-        this.lastPlayerLoggedOffTime = 0;
-        this.peaceful = FactionsPlugin.getInstance().conf().factions().other().isNewFactionsDefaultPeaceful();
-        this.peacefulExplosionsEnabled = false;
-        this.permanent = false;
-        this.powerBoost = 0.0;
-        this.foundedDate = System.currentTimeMillis();
-        this.maxVaults = FactionsPlugin.getInstance().conf().playerVaults().getDefaultMaxVaults();
-        this.defaultRole = FactionsPlugin.getInstance().conf().factions().other().getDefaultRole();
-        this.dtr = FactionsPlugin.getInstance().conf().factions().landRaidControl().dtr().getStartingDTR();
-
-        resetPerms(); // Reset on new Faction so it has default values.
-    }
-
-    public MemoryFaction(MemoryFaction old) {
-        id = old.id;
-        peacefulExplosionsEnabled = old.peacefulExplosionsEnabled;
-        permanent = old.permanent;
-        tag = old.tag;
-        description = old.description;
-        open = old.open;
-        foundedDate = old.foundedDate;
-        peaceful = old.peaceful;
-        permanentPower = old.permanentPower;
-        home = old.home;
-        lastPlayerLoggedOffTime = old.lastPlayerLoggedOffTime;
-        powerBoost = old.powerBoost;
-        relationWish = old.relationWish;
-        claimOwnership = old.claimOwnership;
-        fplayers = new HashSet<>();
-        invites = old.invites;
-        announcements = old.announcements;
-        this.defaultRole = old.defaultRole;
-        this.dtr = old.dtr;
-
-        resetPerms(); // Reset on new Faction so it has default values.
     }
 
     // -------------------------------------------- //
@@ -585,14 +568,14 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     @Override
-    public double getDTRWithoutUpdate() {
-        return this.dtr;
-    }
-
-    @Override
     public void setDTR(double dtr) {
         this.dtr = dtr;
         this.lastDTRUpdateTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public double getDTRWithoutUpdate() {
+        return this.dtr;
     }
 
     @Override
@@ -606,13 +589,13 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     @Override
-    public void setFrozenDTR(long time) {
-        this.frozenDTRUntilTime = time;
+    public boolean isFrozenDTR() {
+        return System.currentTimeMillis() < this.frozenDTRUntilTime;
     }
 
     @Override
-    public boolean isFrozenDTR() {
-        return System.currentTimeMillis() < this.frozenDTRUntilTime;
+    public void setFrozenDTR(long time) {
+        this.frozenDTRUntilTime = time;
     }
 
     // ----------------------------------------------//

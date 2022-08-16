@@ -7,12 +7,8 @@ import org.bukkit.event.Cancellable;
 public class FPlayerTeleportEvent extends FactionPlayerEvent implements Cancellable {
 
     private final PlayerTeleportReason reason;
-    private boolean cancelled = false;
     private final Location location;
-
-    public enum PlayerTeleportReason {
-        HOME, AHOME, WARP, STUCK
-    }
+    private boolean cancelled = false;
 
     public FPlayerTeleportEvent(FPlayer p, Location location, FPlayerTeleportEvent.PlayerTeleportReason r) {
         super(p.getFaction(), p);
@@ -46,6 +42,10 @@ public class FPlayerTeleportEvent extends FactionPlayerEvent implements Cancella
     @Override
     public void setCancelled(boolean c) {
         cancelled = c;
+    }
+
+    public enum PlayerTeleportReason {
+        HOME, AHOME, WARP, STUCK
     }
 
 }

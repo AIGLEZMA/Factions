@@ -18,21 +18,6 @@ public class ParticleColor {
         this.blue = color.getBlue();
     }
 
-    public float getOffsetX() {
-        if (red == 0) {
-            return Float.MIN_VALUE;
-        }
-        return red / 255;
-    }
-
-    public float getOffsetY() {
-        return green / 255;
-    }
-
-    public float getOffsetZ() {
-        return blue / 255;
-    }
-
     // Why Spigot?
     public static ParticleColor fromChatColor(ChatColor chatColor) {
         switch (chatColor) {
@@ -67,6 +52,21 @@ public class ParticleColor {
         }
 
         return null;
+    }
+
+    public float getOffsetX() {
+        if (red == 0) {
+            return Float.MIN_VALUE;
+        }
+        return red / 255;
+    }
+
+    public float getOffsetY() {
+        return green / 255;
+    }
+
+    public float getOffsetZ() {
+        return blue / 255;
     }
 
     public Color getColor() {

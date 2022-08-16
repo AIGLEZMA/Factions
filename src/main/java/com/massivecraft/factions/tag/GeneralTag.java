@@ -21,6 +21,11 @@ public enum GeneralTag implements Tag {
     private final String tag;
     private final Supplier<String> supplier;
 
+    GeneralTag(String tag, Supplier<String> supplier) {
+        this.tag = '{' + tag + '}';
+        this.supplier = supplier;
+    }
+
     private static String getRelation(Relation relation) {
         if (FactionsPlugin.getInstance().conf().factions().maxRelations().isEnabled()) {
             return String.valueOf(relation.getMax());
@@ -33,11 +38,6 @@ public enum GeneralTag implements Tag {
             text = tag.replace(text);
         }
         return text;
-    }
-
-    GeneralTag(String tag, Supplier<String> supplier) {
-        this.tag = '{' + tag + '}';
-        this.supplier = supplier;
     }
 
     @Override

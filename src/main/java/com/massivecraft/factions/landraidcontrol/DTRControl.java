@@ -1,10 +1,6 @@
 package com.massivecraft.factions.landraidcontrol;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.cmd.CommandContext;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.event.DTRLossEvent;
@@ -19,16 +15,16 @@ import java.math.RoundingMode;
 public class DTRControl implements LandRaidControl {
     private static FactionsPlugin plugin;
 
+    public DTRControl() {
+        plugin = FactionsPlugin.getInstance();
+    }
+
     public static String round(double dtr) {
         return BigDecimal.valueOf(dtr).setScale(conf().getDecimalDigits(), RoundingMode.UP).toPlainString();
     }
 
     private static MainConfig.Factions.LandRaidControl.DTR conf() {
         return plugin.conf().factions().landRaidControl().dtr();
-    }
-
-    public DTRControl() {
-        plugin = FactionsPlugin.getInstance();
     }
 
     @Override

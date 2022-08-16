@@ -115,20 +115,6 @@ public enum FactionTag implements Tag {
     private final BiFunction<Faction, FPlayer, String> biFunction;
     private final Function<Faction, String> function;
 
-    public static String parse(String text, Faction faction, FPlayer player) {
-        for (FactionTag tag : FactionTag.values()) {
-            text = tag.replace(text, faction, player);
-        }
-        return text;
-    }
-
-    public static String parse(String text, Faction faction) {
-        for (FactionTag tag : FactionTag.values()) {
-            text = tag.replace(text, faction);
-        }
-        return text;
-    }
-
     FactionTag(String tag, BiFunction<Faction, FPlayer, String> function) {
         this(tag, null, function);
     }
@@ -145,6 +131,20 @@ public enum FactionTag implements Tag {
         }
         this.biFunction = biFunction;
         this.function = function;
+    }
+
+    public static String parse(String text, Faction faction, FPlayer player) {
+        for (FactionTag tag : FactionTag.values()) {
+            text = tag.replace(text, faction, player);
+        }
+        return text;
+    }
+
+    public static String parse(String text, Faction faction) {
+        for (FactionTag tag : FactionTag.values()) {
+            text = tag.replace(text, faction);
+        }
+        return text;
     }
 
     @Override

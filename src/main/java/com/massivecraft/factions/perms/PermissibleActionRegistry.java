@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PermissibleActionRegistry {
-    private static boolean closed = false;
     private static final Map<String, PermissibleAction> registry = new ConcurrentHashMap<>();
+    private static boolean closed = false;
 
     static {
         for (PermissibleAction action : PermissibleActions.values()) {

@@ -16,14 +16,26 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Loader {
+    private static final Set<Class<?>> types = new HashSet<>();
+
+    static {
+        types.add(Boolean.TYPE);
+        types.add(Byte.TYPE);
+        types.add(Character.TYPE);
+        types.add(Double.TYPE);
+        types.add(Float.TYPE);
+        types.add(Integer.TYPE);
+        types.add(Long.TYPE);
+        types.add(Short.TYPE);
+        types.add(List.class);
+        types.add(Map.class);
+        types.add(Set.class);
+        types.add(String.class);
+    }
+
     public static void loadAndSave(String file, Object config) throws IOException, IllegalAccessException {
         HoconConfigurationLoader loader = getLoader(file);
         loadAndSave(loader, config);
@@ -55,23 +67,6 @@ public class Loader {
         CommentedConfigurationNode node = loader.load();
 
         loadNode(node, loader.createEmptyNode(), config);
-    }
-
-    private static final Set<Class<?>> types = new HashSet<>();
-
-    static {
-        types.add(Boolean.TYPE);
-        types.add(Byte.TYPE);
-        types.add(Character.TYPE);
-        types.add(Double.TYPE);
-        types.add(Float.TYPE);
-        types.add(Integer.TYPE);
-        types.add(Long.TYPE);
-        types.add(Short.TYPE);
-        types.add(List.class);
-        types.add(Map.class);
-        types.add(Set.class);
-        types.add(String.class);
     }
 
     private static void loadNode(CommentedConfigurationNode current, CommentedConfigurationNode newNode, Object object) throws IllegalAccessException {

@@ -14,14 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class GUI<Type> implements InventoryHolder {
-    protected Inventory inventory;
-
     protected final int size;
-    protected int back = -1;
-
-    private Map<Integer, Type> slotMap = new HashMap<>();
-
     protected final FPlayer user;
+    protected Inventory inventory;
+    protected int back = -1;
+    private Map<Integer, Type> slotMap = new HashMap<>();
 
     public GUI(FPlayer user, int rows) {
         this.size = rows * 9;

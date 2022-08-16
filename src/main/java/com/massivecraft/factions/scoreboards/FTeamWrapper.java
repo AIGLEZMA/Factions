@@ -1,10 +1,6 @@
 package com.massivecraft.factions.scoreboards;
 
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.Factions;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.tag.Tag;
 import org.bukkit.ChatColor;
@@ -13,23 +9,26 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class FTeamWrapper {
     private static final Map<Faction, FTeamWrapper> wrappers = new HashMap<>();
     private static final List<FScoreboard> tracking = new ArrayList<>();
-    private static int factionTeamPtr;
     private static final Set<Faction> updating = new HashSet<>();
-
+    private static int factionTeamPtr;
     private final Map<FScoreboard, Team> teams = new HashMap<>();
     private final String teamName;
     private final Faction faction;
     private final Set<OfflinePlayer> members = new HashSet<>();
+
+    private FTeamWrapper(Faction faction) {
+        this.teamName = "faction_" + (factionTeamPtr++);
+        this.faction = faction;
+
+        for (FScoreboard fboard : tracking) {
+            add(fboard);
+        }
+    }
 
     public static void applyUpdatesLater(final Faction faction) {
         if (!FScoreboard.isSupportedByServer()) {
@@ -137,16 +136,6 @@ public class FTeamWrapper {
         tracking.remove(fboard);
         for (FTeamWrapper wrapper : wrappers.values()) {
             wrapper.remove(fboard);
-        }
-    }
-
-
-    private FTeamWrapper(Faction faction) {
-        this.teamName = "faction_" + (factionTeamPtr++);
-        this.faction = faction;
-
-        for (FScoreboard fboard : tracking) {
-            add(fboard);
         }
     }
 

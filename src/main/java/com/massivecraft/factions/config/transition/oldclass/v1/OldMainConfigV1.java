@@ -9,7 +9,35 @@ import java.util.Set;
 
 @SuppressWarnings({"InnerClassMayBeStatic", "unused"})
 public class OldMainConfigV1 {
+    @Comment("The command base (by default f, making the command /f)")
+    public List<String> commandBase = new ArrayList<String>() {
+        {
+            this.add("f");
+        }
+    };
+    @Comment("Colors for relationships and default factions")
+    public Colors colors = new Colors();
+    public Factions factions = new Factions();
+    @Comment("What should be logged?")
+    public Logging logging = new Logging();
+    @Comment("Controls certain exploit preventions")
+    public Exploits exploits = new Exploits();
+    @Comment("Economy support requires Vault and a compatible economy plugin")
+    public Economy economy = new Economy();
+    @Comment("Control for the default settings of /f map")
+    public Map map = new Map();
+    @Comment("Data storage settings")
+    public Data data = new Data();
+    public RestrictWorlds restrictWorlds = new RestrictWorlds();
+    @Comment("PlayerVaults faction vault settings")
+    public PlayerVaults playerVaults = new PlayerVaults();
+    @Comment("WorldGuard settings")
+    public WorldGuard worldGuard = new WorldGuard();
+
     public class Colors {
+        public Factions factions = new Factions();
+        public Relations relations = new Relations();
+
         public class Relations {
             public String member = "GREEN";
             public String ally = "LIGHT_PURPLE";
@@ -24,13 +52,48 @@ public class OldMainConfigV1 {
             public String safezone = "GOLD";
             public String warzone = "DARK_RED";
         }
-
-        public Factions factions = new Factions();
-        public Relations relations = new Relations();
     }
 
     public class Factions {
+        public Chat chat = new Chat();
+        public Homes homes = new Homes();
+        public PVP pvp = new PVP();
+        public SpecialCase specialCase = new SpecialCase();
+        public Claims claims = new Claims();
+        public Protection protection = new Protection();
+        @Comment("For claimed areas where further faction-member ownership can be defined")
+        public OwnedArea ownedArea = new OwnedArea();
+        @Comment("Displayed prefixes for different roles within a faction")
+        public Prefix prefixes = new Prefix();
+        public LandRaidControl landRaidControl = new LandRaidControl();
+        public boolean allowMultipleColeaders = false;
+        @Comment("Minimum faction tag length")
+        public int tagLengthMin = 3;
+        @Comment("Maximum faction tag length")
+        public int tagLengthMax = 10;
+        public boolean tagForceUpperCase = false;
+        public boolean newFactionsDefaultOpen = false;
+        @Comment("When faction membership hits this limit, players will no longer be able to join using /f join; default is 0, no limit")
+        public int factionMemberLimit = 0;
+        @Comment("What faction ID to start new players in when they first join the server; default is 0, \"no faction\"")
+        public String newPlayerStartingFactionID = "0";
+        public double saveToFileEveryXMinutes = 30.0;
+        public double autoLeaveAfterDaysOfInactivity = 10.0;
+        public double autoLeaveRoutineRunsEveryXMinutes = 5.0;
+        public int autoLeaveRoutineMaxMillisecondsPerTick = 5;  // 1 server tick is roughly 50ms, so default max 10% of a tick
+        public boolean removePlayerDataWhenBanned = true;
+        public boolean autoLeaveDeleteFPlayerData = true; // Let them just remove player from Faction.
+        public double considerFactionsReallyOfflineAfterXMinutes = 0.0;
+        public int actionDeniedPainAmount = 1;
+        @Comment("If enabled, perms can be managed separately for when the faction is offline")
+        public boolean separateOfflinePerms = false;
+
         public class LandRaidControl {
+            @Comment("Sets the mode of land/raid control")
+            public String system = "power";
+            @Comment("Controls the power system of land/raid control\nSet the 'system' value to 'power' to use this system")
+            public Power power = new Power();
+
             public class Power {
                 public double playerMin = -10.0D;
                 public double playerMax = 10.0D;
@@ -55,11 +118,6 @@ public class OldMainConfigV1 {
                 @Comment("Disallow joining/leaving/kicking while power is negative")
                 public boolean canLeaveWithNegativePower = true;
             }
-
-            @Comment("Sets the mode of land/raid control")
-            public String system = "power";
-            @Comment("Controls the power system of land/raid control\nSet the 'system' value to 'power' to use this system")
-            public Power power = new Power();
         }
 
         public class Prefix {
@@ -245,47 +303,6 @@ public class OldMainConfigV1 {
             public boolean messageInsideTerritory = true;
             public boolean messageByChunk = false;
         }
-
-        public Chat chat = new Chat();
-        public Homes homes = new Homes();
-        public PVP pvp = new PVP();
-        public SpecialCase specialCase = new SpecialCase();
-        public Claims claims = new Claims();
-        public Protection protection = new Protection();
-        @Comment("For claimed areas where further faction-member ownership can be defined")
-        public OwnedArea ownedArea = new OwnedArea();
-        @Comment("Displayed prefixes for different roles within a faction")
-        public Prefix prefixes = new Prefix();
-        public LandRaidControl landRaidControl = new LandRaidControl();
-
-        public boolean allowMultipleColeaders = false;
-
-        @Comment("Minimum faction tag length")
-        public int tagLengthMin = 3;
-        @Comment("Maximum faction tag length")
-        public int tagLengthMax = 10;
-        public boolean tagForceUpperCase = false;
-
-        public boolean newFactionsDefaultOpen = false;
-
-        @Comment("When faction membership hits this limit, players will no longer be able to join using /f join; default is 0, no limit")
-        public int factionMemberLimit = 0;
-
-        @Comment("What faction ID to start new players in when they first join the server; default is 0, \"no faction\"")
-        public String newPlayerStartingFactionID = "0";
-
-        public double saveToFileEveryXMinutes = 30.0;
-
-        public double autoLeaveAfterDaysOfInactivity = 10.0;
-        public double autoLeaveRoutineRunsEveryXMinutes = 5.0;
-        public int autoLeaveRoutineMaxMillisecondsPerTick = 5;  // 1 server tick is roughly 50ms, so default max 10% of a tick
-        public boolean removePlayerDataWhenBanned = true;
-        public boolean autoLeaveDeleteFPlayerData = true; // Let them just remove player from Faction.
-        public double considerFactionsReallyOfflineAfterXMinutes = 0.0;
-        public int actionDeniedPainAmount = 1;
-
-        @Comment("If enabled, perms can be managed separately for when the faction is offline")
-        public boolean separateOfflinePerms = false;
     }
 
     public class Logging {
@@ -362,15 +379,15 @@ public class OldMainConfigV1 {
     }
 
     public class Data {
+        @Comment("Presently, the only option is JSON.")
+        public String storage = "JSON";
+        public Json json = new Json();
+
         public class Json {
             @Comment("If true, data files will be stored without extra whitespace and linebreaks.\n" +
                     "This becomes less readable, but can cut storage use in half.")
             public boolean efficientStorage = false;
         }
-
-        @Comment("Presently, the only option is JSON.")
-        public String storage = "JSON";
-        public Json json = new Json();
     }
 
     public class RestrictWorlds {
@@ -392,31 +409,4 @@ public class OldMainConfigV1 {
         public boolean checking;
         public boolean buildPriority;
     }
-
-    @Comment("The command base (by default f, making the command /f)")
-    public List<String> commandBase = new ArrayList<String>() {
-        {
-            this.add("f");
-        }
-    };
-
-    @Comment("Colors for relationships and default factions")
-    public Colors colors = new Colors();
-
-    public Factions factions = new Factions();
-    @Comment("What should be logged?")
-    public Logging logging = new Logging();
-    @Comment("Controls certain exploit preventions")
-    public Exploits exploits = new Exploits();
-    @Comment("Economy support requires Vault and a compatible economy plugin")
-    public Economy economy = new Economy();
-    @Comment("Control for the default settings of /f map")
-    public Map map = new Map();
-    @Comment("Data storage settings")
-    public Data data = new Data();
-    public RestrictWorlds restrictWorlds = new RestrictWorlds();
-    @Comment("PlayerVaults faction vault settings")
-    public PlayerVaults playerVaults = new PlayerVaults();
-    @Comment("WorldGuard settings")
-    public WorldGuard worldGuard = new WorldGuard();
 }

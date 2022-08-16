@@ -15,10 +15,8 @@ import java.util.UUID;
 
 public class PlayerSelector extends AbstractSelector {
     public static final String NAME = "player";
-    public static final Descriptor DESCRIPTOR = new BasicDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().player()::getDisplayName, PlayerSelector::new)
+    private final UUID uuid;    public static final Descriptor DESCRIPTOR = new BasicDescriptor(NAME, FactionsPlugin.getInstance().tl().permissions().selectors().player()::getDisplayName, PlayerSelector::new)
             .withInstructions(FactionsPlugin.getInstance().tl().permissions().selectors().player()::getInstructions);
-
-    private final UUID uuid;
 
     public PlayerSelector(String str) {
         super(DESCRIPTOR);
@@ -62,4 +60,6 @@ public class PlayerSelector extends AbstractSelector {
                 MiniMessage.miniMessage().deserialize(FactionsPlugin.getInstance().tl().permissions().selectors().player().getUuidValue(), Placeholder.unparsed("uuid", this.uuid.toString()))
                 : LegacyComponentSerializer.legacySection().deserialize(player.getRelationTo(context).getColor() + player.getName());
     }
+
+
 }

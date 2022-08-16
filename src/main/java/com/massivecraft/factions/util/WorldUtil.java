@@ -8,8 +8,8 @@ import org.bukkit.entity.Player;
 import java.util.HashSet;
 
 public class WorldUtil {
-    private HashSet<String> worlds;
     private final boolean check;
+    private HashSet<String> worlds;
     private boolean whitelist;
 
     public WorldUtil(FactionsPlugin plugin) {

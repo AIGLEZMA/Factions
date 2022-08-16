@@ -1,11 +1,7 @@
 package com.massivecraft.factions;
 
 import com.massivecraft.factions.util.MiscUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -18,9 +14,6 @@ import java.util.Set;
 public class FLocation implements Serializable {
     private static final long serialVersionUID = -8292915234027387983L;
     private static final boolean worldBorderSupport;
-    private final String worldName;
-    private final int x;
-    private final int z;
 
     static {
         boolean worldBorderClassPresent = false;
@@ -32,6 +25,10 @@ public class FLocation implements Serializable {
 
         worldBorderSupport = worldBorderClassPresent;
     }
+
+    private final String worldName;
+    private final int x;
+    private final int z;
 
     //----------------------------------------------//
     // Constructors
@@ -71,35 +68,6 @@ public class FLocation implements Serializable {
     // Getters and Setters
     //----------------------------------------------//
 
-    public String getWorldName() {
-        return worldName;
-    }
-
-    public World getWorld() {
-        return Bukkit.getWorld(worldName);
-    }
-
-    public long getX() {
-        return x;
-    }
-
-    public long getZ() {
-        return z;
-    }
-
-    public String getCoordString() {
-        return "" + x + "," + z;
-    }
-
-    public Chunk getChunk() {
-        return new Location(getWorld(), chunkToBlock(x), 0, chunkToBlock(z)).getChunk();
-    }
-
-    @Override
-    public String toString() {
-        return "[" + this.getWorldName() + "," + this.getCoordString() + "]";
-    }
-
     public static FLocation fromString(String string) {
         int index = string.indexOf(',');
         int start = 1;
@@ -110,10 +78,6 @@ public class FLocation implements Serializable {
         int y = Integer.parseInt(string.substring(index + 1, string.length() - 1));
         return new FLocation(worldName, x, y);
     }
-
-    //----------------------------------------------//
-    // Block/Chunk/Region Value Transformation
-    //----------------------------------------------//
 
     // bit-shifting is used because it's much faster than standard division and multiplication
     public static int blockToChunk(int blockVal) {    // 1 chunk is 16x16 blocks
@@ -140,9 +104,54 @@ public class FLocation implements Serializable {
         return regionVal << 5;   // "<< 5" == "* 32"
     }
 
+    public static HashSet<FLocation> getArea(FLocation from, FLocation to) {
+        HashSet<FLocation> ret = new HashSet<>();
+
+        for (long x : MiscUtil.range(from.getX(), to.getX())) {
+            for (long z : MiscUtil.range(from.getZ(), to.getZ())) {
+                ret.add(new FLocation(from.getWorldName(), (int) x, (int) z));
+            }
+        }
+
+        return ret;
+    }
+
+    //----------------------------------------------//
+    // Block/Chunk/Region Value Transformation
+    //----------------------------------------------//
+
+    public String getWorldName() {
+        return worldName;
+    }
+
+    public World getWorld() {
+        return Bukkit.getWorld(worldName);
+    }
+
+    public long getX() {
+        return x;
+    }
+
+    public long getZ() {
+        return z;
+    }
+
+    public String getCoordString() {
+        return "" + x + "," + z;
+    }
+
+    public Chunk getChunk() {
+        return new Location(getWorld(), chunkToBlock(x), 0, chunkToBlock(z)).getChunk();
+    }
+
     //----------------------------------------------//
     // Misc Geometry
     //----------------------------------------------//
+
+    @Override
+    public String toString() {
+        return "[" + this.getWorldName() + "," + this.getCoordString() + "]";
+    }
 
     public FLocation getRelative(int dx, int dz) {
         return new FLocation(this.worldName, this.x + dx, this.z + dz);
@@ -227,18 +236,6 @@ public class FLocation implements Serializable {
         return ret;
     }
 
-    public static HashSet<FLocation> getArea(FLocation from, FLocation to) {
-        HashSet<FLocation> ret = new HashSet<>();
-
-        for (long x : MiscUtil.range(from.getX(), to.getX())) {
-            for (long z : MiscUtil.range(from.getZ(), to.getZ())) {
-                ret.add(new FLocation(from.getWorldName(), (int) x, (int) z));
-            }
-        }
-
-        return ret;
-    }
-
     //----------------------------------------------//
     // Comparison
     //----------------------------------------------//
@@ -254,11 +251,10 @@ public class FLocation implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof FLocation)) {
+        if (!(obj instanceof FLocation that)) {
             return false;
         }
 
-        FLocation that = (FLocation) obj;
         return this.x == that.x && this.z == that.z && (Objects.equals(this.worldName, that.worldName));
     }
 }

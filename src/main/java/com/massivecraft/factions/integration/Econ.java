@@ -26,8 +26,9 @@ import java.util.regex.Pattern;
 
 public class Econ {
 
-    private static Economy econ = null;
     private static final Pattern FACTION_PATTERN = Pattern.compile("^faction-(\\d+)$");
+    private static final DecimalFormat format = new DecimalFormat(TL.ECON_FORMAT.toString());
+    private static Economy econ = null;
 
     public static void setup() {
         if (isSetup()) {
@@ -353,15 +354,15 @@ public class Econ {
         return amount;
     }
 
-    // calculate refund amount for all owned land
-    public static double calculateTotalLandRefund(int ownedLand) {
-        return calculateTotalLandValue(ownedLand) * FactionsPlugin.getInstance().conf().economy().getClaimRefundMultiplier();
-    }
-
 
     // -------------------------------------------- //
     // Standard account management methods
     // -------------------------------------------- //
+
+    // calculate refund amount for all owned land
+    public static double calculateTotalLandRefund(int ownedLand) {
+        return calculateTotalLandValue(ownedLand) * FactionsPlugin.getInstance().conf().economy().getClaimRefundMultiplier();
+    }
 
     @Deprecated
     private static OfflinePlayer getOfflinePlayerForName(String name) {
@@ -409,8 +410,6 @@ public class Econ {
     private static boolean has(OfflinePlayer op, double amount) {
         return econ.has(checkStatus(op), getWorld(op), amount);
     }
-
-    private static final DecimalFormat format = new DecimalFormat(TL.ECON_FORMAT.toString());
 
     @Deprecated
     public static String getFriendlyBalance(UUID uuid) {

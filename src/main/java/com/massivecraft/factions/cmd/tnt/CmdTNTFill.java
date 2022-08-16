@@ -16,12 +16,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CmdTNTFill extends FCommand {
@@ -33,6 +28,46 @@ public class CmdTNTFill extends FCommand {
         this.requiredArgs.add("amount");
 
         this.requirements = new CommandRequirements.Builder(Permission.TNT_FILL).withAction(PermissibleActions.TNTWITHDRAW).memberOnly().build();
+    }
+
+    static ItemStack[] getStacks(int count) {
+        if (count < 65) {
+            return new ItemStack[]{new ItemStack(Material.TNT, count)};
+        } else {
+            List<ItemStack> stack = new ArrayList<>();
+            while (count > 0) {
+                stack.add(new ItemStack(Material.TNT, Math.min(64, count)));
+                count -= Math.min(64, count);
+            }
+            return stack.toArray(new ItemStack[0]);
+        }
+    }
+
+    static List<Dispenser> getDispensers(Location location, int radius, String id) {
+        List<Pair<Dispenser, Double>> list = new ArrayList<>();
+        for (int x = location.getBlockX() - radius; x <= location.getBlockX() + radius; x++) {
+            for (int y = location.getBlockY() - radius; y <= location.getBlockY() + radius; y++) {
+                for (int z = location.getBlockZ() - radius; z <= location.getBlockZ() + radius; z++) {
+                    Block block = location.getWorld().getBlockAt(x, y, z);
+                    if (!Board.getInstance().getIdAt(new FLocation(block)).equals(id)) {
+                        continue;
+                    }
+                    if (block.getType() == Material.DISPENSER) {
+                        list.add(Pair.of((Dispenser) block.getState(), Math.sqrt(((location.getBlockX() - x) ^ 2) + ((location.getBlockY() - y) ^ 2) + ((location.getBlockZ() - z) ^ 2))));
+                    }
+                }
+            }
+        }
+        list.sort(Comparator.comparing(Pair::getRight));
+        return list.stream().map(Pair::getLeft).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    static int getCount(Collection<? extends ItemStack> items) {
+        int count = 0;
+        for (ItemStack stack : items) {
+            count += stack.getAmount();
+        }
+        return count;
     }
 
     @Override
@@ -85,46 +120,6 @@ public class CmdTNTFill extends FCommand {
         context.faction.setTNTBank(context.faction.getTNTBank() - amount + remaining);
 
         context.msg(TL.COMMAND_TNT_FILL_MESSAGE, amount - remaining, dispenserCount, context.faction.getTNTBank());
-    }
-
-    static ItemStack[] getStacks(int count) {
-        if (count < 65) {
-            return new ItemStack[]{new ItemStack(Material.TNT, count)};
-        } else {
-            List<ItemStack> stack = new ArrayList<>();
-            while (count > 0) {
-                stack.add(new ItemStack(Material.TNT, Math.min(64, count)));
-                count -= Math.min(64, count);
-            }
-            return stack.toArray(new ItemStack[0]);
-        }
-    }
-
-    static List<Dispenser> getDispensers(Location location, int radius, String id) {
-        List<Pair<Dispenser, Double>> list = new ArrayList<>();
-        for (int x = location.getBlockX() - radius; x <= location.getBlockX() + radius; x++) {
-            for (int y = location.getBlockY() - radius; y <= location.getBlockY() + radius; y++) {
-                for (int z = location.getBlockZ() - radius; z <= location.getBlockZ() + radius; z++) {
-                    Block block = location.getWorld().getBlockAt(x, y, z);
-                    if (!Board.getInstance().getIdAt(new FLocation(block)).equals(id)) {
-                        continue;
-                    }
-                    if (block.getType() == Material.DISPENSER) {
-                        list.add(Pair.of((Dispenser) block.getState(), Math.sqrt(((location.getBlockX() - x) ^ 2) + ((location.getBlockY() - y) ^ 2) + ((location.getBlockZ() - z) ^ 2))));
-                    }
-                }
-            }
-        }
-        list.sort(Comparator.comparing(Pair::getRight));
-        return list.stream().map(Pair::getLeft).collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    static int getCount(Collection<? extends ItemStack> items) {
-        int count = 0;
-        for (ItemStack stack : items) {
-            count += stack.getAmount();
-        }
-        return count;
     }
 
     @Override

@@ -35,7 +35,7 @@ public class CmdColeader extends FCommand {
                 String s = player.getName();
 
                 msg.then(s + " ").color(ChatColor.WHITE)
-                        .tooltip(TL.COMMAND_COLEADER_CLICKTOPROMOTE.toString() + s)
+                        .tooltip(TL.COMMAND_COLEADER_CLICKTOPROMOTE + s)
                         .command("/" + FactionsPlugin.getInstance().conf().getCommandBase().get(0) + " coleader " + s);
             }
 

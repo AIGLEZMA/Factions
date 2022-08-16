@@ -1,11 +1,6 @@
 package com.massivecraft.factions.listeners;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FLocation;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.data.MemoryFPlayer;
 import com.massivecraft.factions.event.FPlayerJoinEvent;
@@ -33,20 +28,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
@@ -63,12 +45,97 @@ import java.util.logging.Level;
 public class FactionsPlayerListener extends AbstractListener {
 
     private final FactionsPlugin plugin;
+    // Holds the next time a player can have a map shown.
+    private final HashMap<UUID, Long> showTimes = new HashMap<>();
+    // for handling people who repeatedly spam attempts to open a door (or similar) in another faction's territory
+    private final Map<String, InteractAttemptSpam> interactSpammers = new HashMap<>();
 
     public FactionsPlayerListener(FactionsPlugin plugin) {
         this.plugin = plugin;
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             initPlayer(player);
         }
+    }
+
+    public static boolean preventCommand(String fullCmd, Player player) {
+        MainConfig.Factions.Protection protection = FactionsPlugin.getInstance().conf().factions().protection();
+        if ((protection.getTerritoryNeutralDenyCommands().isEmpty() &&
+                protection.getTerritoryEnemyDenyCommands().isEmpty() &&
+                protection.getPermanentFactionMemberDenyCommands().isEmpty() &&
+                protection.getWildernessDenyCommands().isEmpty() &&
+                protection.getTerritoryAllyDenyCommands().isEmpty() &&
+                protection.getTerritoryTruceDenyCommands().isEmpty() &&
+                protection.getWarzoneDenyCommands().isEmpty())) {
+            return false;
+        }
+
+        fullCmd = fullCmd.toLowerCase();
+
+        FPlayer me = FPlayers.getInstance().getByPlayer(player);
+
+        String shortCmd;  // command without the slash at the beginning
+        if (fullCmd.startsWith("/")) {
+            shortCmd = fullCmd.substring(1);
+        } else {
+            shortCmd = fullCmd;
+            fullCmd = "/" + fullCmd;
+        }
+
+        if (me.hasFaction() &&
+                !me.isAdminBypassing() &&
+                !protection.getPermanentFactionMemberDenyCommands().isEmpty() &&
+                me.getFaction().isPermanent() &&
+                isCommandInSet(fullCmd, shortCmd, protection.getPermanentFactionMemberDenyCommands())) {
+            me.msg(TL.PLAYER_COMMAND_PERMANENT, fullCmd);
+            return true;
+        }
+
+        Faction at = Board.getInstance().getFactionAt(new FLocation(player.getLocation()));
+        if (at.isWilderness() && !protection.getWildernessDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getWildernessDenyCommands())) {
+            me.msg(TL.PLAYER_COMMAND_WILDERNESS, fullCmd);
+            return true;
+        }
+
+        Relation rel = at.getRelationTo(me);
+        if (at.isNormal() && rel.isAlly() && !protection.getTerritoryAllyDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryAllyDenyCommands())) {
+            me.msg(TL.PLAYER_COMMAND_ALLY, fullCmd);
+            return true;
+        }
+
+        if (at.isNormal() && rel.isTruce() && !protection.getTerritoryTruceDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryTruceDenyCommands())) {
+            me.msg(TL.PLAYER_COMMAND_TRUCE, fullCmd);
+            return true;
+        }
+
+        if (at.isNormal() && rel.isNeutral() && !protection.getTerritoryNeutralDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryNeutralDenyCommands())) {
+            me.msg(TL.PLAYER_COMMAND_NEUTRAL, fullCmd);
+            return true;
+        }
+
+        if (at.isNormal() && rel.isEnemy() && !protection.getTerritoryEnemyDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryEnemyDenyCommands())) {
+            me.msg(TL.PLAYER_COMMAND_ENEMY, fullCmd);
+            return true;
+        }
+
+        if (at.isWarZone() && !protection.getWarzoneDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getWarzoneDenyCommands())) {
+            me.msg(TL.PLAYER_COMMAND_WARZONE, fullCmd);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean isCommandInSet(String fullCmd, String shortCmd, Set<String> set) {
+        for (String string : set) {
+            if (string == null) {
+                continue;
+            }
+            string = string.toLowerCase();
+            if (fullCmd.startsWith(string) || shortCmd.startsWith(string)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -244,9 +311,6 @@ public class FactionsPlayerListener extends AbstractListener {
             }.runTask(this.plugin);
         }
     }
-
-    // Holds the next time a player can have a map shown.
-    private final HashMap<UUID, Long> showTimes = new HashMap<>();
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
@@ -457,27 +521,6 @@ public class FactionsPlayerListener extends AbstractListener {
         }
     }
 
-
-    // for handling people who repeatedly spam attempts to open a door (or similar) in another faction's territory
-    private final Map<String, InteractAttemptSpam> interactSpammers = new HashMap<>();
-
-    private static class InteractAttemptSpam {
-        private int attempts = 0;
-        private long lastAttempt = System.currentTimeMillis();
-
-        // returns the current attempt count
-        public int increment() {
-            long Now = System.currentTimeMillis();
-            if (Now > lastAttempt + 2000) {
-                attempts = 1;
-            } else {
-                attempts++;
-            }
-            lastAttempt = Now;
-            return attempts;
-        }
-    }
-
     public boolean playerCanUseItemHere(Player player, Location location, Material material, boolean justCheck) {
         String name = player.getName();
         MainConfig.Factions facConf = FactionsPlugin.getInstance().conf().factions();
@@ -628,87 +671,6 @@ public class FactionsPlayerListener extends AbstractListener {
         }
     }
 
-    public static boolean preventCommand(String fullCmd, Player player) {
-        MainConfig.Factions.Protection protection = FactionsPlugin.getInstance().conf().factions().protection();
-        if ((protection.getTerritoryNeutralDenyCommands().isEmpty() &&
-                protection.getTerritoryEnemyDenyCommands().isEmpty() &&
-                protection.getPermanentFactionMemberDenyCommands().isEmpty() &&
-                protection.getWildernessDenyCommands().isEmpty() &&
-                protection.getTerritoryAllyDenyCommands().isEmpty() &&
-                protection.getTerritoryTruceDenyCommands().isEmpty() &&
-                protection.getWarzoneDenyCommands().isEmpty())) {
-            return false;
-        }
-
-        fullCmd = fullCmd.toLowerCase();
-
-        FPlayer me = FPlayers.getInstance().getByPlayer(player);
-
-        String shortCmd;  // command without the slash at the beginning
-        if (fullCmd.startsWith("/")) {
-            shortCmd = fullCmd.substring(1);
-        } else {
-            shortCmd = fullCmd;
-            fullCmd = "/" + fullCmd;
-        }
-
-        if (me.hasFaction() &&
-                !me.isAdminBypassing() &&
-                !protection.getPermanentFactionMemberDenyCommands().isEmpty() &&
-                me.getFaction().isPermanent() &&
-                isCommandInSet(fullCmd, shortCmd, protection.getPermanentFactionMemberDenyCommands())) {
-            me.msg(TL.PLAYER_COMMAND_PERMANENT, fullCmd);
-            return true;
-        }
-
-        Faction at = Board.getInstance().getFactionAt(new FLocation(player.getLocation()));
-        if (at.isWilderness() && !protection.getWildernessDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getWildernessDenyCommands())) {
-            me.msg(TL.PLAYER_COMMAND_WILDERNESS, fullCmd);
-            return true;
-        }
-
-        Relation rel = at.getRelationTo(me);
-        if (at.isNormal() && rel.isAlly() && !protection.getTerritoryAllyDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryAllyDenyCommands())) {
-            me.msg(TL.PLAYER_COMMAND_ALLY, fullCmd);
-            return true;
-        }
-
-        if (at.isNormal() && rel.isTruce() && !protection.getTerritoryTruceDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryTruceDenyCommands())) {
-            me.msg(TL.PLAYER_COMMAND_TRUCE, fullCmd);
-            return true;
-        }
-
-        if (at.isNormal() && rel.isNeutral() && !protection.getTerritoryNeutralDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryNeutralDenyCommands())) {
-            me.msg(TL.PLAYER_COMMAND_NEUTRAL, fullCmd);
-            return true;
-        }
-
-        if (at.isNormal() && rel.isEnemy() && !protection.getTerritoryEnemyDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getTerritoryEnemyDenyCommands())) {
-            me.msg(TL.PLAYER_COMMAND_ENEMY, fullCmd);
-            return true;
-        }
-
-        if (at.isWarZone() && !protection.getWarzoneDenyCommands().isEmpty() && !me.isAdminBypassing() && isCommandInSet(fullCmd, shortCmd, protection.getWarzoneDenyCommands())) {
-            me.msg(TL.PLAYER_COMMAND_WARZONE, fullCmd);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static boolean isCommandInSet(String fullCmd, String shortCmd, Set<String> set) {
-        for (String string : set) {
-            if (string == null) {
-                continue;
-            }
-            string = string.toLowerCase();
-            if (fullCmd.startsWith(string) || shortCmd.startsWith(string)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteractGUI(InventoryClickEvent event) {
         if (!plugin.worldUtil().isEnabled(event.getWhoClicked().getWorld())) {
@@ -719,9 +681,8 @@ public class FactionsPlayerListener extends AbstractListener {
         if (clickedInventory == null) {
             return;
         }
-        if (clickedInventory.getHolder() instanceof GUI) {
+        if (clickedInventory.getHolder() instanceof GUI<?> ui) {
             event.setCancelled(true);
-            GUI<?> ui = (GUI<?>) clickedInventory.getHolder();
             ui.click(event.getRawSlot(), event.getClick());
         }
     }
@@ -749,7 +710,6 @@ public class FactionsPlayerListener extends AbstractListener {
             event.setCancelled(true);
         }
     }
-
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerKick(PlayerKickEvent event) {
@@ -804,5 +764,22 @@ public class FactionsPlayerListener extends AbstractListener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerPreLogin(PlayerLoginEvent event) {
         FPlayers.getInstance().getByPlayer(event.getPlayer());
+    }
+
+    private static class InteractAttemptSpam {
+        private int attempts = 0;
+        private long lastAttempt = System.currentTimeMillis();
+
+        // returns the current attempt count
+        public int increment() {
+            long Now = System.currentTimeMillis();
+            if (Now > lastAttempt + 2000) {
+                attempts = 1;
+            } else {
+                attempts++;
+            }
+            lastAttempt = Now;
+            return attempts;
+        }
     }
 }

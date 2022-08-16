@@ -7,12 +7,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,20 +15,6 @@ public class BufferedObjective {
     private static final Method addEntryMethod;
     private static final int MAX_LINE_LENGTH;
     private static final Pattern PATTERN = Pattern.compile("(\u00A7[0-9a-fk-r])|(.)");
-
-    private final Scoreboard scoreboard;
-    private final String baseName;
-
-    private Objective current;
-    private List<Team> currentTeams = new ArrayList<>();
-    private String title;
-    private DisplaySlot displaySlot;
-
-    private int objPtr;
-    private int teamPtr;
-    private boolean requiresUpdate = false;
-
-    private final Map<Integer, String> contents = new HashMap<>();
 
     static {
         // Check for long line support.
@@ -54,6 +35,17 @@ public class BufferedObjective {
             MAX_LINE_LENGTH = 16;
         }
     }
+
+    private final Scoreboard scoreboard;
+    private final String baseName;
+    private final Map<Integer, String> contents = new HashMap<>();
+    private Objective current;
+    private List<Team> currentTeams = new ArrayList<>();
+    private String title;
+    private DisplaySlot displaySlot;
+    private int objPtr;
+    private int teamPtr;
+    private boolean requiresUpdate = false;
 
     public BufferedObjective(Scoreboard scoreboard) {
         this.scoreboard = scoreboard;

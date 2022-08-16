@@ -20,6 +20,10 @@ public class PermSelectorTypeAdapter extends TypeAdapter<PermSelector> {
         return legacy;
     }
 
+    public static void setLegacy() {
+        legacy = true;
+    }
+
     @Override
     public void write(JsonWriter out, PermSelector value) throws IOException {
         out.value(value.serialize());
@@ -49,10 +53,6 @@ public class PermSelectorTypeAdapter extends TypeAdapter<PermSelector> {
             }
         }
         return selector;
-    }
-
-    public static void setLegacy() {
-        legacy = true;
     }
 
     private PermSelector getLegacy(String string) {

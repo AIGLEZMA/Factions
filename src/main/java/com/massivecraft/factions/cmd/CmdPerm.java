@@ -4,11 +4,7 @@ import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.config.file.PermissionsConfig;
 import com.massivecraft.factions.config.file.TranslationsConfig;
 import com.massivecraft.factions.data.MemoryFaction;
-import com.massivecraft.factions.perms.PermSelector;
-import com.massivecraft.factions.perms.PermSelectorRegistry;
-import com.massivecraft.factions.perms.PermissibleAction;
-import com.massivecraft.factions.perms.PermissibleActionRegistry;
-import com.massivecraft.factions.perms.Role;
+import com.massivecraft.factions.perms.*;
 import com.massivecraft.factions.perms.selector.UnknownSelector;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.util.TL;
@@ -21,13 +17,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CmdPerm extends FCommand {
@@ -53,6 +43,176 @@ public class CmdPerm extends FCommand {
 
     private static int length(ComponentBuilder<TextComponent, TextComponent.Builder> builder) {
         return ChatColor.stripColor(LegacyComponentSerializer.legacySection().serialize(builder.build())).length();
+    }
+
+    @Override
+    public void perform(CommandContext context) {
+        listSelectors(context, FactionsPlugin.getInstance().getAdventure().player(context.player), ((MemoryFaction) context.faction).getPermissions(), FactionsPlugin.getInstance().tl().commands().permissions());
+    }
+
+    private void listSelectors(CommandContext context, Audience audience, LinkedHashMap<PermSelector, Map<String, Boolean>> permissions, TranslationsConfig.Commands.Permissions tl) {
+        int x = 0;
+        String commandPiece = '/' + FactionsPlugin.getInstance().conf().getCommandBase().get(0) + ' ' +
+                tl.getAliases().get(0) + ' ';
+        String movePiece = tl.move().getAliases().get(0) + ' ';
+        String removePiece = tl.remove().getAliases().get(0) + ' ';
+        String showPiece = tl.show().getAliases().get(0) + ' ';
+        if (!tl.list().getHeader().isEmpty()) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.list().getHeader(),
+                    Placeholder.parsed("commandadd", commandPiece + tl.add().getAliases().get(0)),
+                    Placeholder.parsed("commandoverride", commandPiece + tl.listOverride().getAliases().get(0))));
+        }
+        for (Map.Entry<PermSelector, ?> entry : permissions.entrySet()) {
+            x++;
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(
+                    tl.list().getItem(),
+                    Placeholder.component("name", entry.getKey().displayName()),
+                    Placeholder.component("value", entry.getKey().displayValue(context.faction)),
+                    Placeholder.parsed("commandmoveup", commandPiece + movePiece + x + ' ' + tl.move().getAliasUp().get(0)),
+                    Placeholder.parsed("commandmovedown", commandPiece + movePiece + x + ' ' + tl.move().getAliasDown().get(0)),
+                    Placeholder.parsed("commandremove", commandPiece + removePiece + entry.getKey().serialize()),
+                    Placeholder.parsed("commandshow", commandPiece + showPiece + x),
+                    Placeholder.parsed("rownumber", Integer.toString(x))));
+        }
+        if (!tl.list().getFooter().isEmpty()) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.list().getFooter(),
+                    Placeholder.parsed("commandadd", commandPiece + tl.add().getAliases().get(0)),
+                    Placeholder.parsed("commandoverride", commandPiece + tl.listOverride().getAliases().get(0))));
+        }
+    }
+
+    private void listOverrideSelectors(CommandContext context, Audience audience, TranslationsConfig.Commands.Permissions tl) {
+        PermissionsConfig conf = FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig();
+        List<PermSelector> order = conf.getOverridePermissionsOrder();
+        Map<PermSelector, Map<String, Boolean>> permissions = conf.getOverridePermissions();
+        int x = 0;
+        String commandPiece = '/' + FactionsPlugin.getInstance().conf().getCommandBase().get(0) + ' ' +
+                tl.getAliases().get(0) + ' ' + tl.showOverride().getAliases().get(0) + ' ';
+        if (!tl.listOverride().getHeader().isEmpty()) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.listOverride().getHeader()));
+        }
+        for (PermSelector selector : order) {
+            Set<String> actions = new HashSet<>(permissions.get(selector).keySet());
+            conf.getHiddenActions().forEach(actions::remove);
+            if (actions.isEmpty()) {
+                continue;
+            }
+            x++;
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(
+                    tl.listOverride().getItem(),
+                    Placeholder.component("name", selector.displayName()),
+                    Placeholder.component("value", selector.displayValue(context.faction)),
+                    Placeholder.parsed("commandshow", commandPiece + x),
+                    Placeholder.unparsed("rownumber", Integer.toString(x))));
+        }
+        if (!tl.listOverride().getFooter().isEmpty()) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.listOverride().getFooter()));
+        }
+    }
+
+    private void showSelector(CommandContext context, int index, PermSelector selector, Audience audience, LinkedHashMap<PermSelector, Map<String, Boolean>> permissions, TranslationsConfig.Commands.Permissions tl) {
+        int x = 0;
+        // don't show priority that only has hiddens
+        String commandPiece = '/' + FactionsPlugin.getInstance().conf().getCommandBase().get(0) + ' ' +
+                tl.getAliases().get(0) + ' ';
+        boolean notShown = true;
+        for (Map.Entry<PermSelector, Map<String, Boolean>> entry : permissions.entrySet()) {
+            if (++x == index || entry.getKey().equals(selector)) {
+                notShown = false;
+                if (!tl.show().getHeader().isEmpty()) {
+                    audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getHeader(),
+                            Placeholder.component("name", entry.getKey().displayName()),
+                            Placeholder.component("value", entry.getKey().displayValue(context.faction)),
+                            Placeholder.unparsed("rownumber", Integer.toString(x)),
+                            Placeholder.parsed("command", commandPiece + tl.add().getAliases().get(0) + ' ' + entry.getKey().serialize())));
+                }
+                for (Map.Entry<String, Boolean> e : entry.getValue().entrySet()) {
+                    if (FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig().getHiddenActions().contains(e.getKey())) {
+                        continue;
+                    }
+                    PermissibleAction action = PermissibleActionRegistry.get(e.getKey());
+                    audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getItem(),
+                            Placeholder.unparsed("shortdesc", action.getShortDescription()),
+                            Placeholder.unparsed("desc", action.getDescription()),
+                            Placeholder.unparsed("state", e.getValue().toString()),
+                            Placeholder.parsed("commandremove", commandPiece + tl.remove().getAliases().get(0) + ' ' + entry.getKey().serialize() + ' ' + action.getName())));
+                }
+                if (!tl.show().getFooter().isEmpty()) {
+                    audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getFooter(),
+                            Placeholder.component("name", entry.getKey().displayName()),
+                            Placeholder.component("value", entry.getKey().displayValue(context.faction)),
+                            Placeholder.unparsed("rownumber", Integer.toString(x)),
+                            Placeholder.parsed("command", commandPiece + tl.add().getAliases().get(0) + ' ' + entry.getKey().serialize())));
+                }
+            }
+        }
+        if (notShown) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getSelectorNotFound()));
+        }
+    }
+
+    private void showOverrideSelector(CommandContext context, int index, PermSelector selector, Audience audience, TranslationsConfig.Commands.Permissions tl) {
+        PermissionsConfig conf = FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig();
+        List<PermSelector> order = conf.getOverridePermissionsOrder();
+        Map<PermSelector, Map<String, Boolean>> permissions = conf.getOverridePermissions();
+        int x = 0;
+        if (selector == null && index >= 0) {
+            for (PermSelector sel : order) {
+                Set<String> actions = new HashSet<>(permissions.get(sel).keySet());
+                conf.getHiddenActions().forEach(actions::remove);
+                if (actions.isEmpty()) {
+                    continue;
+                }
+                x++;
+                if (x == index) {
+                    selector = sel;
+                    break;
+                }
+            }
+        } else if (selector != null) {
+            // Check for hidden selector
+            if (order.contains(selector)) {
+                Set<String> actions = new HashSet<>(permissions.get(selector).keySet());
+                conf.getHiddenActions().forEach(actions::remove);
+                if (actions.isEmpty()) {
+                    selector = null;
+                }
+            } else {
+                selector = null;
+            }
+        }
+        if (selector == null) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getSelectorNotFound()));
+            return;
+        }
+
+        if (!tl.showOverride().getHeader().isEmpty()) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getHeader(),
+                    Placeholder.component("name", selector.displayName()),
+                    Placeholder.component("value", selector.displayValue(context.faction)),
+                    Placeholder.unparsed("rownumber", Integer.toString(x))));
+        }
+        for (Map.Entry<String, Boolean> e : permissions.get(selector).entrySet()) {
+            if (FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig().getHiddenActions().contains(e.getKey())) {
+                continue;
+            }
+            PermissibleAction action = PermissibleActionRegistry.get(e.getKey());
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getItem(),
+                    Placeholder.unparsed("shortdesc", action.getShortDescription()),
+                    Placeholder.unparsed("desc", action.getDescription()),
+                    Placeholder.unparsed("state", e.getValue().toString())));
+        }
+        if (!tl.showOverride().getFooter().isEmpty()) {
+            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getFooter(),
+                    Placeholder.component("name", selector.displayName()),
+                    Placeholder.component("value", selector.displayValue(context.faction)),
+                    Placeholder.unparsed("rownumber", Integer.toString(x))));
+        }
+    }
+
+    @Override
+    public TL getUsageTranslation() {
+        return TL.COMMAND_PERMS_DESCRIPTION;
     }
 
     abstract static class CmdPermAbstract extends FCommand {
@@ -389,175 +549,5 @@ public class CmdPerm extends FCommand {
             }
             showOverrideSelector(context, index, selector, audience, tl);
         }
-    }
-
-    @Override
-    public void perform(CommandContext context) {
-        listSelectors(context, FactionsPlugin.getInstance().getAdventure().player(context.player), ((MemoryFaction) context.faction).getPermissions(), FactionsPlugin.getInstance().tl().commands().permissions());
-    }
-
-    private void listSelectors(CommandContext context, Audience audience, LinkedHashMap<PermSelector, Map<String, Boolean>> permissions, TranslationsConfig.Commands.Permissions tl) {
-        int x = 0;
-        String commandPiece = '/' + FactionsPlugin.getInstance().conf().getCommandBase().get(0) + ' ' +
-                tl.getAliases().get(0) + ' ';
-        String movePiece = tl.move().getAliases().get(0) + ' ';
-        String removePiece = tl.remove().getAliases().get(0) + ' ';
-        String showPiece = tl.show().getAliases().get(0) + ' ';
-        if (!tl.list().getHeader().isEmpty()) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.list().getHeader(),
-                    Placeholder.parsed("commandadd", commandPiece + tl.add().getAliases().get(0)),
-                    Placeholder.parsed("commandoverride", commandPiece + tl.listOverride().getAliases().get(0))));
-        }
-        for (Map.Entry<PermSelector, ?> entry : permissions.entrySet()) {
-            x++;
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(
-                    tl.list().getItem(),
-                    Placeholder.component("name", entry.getKey().displayName()),
-                    Placeholder.component("value", entry.getKey().displayValue(context.faction)),
-                    Placeholder.parsed("commandmoveup", commandPiece + movePiece + x + ' ' + tl.move().getAliasUp().get(0)),
-                    Placeholder.parsed("commandmovedown", commandPiece + movePiece + x + ' ' + tl.move().getAliasDown().get(0)),
-                    Placeholder.parsed("commandremove", commandPiece + removePiece + entry.getKey().serialize()),
-                    Placeholder.parsed("commandshow", commandPiece + showPiece + x),
-                    Placeholder.parsed("rownumber", Integer.toString(x))));
-        }
-        if (!tl.list().getFooter().isEmpty()) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.list().getFooter(),
-                    Placeholder.parsed("commandadd", commandPiece + tl.add().getAliases().get(0)),
-                    Placeholder.parsed("commandoverride", commandPiece + tl.listOverride().getAliases().get(0))));
-        }
-    }
-
-    private void listOverrideSelectors(CommandContext context, Audience audience, TranslationsConfig.Commands.Permissions tl) {
-        PermissionsConfig conf = FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig();
-        List<PermSelector> order = conf.getOverridePermissionsOrder();
-        Map<PermSelector, Map<String, Boolean>> permissions = conf.getOverridePermissions();
-        int x = 0;
-        String commandPiece = '/' + FactionsPlugin.getInstance().conf().getCommandBase().get(0) + ' ' +
-                tl.getAliases().get(0) + ' ' + tl.showOverride().getAliases().get(0) + ' ';
-        if (!tl.listOverride().getHeader().isEmpty()) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.listOverride().getHeader()));
-        }
-        for (PermSelector selector : order) {
-            Set<String> actions = new HashSet<>(permissions.get(selector).keySet());
-            conf.getHiddenActions().forEach(actions::remove);
-            if (actions.isEmpty()) {
-                continue;
-            }
-            x++;
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(
-                    tl.listOverride().getItem(),
-                    Placeholder.component("name", selector.displayName()),
-                    Placeholder.component("value", selector.displayValue(context.faction)),
-                    Placeholder.parsed("commandshow", commandPiece + x),
-                    Placeholder.unparsed("rownumber", Integer.toString(x))));
-        }
-        if (!tl.listOverride().getFooter().isEmpty()) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.listOverride().getFooter()));
-        }
-    }
-
-    private void showSelector(CommandContext context, int index, PermSelector selector, Audience audience, LinkedHashMap<PermSelector, Map<String, Boolean>> permissions, TranslationsConfig.Commands.Permissions tl) {
-        int x = 0;
-        // don't show priority that only has hiddens
-        String commandPiece = '/' + FactionsPlugin.getInstance().conf().getCommandBase().get(0) + ' ' +
-                tl.getAliases().get(0) + ' ';
-        boolean notShown = true;
-        for (Map.Entry<PermSelector, Map<String, Boolean>> entry : permissions.entrySet()) {
-            if (++x == index || entry.getKey().equals(selector)) {
-                notShown = false;
-                if (!tl.show().getHeader().isEmpty()) {
-                    audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getHeader(),
-                            Placeholder.component("name", entry.getKey().displayName()),
-                            Placeholder.component("value", entry.getKey().displayValue(context.faction)),
-                            Placeholder.unparsed("rownumber", Integer.toString(x)),
-                            Placeholder.parsed("command", commandPiece + tl.add().getAliases().get(0) + ' ' + entry.getKey().serialize())));
-                }
-                for (Map.Entry<String, Boolean> e : entry.getValue().entrySet()) {
-                    if (FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig().getHiddenActions().contains(e.getKey())) {
-                        continue;
-                    }
-                    PermissibleAction action = PermissibleActionRegistry.get(e.getKey());
-                    audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getItem(),
-                            Placeholder.unparsed("shortdesc", action.getShortDescription()),
-                            Placeholder.unparsed("desc", action.getDescription()),
-                            Placeholder.unparsed("state", e.getValue().toString()),
-                            Placeholder.parsed("commandremove", commandPiece + tl.remove().getAliases().get(0) + ' ' + entry.getKey().serialize() + ' ' + action.getName())));
-                }
-                if (!tl.show().getFooter().isEmpty()) {
-                    audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getFooter(),
-                            Placeholder.component("name", entry.getKey().displayName()),
-                            Placeholder.component("value", entry.getKey().displayValue(context.faction)),
-                            Placeholder.unparsed("rownumber", Integer.toString(x)),
-                            Placeholder.parsed("command", commandPiece + tl.add().getAliases().get(0) + ' ' + entry.getKey().serialize())));
-                }
-            }
-        }
-        if (notShown) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.show().getSelectorNotFound()));
-        }
-    }
-
-    private void showOverrideSelector(CommandContext context, int index, PermSelector selector, Audience audience, TranslationsConfig.Commands.Permissions tl) {
-        PermissionsConfig conf = FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig();
-        List<PermSelector> order = conf.getOverridePermissionsOrder();
-        Map<PermSelector, Map<String, Boolean>> permissions = conf.getOverridePermissions();
-        int x = 0;
-        if (selector == null && index >= 0) {
-            for (PermSelector sel : order) {
-                Set<String> actions = new HashSet<>(permissions.get(sel).keySet());
-                conf.getHiddenActions().forEach(actions::remove);
-                if (actions.isEmpty()) {
-                    continue;
-                }
-                x++;
-                if (x == index) {
-                    selector = sel;
-                    break;
-                }
-            }
-        } else if (selector != null) {
-            // Check for hidden selector
-            if (order.contains(selector)) {
-                Set<String> actions = new HashSet<>(permissions.get(selector).keySet());
-                conf.getHiddenActions().forEach(actions::remove);
-                if (actions.isEmpty()) {
-                    selector = null;
-                }
-            } else {
-                selector = null;
-            }
-        }
-        if (selector == null) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getSelectorNotFound()));
-            return;
-        }
-
-        if (!tl.showOverride().getHeader().isEmpty()) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getHeader(),
-                    Placeholder.component("name", selector.displayName()),
-                    Placeholder.component("value", selector.displayValue(context.faction)),
-                    Placeholder.unparsed("rownumber", Integer.toString(x))));
-        }
-        for (Map.Entry<String, Boolean> e : permissions.get(selector).entrySet()) {
-            if (FactionsPlugin.getInstance().getConfigManager().getPermissionsConfig().getHiddenActions().contains(e.getKey())) {
-                continue;
-            }
-            PermissibleAction action = PermissibleActionRegistry.get(e.getKey());
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getItem(),
-                    Placeholder.unparsed("shortdesc", action.getShortDescription()),
-                    Placeholder.unparsed("desc", action.getDescription()),
-                    Placeholder.unparsed("state", e.getValue().toString())));
-        }
-        if (!tl.showOverride().getFooter().isEmpty()) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize(tl.showOverride().getFooter(),
-                    Placeholder.component("name", selector.displayName()),
-                    Placeholder.component("value", selector.displayValue(context.faction)),
-                    Placeholder.unparsed("rownumber", Integer.toString(x))));
-        }
-    }
-
-    @Override
-    public TL getUsageTranslation() {
-        return TL.COMMAND_PERMS_DESCRIPTION;
     }
 }

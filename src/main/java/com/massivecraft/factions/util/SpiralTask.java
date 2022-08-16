@@ -26,10 +26,9 @@ public abstract class SpiralTask implements Runnable {
 
     // general task-related reference data
     private final transient World world;
+    private final transient int limit;
     private transient boolean readyToGo = false;
     private transient int taskID = -1;
-    private final transient int limit;
-
     // values for the spiral pattern routine
     private transient int x = 0;
     private transient int z = 0;
@@ -57,6 +56,10 @@ public abstract class SpiralTask implements Runnable {
 
         // get this party started
         this.setTaskID(Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(FactionsPlugin.getInstance(), this, 2, 2));
+    }
+
+    private static long now() {
+        return System.currentTimeMillis();
     }
 
     /*
@@ -88,15 +91,15 @@ public abstract class SpiralTask implements Runnable {
         return x;
     }
 
-    public final int getZ() {
-        return z;
-    }
-
 
 
     /*
      * Below are the guts of the class, which you normally wouldn't need to mess with.
      */
+
+    public final int getZ() {
+        return z;
+    }
 
     public final void setTaskID(int ID) {
         if (ID == -1) {
@@ -201,9 +204,5 @@ public abstract class SpiralTask implements Runnable {
     // is this task still valid/workable?
     public final boolean valid() {
         return taskID != -1;
-    }
-
-    private static long now() {
-        return System.currentTimeMillis();
     }
 }

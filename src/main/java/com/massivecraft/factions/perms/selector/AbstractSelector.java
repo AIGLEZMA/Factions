@@ -13,12 +13,37 @@ import java.util.function.Supplier;
  * PermSelectors utilize.
  */
 public abstract class AbstractSelector implements PermSelector {
+    private final Descriptor descriptor;
+
+    protected AbstractSelector(Descriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+
+    public Descriptor descriptor() {
+        return this.descriptor;
+    }
+
+    @Override
+    public String toString() {
+        return this.serialize();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.serialize());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof PermSelector && ((PermSelector) obj).serialize().equals(this.serialize());
+    }
+
     public static class BasicDescriptor implements Descriptor {
         private final Function<String, PermSelector> function;
         private final String name;
+        private final Supplier<String> displayName;
         private boolean acceptsEmpty;
         private Supplier<String> instructions;
-        private final Supplier<String> displayName;
 
         public BasicDescriptor(String name, Supplier<String> displayName, Function<String, PermSelector> function) {
             this.name = name;
@@ -60,30 +85,5 @@ public abstract class AbstractSelector implements PermSelector {
         public String getInstructions() {
             return this.instructions == null ? null : this.instructions.get();
         }
-    }
-
-    private final Descriptor descriptor;
-
-    protected AbstractSelector(Descriptor descriptor) {
-        this.descriptor = descriptor;
-    }
-
-    public Descriptor descriptor() {
-        return this.descriptor;
-    }
-
-    @Override
-    public String toString() {
-        return this.serialize();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.serialize());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof PermSelector && ((PermSelector) obj).serialize().equals(this.serialize());
     }
 }

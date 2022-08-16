@@ -23,6 +23,10 @@ public class FactionAttemptCreateEvent extends Event implements Cancellable {
         this.sender = sender;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
     public FPlayer getFPlayer() {
         return FPlayers.getInstance().getByPlayer(sender);
     }
@@ -34,10 +38,6 @@ public class FactionAttemptCreateEvent extends Event implements Cancellable {
 
     @Override
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

@@ -2,13 +2,7 @@ package com.massivecraft.factions.data;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FLocation;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.Factions;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.perms.Relation;
 import com.massivecraft.factions.util.AsciiCompass;
 import com.massivecraft.factions.util.TL;
@@ -18,75 +12,12 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public abstract class MemoryBoard extends Board {
 
-    public class MemoryBoardMap extends HashMap<FLocation, String> {
-        private static final long serialVersionUID = -6689617828610585368L;
-
-        final Multimap<String, FLocation> factionToLandMap = HashMultimap.create();
-
-        @Override
-        public String put(FLocation floc, String factionId) {
-            String previousValue = super.put(floc, factionId);
-            if (previousValue != null) {
-                factionToLandMap.remove(previousValue, floc);
-            }
-
-            factionToLandMap.put(factionId, floc);
-            return previousValue;
-        }
-
-        @Override
-        public String remove(Object key) {
-            String result = super.remove(key);
-            if (result != null) {
-                FLocation floc = (FLocation) key;
-                factionToLandMap.remove(result, floc);
-            }
-
-            return result;
-        }
-
-        @Override
-        public void clear() {
-            super.clear();
-            factionToLandMap.clear();
-        }
-
-        public int getOwnedLandCount(String factionId) {
-            return factionToLandMap.get(factionId).size();
-        }
-
-        public void removeFaction(String factionId) {
-            Collection<FLocation> fLocations = factionToLandMap.removeAll(factionId);
-            for (FPlayer fPlayer : FPlayers.getInstance().getOnlinePlayers()) {
-                if (fLocations.contains(fPlayer.getLastStoodAt())) {
-                    if (FactionsPlugin.getInstance().conf().commands().fly().isEnable() && !fPlayer.isAdminBypassing() && fPlayer.isFlying()) {
-                        fPlayer.setFlying(false);
-                    }
-                    if (fPlayer.isWarmingUp()) {
-                        fPlayer.clearWarmup();
-                        fPlayer.msg(TL.WARMUPS_CANCELLED);
-                    }
-                }
-            }
-            for (FLocation floc : fLocations) {
-                super.remove(floc);
-            }
-        }
-    }
-
     private final char[] mapKeyChrs = "\\/#$%=&^ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890abcdeghjmnopqrsuvwxyz?".toCharArray();
-
     public MemoryBoardMap flocationIds = new MemoryBoardMap();
 
     //----------------------------------------------//
@@ -227,11 +158,6 @@ public abstract class MemoryBoard extends Board {
         return false;
     }
 
-
-    //----------------------------------------------//
-    // Cleaner. Remove orphaned foreign keys
-    //----------------------------------------------//
-
     public void clean() {
         Iterator<Entry<FLocation, String>> iter = flocationIds.entrySet().iterator();
         while (iter.hasNext()) {
@@ -243,13 +169,18 @@ public abstract class MemoryBoard extends Board {
         }
     }
 
+
     //----------------------------------------------//
-    // Coord count
+    // Cleaner. Remove orphaned foreign keys
     //----------------------------------------------//
 
     public int getFactionCoordCount(String factionId) {
         return flocationIds.getOwnedLandCount(factionId);
     }
+
+    //----------------------------------------------//
+    // Coord count
+    //----------------------------------------------//
 
     public int getFactionCoordCount(Faction faction) {
         return getFactionCoordCount(faction.getId());
@@ -265,10 +196,6 @@ public abstract class MemoryBoard extends Board {
         }
         return ret;
     }
-
-    //----------------------------------------------//
-    // Map generation
-    //----------------------------------------------//
 
     /**
      * The map is relative to a coord and a faction north is in the direction of decreasing x east is in the direction
@@ -351,5 +278,65 @@ public abstract class MemoryBoard extends Board {
         return ret;
     }
 
+    //----------------------------------------------//
+    // Map generation
+    //----------------------------------------------//
+
     public abstract void convertFrom(MemoryBoard old);
+
+    public class MemoryBoardMap extends HashMap<FLocation, String> {
+        private static final long serialVersionUID = -6689617828610585368L;
+
+        final Multimap<String, FLocation> factionToLandMap = HashMultimap.create();
+
+        @Override
+        public String put(FLocation floc, String factionId) {
+            String previousValue = super.put(floc, factionId);
+            if (previousValue != null) {
+                factionToLandMap.remove(previousValue, floc);
+            }
+
+            factionToLandMap.put(factionId, floc);
+            return previousValue;
+        }
+
+        @Override
+        public String remove(Object key) {
+            String result = super.remove(key);
+            if (result != null) {
+                FLocation floc = (FLocation) key;
+                factionToLandMap.remove(result, floc);
+            }
+
+            return result;
+        }
+
+        @Override
+        public void clear() {
+            super.clear();
+            factionToLandMap.clear();
+        }
+
+        public int getOwnedLandCount(String factionId) {
+            return factionToLandMap.get(factionId).size();
+        }
+
+        public void removeFaction(String factionId) {
+            Collection<FLocation> fLocations = factionToLandMap.removeAll(factionId);
+            for (FPlayer fPlayer : FPlayers.getInstance().getOnlinePlayers()) {
+                if (fLocations.contains(fPlayer.getLastStoodAt())) {
+                    if (FactionsPlugin.getInstance().conf().commands().fly().isEnable() && !fPlayer.isAdminBypassing() && fPlayer.isFlying()) {
+                        fPlayer.setFlying(false);
+                    }
+                    if (fPlayer.isWarmingUp()) {
+                        fPlayer.clearWarmup();
+                        fPlayer.msg(TL.WARMUPS_CANCELLED);
+                    }
+                }
+            }
+            for (FLocation floc : fLocations) {
+                super.remove(floc);
+            }
+        }
+    }
 }

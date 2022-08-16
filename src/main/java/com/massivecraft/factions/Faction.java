@@ -49,6 +49,8 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     String getId();
 
+    void setId(String id);
+
     void invite(FPlayer fplayer);
 
     void deinvite(FPlayer fplayer);
@@ -71,9 +73,9 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     void setPeaceful(boolean isPeaceful);
 
-    void setPeacefulExplosionsEnabled(boolean val);
-
     boolean getPeacefulExplosionsEnabled();
+
+    void setPeacefulExplosionsEnabled(boolean val);
 
     boolean noExplosionsInTerritory();
 
@@ -83,13 +85,13 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     String getTag();
 
+    void setTag(String str);
+
     String getTag(String prefix);
 
     String getTag(Faction otherFaction);
 
     String getTag(FPlayer otherFplayer);
-
-    void setTag(String str);
 
     String getComparisonTag();
 
@@ -101,13 +103,13 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     void setLink(String value);
 
-    void setHome(Location home);
-
     void delHome();
 
     boolean hasHome();
 
     Location getHome();
+
+    void setHome(Location home);
 
     long getFoundedDate();
 
@@ -162,35 +164,35 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     int getTNTBank();
 
-    void setTNTBank(int amount);
-
     // -------------------------------
     // Relation and relation colors
     // -------------------------------
+
+    void setTNTBank(int amount);
 
     Relation getRelationWish(Faction otherFaction);
 
     void setRelationWish(Faction otherFaction, Relation relation);
 
-    int getRelationCount(Relation relation);
-
     // ----------------------------------------------//
     // DTR
     // ----------------------------------------------//
 
+    int getRelationCount(Relation relation);
+
     double getDTR();
 
-    double getDTRWithoutUpdate();
-
     void setDTR(double dtr);
+
+    double getDTRWithoutUpdate();
 
     long getLastDTRUpdateTime();
 
     long getFrozenDTRUntilTime();
 
-    void setFrozenDTR(long time);
-
     boolean isFrozenDTR();
+
+    void setFrozenDTR(long time);
 
     // ----------------------------------------------//
     // Power
@@ -215,11 +217,11 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     boolean hasLandInflation();
 
-    boolean isPowerFrozen();
-
     // -------------------------------
     // FPlayers
     // -------------------------------
+
+    boolean isPowerFrozen();
 
     // maintain the reference list of FPlayers in this faction
     void refreshFPlayers();
@@ -258,11 +260,11 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     void sendMessage(String message);
 
-    void sendMessage(List<String> messages);
-
     // ----------------------------------------------//
     // Ownership of specific claims
     // ----------------------------------------------//
+
+    void sendMessage(List<String> messages);
 
     Map<FLocation, Set<String>> getClaimOwnership();
 
@@ -294,6 +296,4 @@ public interface Faction extends EconomyParticipator, Selectable {
     void remove();
 
     Set<FLocation> getAllClaims();
-
-    void setId(String id);
 }

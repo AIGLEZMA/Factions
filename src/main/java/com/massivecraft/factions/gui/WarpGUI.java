@@ -10,22 +10,11 @@ import com.massivecraft.factions.util.WarmUpUtil;
 import com.massivecraft.factions.util.material.MaterialDb;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.conversations.ConversationAbandonedListener;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.InactivityConversationCanceller;
-import org.bukkit.conversations.ManuallyAbandonedConversationCanceller;
-import org.bukkit.conversations.Prompt;
-import org.bukkit.conversations.StringPrompt;
+import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WarpGUI extends GUI<Integer> {
     private static final SimpleItem warpItem;
@@ -65,11 +54,6 @@ public class WarpGUI extends GUI<Integer> {
         build();
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
     private static int getRows(Faction faction) {
         int warpCount = faction.getWarps().size();
         if (warpCount == 0) {
@@ -79,6 +63,11 @@ public class WarpGUI extends GUI<Integer> {
             return 6;
         }
         return (int) Math.ceil(((double) warpCount) / 9D);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -192,38 +181,6 @@ public class WarpGUI extends GUI<Integer> {
         return Collections.emptyMap();
     }
 
-    private class PasswordPrompt extends StringPrompt implements ConversationAbandonedListener {
-
-        @Override
-        public String getPromptText(ConversationContext context) {
-            return TL.COMMAND_FWARP_PASSWORD_REQUIRED.toString();
-        }
-
-        @Override
-        public Prompt acceptInput(ConversationContext context, String input) {
-            String warp = (String) context.getSessionData("warp");
-            if (faction.isWarpPassword(warp, input)) {
-                // Valid Password, make em pay
-                if (transact()) {
-                    doWarmup(warp);
-                }
-            } else {
-                // Invalid Password
-                user.msg(TL.COMMAND_FWARP_INVALID_PASSWORD);
-            }
-            return END_OF_CONVERSATION;
-        }
-
-        @Override
-        public void conversationAbandoned(ConversationAbandonedEvent abandonedEvent) {
-            if (abandonedEvent.getCanceller() instanceof ManuallyAbandonedConversationCanceller ||
-                    abandonedEvent.getCanceller() instanceof InactivityConversationCanceller) {
-                user.msg(TL.COMMAND_FWARP_PASSWORD_CANCEL);
-                open();
-            }
-        }
-    }
-
     private void doWarmup(final String warp) {
         WarmUpUtil.process(user, WarmUpUtil.Warmup.WARP, TL.WARMUPS_NOTIFY_TELEPORT, warp, () -> {
             Player player = Bukkit.getPlayer(user.getPlayer().getUniqueId());
@@ -256,6 +213,38 @@ public class WarpGUI extends GUI<Integer> {
             return Econ.modifyMoney(user.getFaction(), -cost, TL.COMMAND_FWARP_TOWARP.toString(), TL.COMMAND_FWARP_FORWARPING.toString());
         } else {
             return Econ.modifyMoney(user, -cost, TL.COMMAND_FWARP_TOWARP.toString(), TL.COMMAND_FWARP_FORWARPING.toString());
+        }
+    }
+
+    private class PasswordPrompt extends StringPrompt implements ConversationAbandonedListener {
+
+        @Override
+        public String getPromptText(ConversationContext context) {
+            return TL.COMMAND_FWARP_PASSWORD_REQUIRED.toString();
+        }
+
+        @Override
+        public Prompt acceptInput(ConversationContext context, String input) {
+            String warp = (String) context.getSessionData("warp");
+            if (faction.isWarpPassword(warp, input)) {
+                // Valid Password, make em pay
+                if (transact()) {
+                    doWarmup(warp);
+                }
+            } else {
+                // Invalid Password
+                user.msg(TL.COMMAND_FWARP_INVALID_PASSWORD);
+            }
+            return END_OF_CONVERSATION;
+        }
+
+        @Override
+        public void conversationAbandoned(ConversationAbandonedEvent abandonedEvent) {
+            if (abandonedEvent.getCanceller() instanceof ManuallyAbandonedConversationCanceller ||
+                    abandonedEvent.getCanceller() instanceof InactivityConversationCanceller) {
+                user.msg(TL.COMMAND_FWARP_PASSWORD_CANCEL);
+                open();
+            }
         }
     }
 

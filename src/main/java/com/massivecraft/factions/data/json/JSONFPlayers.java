@@ -13,25 +13,11 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 
 public class JSONFPlayers extends MemoryFPlayers {
-    public Gson getGson() {
-        return FactionsPlugin.getInstance().getGson();
-    }
-
-    @Deprecated
-    public void setGson(Gson gson) {
-        // NOOP
-    }
-
     private final File file;
 
     public JSONFPlayers() {
@@ -39,6 +25,15 @@ public class JSONFPlayers extends MemoryFPlayers {
             FactionsPlugin.getInstance().grumpException(new RuntimeException());
         }
         file = new File(FactionsPlugin.getInstance().getDataFolder(), "data/players.json");
+    }
+
+    public Gson getGson() {
+        return FactionsPlugin.getInstance().getGson();
+    }
+
+    @Deprecated
+    public void setGson(Gson gson) {
+        // NOOP
     }
 
     public void convertFrom(MemoryFPlayers old) {

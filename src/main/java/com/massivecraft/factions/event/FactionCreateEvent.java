@@ -24,6 +24,10 @@ public class FactionCreateEvent extends Event {
         this.faction = faction;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
     public FPlayer getFPlayer() {
         return FPlayers.getInstance().getByPlayer(sender);
     }
@@ -39,10 +43,6 @@ public class FactionCreateEvent extends Event {
 
     @Override
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

@@ -10,11 +10,63 @@ import java.util.Map;
  * example, a FPlayer might match the PlayerSelector and a Role will never
  * match that selector but might match a RoleAtLeastSelector if it's at least
  * that selector's value.
- *
+ * <p>
  * Implementations must be immutable and should extend AbstractSelector (or
  * at least copy its methods to be consistent).
  */
 public interface PermSelector {
+    /**
+     * Gets the descriptor for this selector type.
+     *
+     * @return descriptor
+     */
+    Descriptor descriptor();
+
+    /**
+     * Tests if the given selectable matches this selector.
+     *
+     * @param selectable selectable
+     * @param faction    faction context
+     * @return true if matches
+     */
+    boolean test(Selectable selectable, Faction faction);
+
+    /**
+     * Serializes this selector for storage. Unlikely to need to override.
+     *
+     * @return serialized selector
+     */
+    default String serialize() {
+        return this.descriptor().getName() + ':' + this.serializeValue();
+    }
+
+    /**
+     * Gets the name of this selector for display in chat.
+     *
+     * @return display name
+     */
+    default Component displayName() {
+        return this.descriptor().getDisplayName();
+    }
+
+    /**
+     * Serializes the value of this selector for storage.
+     *
+     * @return serialized value
+     */
+    String serializeValue();
+
+    /**
+     * Gets the value of this selector for display in chat. Default is plain
+     * text without any decoration.
+     *
+     * @param context faction context
+     * @return display value
+     */
+    default Component displayValue(Faction context) {
+        return Component.text(this.serializeValue());
+    }
+
     /**
      * Describes a type of PermSelector, and can create them.
      */
@@ -70,57 +122,5 @@ public interface PermSelector {
         default String getInstructions() {
             return null;
         }
-    }
-
-    /**
-     * Gets the descriptor for this selector type.
-     *
-     * @return descriptor
-     */
-    Descriptor descriptor();
-
-    /**
-     * Tests if the given selectable matches this selector.
-     *
-     * @param selectable selectable
-     * @param faction faction context
-     * @return true if matches
-     */
-    boolean test(Selectable selectable, Faction faction);
-
-    /**
-     * Serializes this selector for storage. Unlikely to need to override.
-     *
-     * @return serialized selector
-     */
-    default String serialize() {
-        return this.descriptor().getName() + ':' + this.serializeValue();
-    }
-
-    /**
-     * Gets the name of this selector for display in chat.
-     *
-     * @return display name
-     */
-    default Component displayName() {
-        return this.descriptor().getDisplayName();
-    }
-
-    /**
-     * Serializes the value of this selector for storage.
-     *
-     * @return serialized value
-     */
-    String serializeValue();
-
-    /**
-     * Gets the value of this selector for display in chat. Default is plain
-     * text without any decoration.
-     *
-     * @param context faction context
-     * @return display value
-     */
-    default Component displayValue(Faction context) {
-        return Component.text(this.serializeValue());
     }
 }

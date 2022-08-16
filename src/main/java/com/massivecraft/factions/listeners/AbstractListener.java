@@ -1,11 +1,6 @@
 package com.massivecraft.factions.listeners;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FLocation;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.perms.PermissibleAction;
 import com.massivecraft.factions.perms.PermissibleActions;
@@ -17,13 +12,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Fireball;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TNTPrimed;
-import org.bukkit.entity.Wither;
-import org.bukkit.entity.WitherSkull;
+import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Listener;
@@ -34,10 +23,6 @@ import java.util.stream.Collectors;
 
 
 public abstract class AbstractListener implements Listener {
-    public boolean playerCanInteractHere(Player player, Location location) {
-        return canInteractHere(player, location);
-    }
-
     public static boolean canInteractHere(Player player, Location location) {
         String name = player.getName();
         if (FactionsPlugin.getInstance().conf().factions().protection().getPlayersWhoBypassAllProtection().contains(name)) {
@@ -95,59 +80,6 @@ public abstract class AbstractListener implements Listener {
         return true;
     }
 
-    protected void handleExplosion(Location loc, Entity boomer, Cancellable event, List<Block> blockList) {
-        if (!FactionsPlugin.getInstance().worldUtil().isEnabled(loc.getWorld())) {
-            return;
-        }
-
-        if (explosionDisallowed(boomer, new FLocation(loc))) {
-            event.setCancelled(true);
-            return;
-        }
-
-        List<Chunk> chunks = blockList.stream().map(Block::getChunk).distinct().collect(Collectors.toList());
-        if (chunks.removeIf(chunk -> explosionDisallowed(boomer, new FLocation(chunk)))) {
-            blockList.removeIf(block -> !chunks.contains(block.getChunk()));
-        }
-
-        if ((boomer instanceof TNTPrimed || boomer instanceof ExplosiveMinecart) && FactionsPlugin.getInstance().conf().exploits().isTntWaterlog()) {
-            // TNT in water/lava doesn't normally destroy any surrounding blocks, which is usually desired behavior, but...
-            // this change below provides workaround for waterwalling providing perfect protection,
-            // and makes cheap (non-obsidian) TNT cannons require minor maintenance between shots
-            Block center = loc.getBlock();
-            if (center.isLiquid()) {
-                // a single surrounding block in all 6 directions is broken if the material is weak enough
-                List<Block> targets = new ArrayList<>();
-                targets.add(center.getRelative(0, 0, 1));
-                targets.add(center.getRelative(0, 0, -1));
-                targets.add(center.getRelative(0, 1, 0));
-                targets.add(center.getRelative(0, -1, 0));
-                targets.add(center.getRelative(1, 0, 0));
-                targets.add(center.getRelative(-1, 0, 0));
-                for (Block target : targets) {
-                    // TODO get resistance value via NMS for future-proofing
-                    switch (target.getType()) {
-                        case AIR:
-                        case BEDROCK:
-                        case WATER:
-                        case LAVA:
-                        case OBSIDIAN:
-                        case PORTAL:
-                        case ENCHANTMENT_TABLE:
-                        case ANVIL:
-                        case ENDER_PORTAL:
-                        case ENDER_PORTAL_FRAME:
-                        case ENDER_CHEST:
-                            continue;
-                    }
-                    if (!explosionDisallowed(boomer, new FLocation(target.getLocation()))) {
-                        target.breakNaturally();
-                    }
-                }
-            }
-        }
-    }
-
     public static boolean explosionDisallowed(Entity boomer, FLocation location) {
         Faction faction = Board.getInstance().getFactionAt(location);
         boolean online = faction.hasPlayersOnline();
@@ -176,17 +108,10 @@ public abstract class AbstractListener implements Listener {
                 (faction.isSafeZone() && protection.isSafeZoneBlockTNT()))) {
             // TNT which needs prevention
             return true;
-        } else if (((faction.isWilderness() && protection.isWildernessBlockOtherExplosions() && !protection.getWorldsNoWildernessProtection().contains(location.getWorldName())) ||
+        } else return (faction.isWilderness() && protection.isWildernessBlockOtherExplosions() && !protection.getWorldsNoWildernessProtection().contains(location.getWorldName())) ||
                 (faction.isNormal() && (online ? protection.isTerritoryBlockOtherExplosions() : protection.isTerritoryBlockOtherExplosionsWhenOffline())) ||
                 (faction.isWarZone() && protection.isWarZoneBlockOtherExplosions()) ||
-                (faction.isSafeZone() && protection.isSafeZoneBlockOtherExplosions()))) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean canPlayerUseBlock(Player player, Material material, Location location, boolean justCheck) {
-        return canUseBlock(player, material, location, justCheck);
+                (faction.isSafeZone() && protection.isSafeZoneBlockOtherExplosions());
     }
 
     public static boolean canUseBlock(Player player, Material material, Location location, boolean justCheck) {
@@ -356,5 +281,66 @@ public abstract class AbstractListener implements Listener {
         }
 
         return false;
+    }
+
+    public boolean playerCanInteractHere(Player player, Location location) {
+        return canInteractHere(player, location);
+    }
+
+    protected void handleExplosion(Location loc, Entity boomer, Cancellable event, List<Block> blockList) {
+        if (!FactionsPlugin.getInstance().worldUtil().isEnabled(loc.getWorld())) {
+            return;
+        }
+
+        if (explosionDisallowed(boomer, new FLocation(loc))) {
+            event.setCancelled(true);
+            return;
+        }
+
+        List<Chunk> chunks = blockList.stream().map(Block::getChunk).distinct().collect(Collectors.toList());
+        if (chunks.removeIf(chunk -> explosionDisallowed(boomer, new FLocation(chunk)))) {
+            blockList.removeIf(block -> !chunks.contains(block.getChunk()));
+        }
+
+        if ((boomer instanceof TNTPrimed || boomer instanceof ExplosiveMinecart) && FactionsPlugin.getInstance().conf().exploits().isTntWaterlog()) {
+            // TNT in water/lava doesn't normally destroy any surrounding blocks, which is usually desired behavior, but...
+            // this change below provides workaround for waterwalling providing perfect protection,
+            // and makes cheap (non-obsidian) TNT cannons require minor maintenance between shots
+            Block center = loc.getBlock();
+            if (center.isLiquid()) {
+                // a single surrounding block in all 6 directions is broken if the material is weak enough
+                List<Block> targets = new ArrayList<>();
+                targets.add(center.getRelative(0, 0, 1));
+                targets.add(center.getRelative(0, 0, -1));
+                targets.add(center.getRelative(0, 1, 0));
+                targets.add(center.getRelative(0, -1, 0));
+                targets.add(center.getRelative(1, 0, 0));
+                targets.add(center.getRelative(-1, 0, 0));
+                for (Block target : targets) {
+                    // TODO get resistance value via NMS for future-proofing
+                    switch (target.getType()) {
+                        case AIR:
+                        case BEDROCK:
+                        case WATER:
+                        case LAVA:
+                        case OBSIDIAN:
+                        case PORTAL:
+                        case ENCHANTMENT_TABLE:
+                        case ANVIL:
+                        case ENDER_PORTAL:
+                        case ENDER_PORTAL_FRAME:
+                        case ENDER_CHEST:
+                            continue;
+                    }
+                    if (!explosionDisallowed(boomer, new FLocation(target.getLocation()))) {
+                        target.breakNaturally();
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean canPlayerUseBlock(Player player, Material material, Location location, boolean justCheck) {
+        return canUseBlock(player, material, location, justCheck);
     }
 }

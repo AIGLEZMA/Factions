@@ -1021,10 +1021,10 @@ public enum TL {
     DTR_FROZEN_TIME_NOTFROZEN(""),
     ;
 
-    private String path;
-    private final String def;
-    private static YamlConfiguration LANG;
     public static SimpleDateFormat sdf;
+    private static YamlConfiguration LANG;
+    private final String def;
+    private String path;
 
     /**
      * Lang enum constructor.

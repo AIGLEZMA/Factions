@@ -8,6 +8,19 @@ import java.util.List;
 
 @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "unused"})
 public class TranslationsConfig {
+    @Comment("This config file will slowly become the location for all text content\n" +
+            "All information here uses MiniMessage. https://docs.adventure.kyori.net/minimessage.html")
+    private Commands commands = new Commands();
+    private Permissions permissions = new Permissions();
+
+    public Commands commands() {
+        return commands;
+    }
+
+    public Permissions permissions() {
+        return permissions;
+    }
+
     public static class AbsCommand {
         private List<String> aliases;
 
@@ -23,35 +36,78 @@ public class TranslationsConfig {
     }
 
     public static class Commands {
-        public static class Permissions extends AbsCommand {
-            public static class SubCmdAdd extends AbsCommand {
-                public SubCmdAdd() {
-                    super("add");
-                }
+        private Permissions permissions = new Permissions();
 
+        public Permissions permissions() {
+            return permissions;
+        }
+
+        public static class Permissions extends AbsCommand {
+            private SubCmdAdd add = new SubCmdAdd();
+            private SubCmdList list = new SubCmdList();
+            private SubCmdListOverride listOverride = new SubCmdListOverride();
+            private SubCmdMove move = new SubCmdMove();
+            private SubCmdRemove remove = new SubCmdRemove();
+            private SubCmdReset reset = new SubCmdReset();
+            private SubCmdShow show = new SubCmdShow();
+            private SubCmdShowOverride showOverride = new SubCmdShowOverride();
+
+            protected Permissions() {
+                super("perm", "perms", "permission", "permissions");
+            }
+
+            public SubCmdAdd add() {
+                return add;
+            }
+
+            public SubCmdList list() {
+                return list;
+            }
+
+            public SubCmdListOverride listOverride() {
+                return listOverride;
+            }
+
+            public SubCmdMove move() {
+                return move;
+            }
+
+            public SubCmdRemove remove() {
+                return remove;
+            }
+
+            public SubCmdReset reset() {
+                return reset;
+            }
+
+            public SubCmdShow show() {
+                return show;
+            }
+
+            public SubCmdShowOverride showOverride() {
+                return showOverride;
+            }
+
+            public static class SubCmdAdd extends AbsCommand {
                 private String availableSelectorsIntro = "Available: ";
                 private String availableSelectorsSelector = "<click:run_command:\"<command>\"><color:#66ebff><selector></color:#66ebff></click>  ";
-
                 private String selectorNotFound = "<red>No selector available with that name</red>";
                 private String selectorCreateFail = "<red>Could not create selector:</red> <error>";
                 private String selectorOptionHere = "OPTIONHERE";
                 private String selectorOptionsIntro = "Available: ";
                 private String selectorOptionsItem = "<click:run_command:\"<command>\"><color:#66ebff><display></color:#66ebff></click>  ";
-
                 private String actionOptionsIntro = "Available: ";
                 private String actionOptionsItem = "<hover:show_text:\"<description>\"><action></hover>" +
                         "<click:run_command:\"<commandtrue>\"><color:#66ffb0>+</color:#66ffb0></click>" +
                         "<click:run_command:\"<commandfalse>\"><color:#ff6666>-</color:#ff6666></click>  ";
                 private String actionNotFound = "<red>No action available with that name</red>";
                 private String actionAllowDenyOptions = "<red>Unrecognized choice. What about </red><allow> <red>or</red> <deny><red>?</red>";
-
                 private List<String> actionAllowAlias = new ArrayList<String>() {
                     {
                         this.add("allow");
                         this.add("true");
                     }
                 };
-
                 private List<String> actionDenyAlias = new ArrayList<String>() {
                     {
                         this.add("deny");
@@ -59,6 +115,10 @@ public class TranslationsConfig {
                         this.add("disallow");
                     }
                 };
+
+                public SubCmdAdd() {
+                    super("add");
+                }
 
                 public String getAvailableSelectorsIntro() {
                     return availableSelectorsIntro;
@@ -289,62 +349,68 @@ public class TranslationsConfig {
                     return selectorNotFound;
                 }
             }
-
-            protected Permissions() {
-                super("perm", "perms", "permission", "permissions");
-            }
-
-            private SubCmdAdd add = new SubCmdAdd();
-            private SubCmdList list = new SubCmdList();
-            private SubCmdListOverride listOverride = new SubCmdListOverride();
-            private SubCmdMove move = new SubCmdMove();
-            private SubCmdRemove remove = new SubCmdRemove();
-            private SubCmdReset reset = new SubCmdReset();
-            private SubCmdShow show = new SubCmdShow();
-            private SubCmdShowOverride showOverride = new SubCmdShowOverride();
-
-            public SubCmdAdd add() {
-                return add;
-            }
-
-            public SubCmdList list() {
-                return list;
-            }
-
-            public SubCmdListOverride listOverride() {
-                return listOverride;
-            }
-
-            public SubCmdMove move() {
-                return move;
-            }
-
-            public SubCmdRemove remove() {
-                return remove;
-            }
-
-            public SubCmdReset reset() {
-                return reset;
-            }
-
-            public SubCmdShow show() {
-                return show;
-            }
-
-            public SubCmdShowOverride showOverride() {
-                return showOverride;
-            }
-        }
-
-        private Permissions permissions = new Permissions();
-
-        public Permissions permissions() {
-            return permissions;
         }
     }
 
     public static class Permissions {
+        private Selectors selectors = new Selectors();
+
+        public Selectors selectors() {
+            return selectors;
+        }
+
         public static class Selectors {
+            private All all = new All();
+            private Faction faction = new Faction();
+            private Player player = new Player();
+            private RelationAtLeast relationAtLeast = new RelationAtLeast();
+            private RelationAtMost relationAtMost = new RelationAtMost();
+            private RelationSingle relationSingle = new RelationSingle();
+            private RoleAtLeast roleAtLeast = new RoleAtLeast();
+            private RoleAtMost roleAtMost = new RoleAtMost();
+            private RoleSingle roleSingle = new RoleSingle();
+            private Unknown unknown = new Unknown();
+
+            public All all() {
+                return all;
+            }
+
+            public Faction faction() {
+                return faction;
+            }
+
+            public Player player() {
+                return player;
+            }
+
+            public RelationAtLeast relationAtLeast() {
+                return relationAtLeast;
+            }
+
+            public RelationAtMost relationAtMost() {
+                return relationAtMost;
+            }
+
+            public RelationSingle relationSingle() {
+                return relationSingle;
+            }
+
+            public RoleAtLeast roleAtLeast() {
+                return roleAtLeast;
+            }
+
+            public RoleAtMost roleAtMost() {
+                return roleAtMost;
+            }
+
+            public RoleSingle roleSingle() {
+                return roleSingle;
+            }
+
+            public Unknown unknown() {
+                return unknown;
+            }
+
             public static class BasicSelector {
                 private String displayName;
 
@@ -447,76 +513,6 @@ public class TranslationsConfig {
                     super("Unknown");
                 }
             }
-
-            private All all = new All();
-            private Faction faction = new Faction();
-            private Player player = new Player();
-            private RelationAtLeast relationAtLeast = new RelationAtLeast();
-            private RelationAtMost relationAtMost = new RelationAtMost();
-            private RelationSingle relationSingle = new RelationSingle();
-            private RoleAtLeast roleAtLeast = new RoleAtLeast();
-            private RoleAtMost roleAtMost = new RoleAtMost();
-            private RoleSingle roleSingle = new RoleSingle();
-            private Unknown unknown = new Unknown();
-
-            public All all() {
-                return all;
-            }
-
-            public Faction faction() {
-                return faction;
-            }
-
-            public Player player() {
-                return player;
-            }
-
-            public RelationAtLeast relationAtLeast() {
-                return relationAtLeast;
-            }
-
-            public RelationAtMost relationAtMost() {
-                return relationAtMost;
-            }
-
-            public RelationSingle relationSingle() {
-                return relationSingle;
-            }
-
-            public RoleAtLeast roleAtLeast() {
-                return roleAtLeast;
-            }
-
-            public RoleAtMost roleAtMost() {
-                return roleAtMost;
-            }
-
-            public RoleSingle roleSingle() {
-                return roleSingle;
-            }
-
-            public Unknown unknown() {
-                return unknown;
-            }
         }
-
-        private Selectors selectors = new Selectors();
-
-        public Selectors selectors() {
-            return selectors;
-        }
-    }
-
-    @Comment("This config file will slowly become the location for all text content\n" +
-            "All information here uses MiniMessage. https://docs.adventure.kyori.net/minimessage.html")
-    private Commands commands = new Commands();
-    private Permissions permissions = new Permissions();
-
-    public Commands commands() {
-        return commands;
-    }
-
-    public Permissions permissions() {
-        return permissions;
     }
 }

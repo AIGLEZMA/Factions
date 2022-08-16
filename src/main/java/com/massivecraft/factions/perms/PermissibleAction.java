@@ -4,6 +4,15 @@ import org.bukkit.Material;
 
 public interface PermissibleAction {
     @Deprecated
+    static PermissibleAction valueOf(String name) {
+        PermissibleAction action = PermissibleActionRegistry.get(name);
+        if (action == null) {
+            throw new IllegalArgumentException("Invalid name '" + name + "'");
+        }
+        return action;
+    }
+
+    @Deprecated
     boolean isFactionOnly();
 
     @Deprecated
@@ -14,13 +23,4 @@ public interface PermissibleAction {
     String getDescription();
 
     String getShortDescription();
-
-    @Deprecated
-    static PermissibleAction valueOf(String name) {
-        PermissibleAction action = PermissibleActionRegistry.get(name);
-        if (action == null) {
-            throw new IllegalArgumentException("Invalid name '" + name + "'");
-        }
-        return action;
-    }
 }

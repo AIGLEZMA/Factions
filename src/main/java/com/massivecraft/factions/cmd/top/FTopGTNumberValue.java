@@ -7,11 +7,11 @@ package com.massivecraft.factions.cmd.top;
  * @param <N> value type
  */
 public abstract class FTopGTNumberValue<T extends FTopGTNumberValue<T, N>, N extends Comparable<N>> implements FTopValue<T> {
+    protected final N value;
+
     public FTopGTNumberValue(N value) {
         this.value = value;
     }
-
-    protected final N value;
 
     @Override
     public int compareTo(T arg) {

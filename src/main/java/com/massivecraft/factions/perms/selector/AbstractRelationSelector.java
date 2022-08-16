@@ -9,40 +9,12 @@ import com.massivecraft.factions.perms.Selectable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public abstract class AbstractRelationSelector extends AbstractSelector {
-    public static class RelationDescriptor extends BasicDescriptor {
-        private List<PermSelector> relationSelectors;
-        private final Function<Relation, PermSelector> function;
-
-        public RelationDescriptor(String name, Supplier<String> displayName, Function<Relation, PermSelector> function) {
-            super(name, displayName, input -> function.apply(Relation.fromString(input)));
-            this.function = function;
-        }
-
-        @Override
-        public Map<String, String> getOptions(Faction faction) {
-            List<PermSelector> available = new ArrayList<>(relationSelectors == null ? (relationSelectors = Arrays.stream(Relation.values()).map(function).collect(Collectors.toList())) : relationSelectors);
-            available.removeAll(((MemoryFaction) faction).getPermissions().keySet());
-
-            Map<String, String> map = new LinkedHashMap<>();
-
-            for (PermSelector selector : available) {
-                map.put(selector.serialize(), ((AbstractRelationSelector) selector).getRelation().getTranslation());
-            }
-
-            return map;
-        }
-    }
-
     protected final Relation relation;
 
     public AbstractRelationSelector(Descriptor descriptor, Relation relation) {
@@ -76,4 +48,28 @@ public abstract class AbstractRelationSelector extends AbstractSelector {
     }
 
     public abstract boolean test(Relation relation);
+
+    public static class RelationDescriptor extends BasicDescriptor {
+        private final Function<Relation, PermSelector> function;
+        private List<PermSelector> relationSelectors;
+
+        public RelationDescriptor(String name, Supplier<String> displayName, Function<Relation, PermSelector> function) {
+            super(name, displayName, input -> function.apply(Relation.fromString(input)));
+            this.function = function;
+        }
+
+        @Override
+        public Map<String, String> getOptions(Faction faction) {
+            List<PermSelector> available = new ArrayList<>(relationSelectors == null ? (relationSelectors = Arrays.stream(Relation.values()).map(function).collect(Collectors.toList())) : relationSelectors);
+            available.removeAll(((MemoryFaction) faction).getPermissions().keySet());
+
+            Map<String, String> map = new LinkedHashMap<>();
+
+            for (PermSelector selector : available) {
+                map.put(selector.serialize(), ((AbstractRelationSelector) selector).getRelation().getTranslation());
+            }
+
+            return map;
+        }
+    }
 }

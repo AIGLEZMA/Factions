@@ -11,8 +11,8 @@ import org.bukkit.event.Cancellable;
  */
 public class LandUnclaimEvent extends FactionPlayerEvent implements Cancellable {
 
-    private boolean cancelled;
     private final FLocation location;
+    private boolean cancelled;
 
     public LandUnclaimEvent(FLocation loc, Faction f, FPlayer p) {
         super(f, p);

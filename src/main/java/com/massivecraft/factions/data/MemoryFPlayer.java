@@ -1,12 +1,6 @@
 package com.massivecraft.factions.data;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FLocation;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.Factions;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.FPlayerLeaveEvent;
 import com.massivecraft.factions.event.FactionAutoDisbandEvent;
 import com.massivecraft.factions.event.LandClaimEvent;
@@ -30,11 +24,7 @@ import com.massivecraft.factions.util.TL;
 import com.massivecraft.factions.util.TitleAPI;
 import com.massivecraft.factions.util.WarmUpUtil;
 import mkremins.fanciful.FancyMessage;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Statistic;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
@@ -97,6 +87,48 @@ public abstract class MemoryFPlayer implements FPlayer {
     protected transient boolean shouldTakeFallDamage = true;
     protected transient OfflinePlayer offlinePlayer;
 
+    public MemoryFPlayer() {
+    }
+
+    public MemoryFPlayer(String id) {
+        this.id = id;
+        this.resetFactionData(false);
+        this.power = FactionsPlugin.getInstance().conf().factions().landRaidControl().power().getPlayerStarting();
+        this.lastPowerUpdateTime = System.currentTimeMillis();
+        this.lastLoginTime = System.currentTimeMillis();
+        this.mapAutoUpdating = false;
+        this.autoClaimFor = null;
+        this.loginPvpDisabled = FactionsPlugin.getInstance().conf().factions().pvp().getNoPVPDamageToOthersForXSecondsAfterLogin() > 0;
+        this.powerBoost = 0.0;
+        this.kills = 0;
+        this.deaths = 0;
+        this.mapHeight = FactionsPlugin.getInstance().conf().map().getHeight();
+
+        if (!FactionsPlugin.getInstance().conf().factions().other().getNewPlayerStartingFactionID().equals("0") && Factions.getInstance().isValidFactionId(FactionsPlugin.getInstance().conf().factions().other().getNewPlayerStartingFactionID())) {
+            this.factionId = FactionsPlugin.getInstance().conf().factions().other().getNewPlayerStartingFactionID();
+        }
+    }
+
+    public MemoryFPlayer(MemoryFPlayer other) {
+        this.factionId = other.factionId;
+        this.id = other.id;
+        this.power = other.power;
+        this.lastLoginTime = other.lastLoginTime;
+        this.mapAutoUpdating = other.mapAutoUpdating;
+        this.autoClaimFor = other.autoClaimFor;
+        this.loginPvpDisabled = other.loginPvpDisabled;
+        this.powerBoost = other.powerBoost;
+        this.role = other.role;
+        this.title = other.title;
+        this.chatMode = other.chatMode;
+        this.spyingChat = other.spyingChat;
+        this.lastStoodAt = other.lastStoodAt;
+        this.isAdminBypassing = other.isAdminBypassing;
+        this.kills = other.kills;
+        this.deaths = other.deaths;
+        this.mapHeight = other.mapHeight;
+    }
+
     public void login() {
         this.kills = getPlayer().getStatistic(Statistic.PLAYER_KILLS);
         this.deaths = getPlayer().getStatistic(Statistic.DEATHS);
@@ -120,14 +152,6 @@ public abstract class MemoryFPlayer implements FPlayer {
         return faction;
     }
 
-    public String getFactionId() {
-        return this.factionId;
-    }
-
-    public boolean hasFaction() {
-        return !factionId.equals("0");
-    }
-
     public void setFaction(Faction faction) {
         Faction oldFaction = this.getFaction();
         if (oldFaction != null) {
@@ -135,6 +159,14 @@ public abstract class MemoryFPlayer implements FPlayer {
         }
         faction.addFPlayer(this);
         this.factionId = faction.getId();
+    }
+
+    public String getFactionId() {
+        return this.factionId;
+    }
+
+    public boolean hasFaction() {
+        return !factionId.equals("0");
     }
 
     public void setMonitorJoins(boolean monitor) {
@@ -248,10 +280,6 @@ public abstract class MemoryFPlayer implements FPlayer {
         this.isAdminBypassing = val;
     }
 
-    public void setChatMode(ChatMode chatMode) {
-        this.chatMode = chatMode;
-    }
-
     public ChatMode getChatMode() {
         if (this.chatMode == null || this.factionId.equals("0") || !FactionsPlugin.getInstance().conf().factions().chat().isFactionOnlyChat()) {
             this.chatMode = ChatMode.PUBLIC;
@@ -259,20 +287,24 @@ public abstract class MemoryFPlayer implements FPlayer {
         return chatMode;
     }
 
-    public void setIgnoreAllianceChat(boolean ignore) {
-        this.ignoreAllianceChat = ignore;
+    public void setChatMode(ChatMode chatMode) {
+        this.chatMode = chatMode;
     }
 
     public boolean isIgnoreAllianceChat() {
         return ignoreAllianceChat;
     }
 
-    public void setSpyingChat(boolean chatSpying) {
-        this.spyingChat = chatSpying;
+    public void setIgnoreAllianceChat(boolean ignore) {
+        this.ignoreAllianceChat = ignore;
     }
 
     public boolean isSpyingChat() {
         return spyingChat;
+    }
+
+    public void setSpyingChat(boolean chatSpying) {
+        this.spyingChat = chatSpying;
     }
 
     // FIELD: account
@@ -293,48 +325,6 @@ public abstract class MemoryFPlayer implements FPlayer {
 
     public void setOfflinePlayer(Player player) {
         this.offlinePlayer = player;
-    }
-
-    public MemoryFPlayer() {
-    }
-
-    public MemoryFPlayer(String id) {
-        this.id = id;
-        this.resetFactionData(false);
-        this.power = FactionsPlugin.getInstance().conf().factions().landRaidControl().power().getPlayerStarting();
-        this.lastPowerUpdateTime = System.currentTimeMillis();
-        this.lastLoginTime = System.currentTimeMillis();
-        this.mapAutoUpdating = false;
-        this.autoClaimFor = null;
-        this.loginPvpDisabled = FactionsPlugin.getInstance().conf().factions().pvp().getNoPVPDamageToOthersForXSecondsAfterLogin() > 0;
-        this.powerBoost = 0.0;
-        this.kills = 0;
-        this.deaths = 0;
-        this.mapHeight = FactionsPlugin.getInstance().conf().map().getHeight();
-
-        if (!FactionsPlugin.getInstance().conf().factions().other().getNewPlayerStartingFactionID().equals("0") && Factions.getInstance().isValidFactionId(FactionsPlugin.getInstance().conf().factions().other().getNewPlayerStartingFactionID())) {
-            this.factionId = FactionsPlugin.getInstance().conf().factions().other().getNewPlayerStartingFactionID();
-        }
-    }
-
-    public MemoryFPlayer(MemoryFPlayer other) {
-        this.factionId = other.factionId;
-        this.id = other.id;
-        this.power = other.power;
-        this.lastLoginTime = other.lastLoginTime;
-        this.mapAutoUpdating = other.mapAutoUpdating;
-        this.autoClaimFor = other.autoClaimFor;
-        this.loginPvpDisabled = other.loginPvpDisabled;
-        this.powerBoost = other.powerBoost;
-        this.role = other.role;
-        this.title = other.title;
-        this.chatMode = other.chatMode;
-        this.spyingChat = other.spyingChat;
-        this.lastStoodAt = other.lastStoodAt;
-        this.isAdminBypassing = other.isAdminBypassing;
-        this.kills = other.kills;
-        this.deaths = other.deaths;
-        this.mapHeight = other.mapHeight;
     }
 
     public void resetFactionData(boolean doSpoutUpdate) {
@@ -431,10 +421,6 @@ public abstract class MemoryFPlayer implements FPlayer {
         return name;
     }
 
-    private static class NameLookup {
-        String name;
-    }
-
     public void setName(String name) {
         if (!name.equalsIgnoreCase(this.name)) {
             for (FPlayer fplayer : FPlayers.getInstance().getAllFPlayers()) {
@@ -480,8 +466,6 @@ public abstract class MemoryFPlayer implements FPlayer {
         return this.hasFaction() ? this.getFaction().getTag() : "";
     }
 
-    // Base concatenations:
-
     public String getNameAndSomething(String something) {
         String ret = this.role.getPrefix();
         if (something != null && something.length() > 0) {
@@ -491,6 +475,8 @@ public abstract class MemoryFPlayer implements FPlayer {
         return ret;
     }
 
+    // Base concatenations:
+
     public String getNameAndTitle() {
         return this.getNameAndSomething(this.getTitle());
     }
@@ -499,23 +485,23 @@ public abstract class MemoryFPlayer implements FPlayer {
         return this.getNameAndSomething(this.getTag());
     }
 
-    // Colored concatenations:
-    // These are used in information messages
-
     public String getNameAndTitle(Faction faction) {
         return this.getColorTo(faction) + this.getNameAndTitle();
     }
+
+    // Colored concatenations:
+    // These are used in information messages
 
     public String getNameAndTitle(MemoryFPlayer fplayer) {
         return this.getColorTo(fplayer) + this.getNameAndTitle();
     }
 
-    // Chat Tag:
-    // These are injected into the format of global chat messages.
-
     public String getChatTag() {
         return this.hasFaction() ? String.format(FactionsPlugin.getInstance().conf().factions().chat().getTagFormat(), this.getRole().getPrefix() + this.getTag()) : TL.NOFACTION_PREFIX.toString();
     }
+
+    // Chat Tag:
+    // These are injected into the format of global chat messages.
 
     // Colored Chat Tag
     public String getChatTag(Faction faction) {
@@ -536,14 +522,14 @@ public abstract class MemoryFPlayer implements FPlayer {
 
     }
 
-    // -------------------------------
-    // Relation and relation colors
-    // -------------------------------
-
     @Override
     public String describeTo(RelationParticipator that, boolean ucfirst) {
         return RelationUtil.describeThatToMe(this, that, ucfirst);
     }
+
+    // -------------------------------
+    // Relation and relation colors
+    // -------------------------------
 
     @Override
     public String describeTo(RelationParticipator that) {
@@ -579,7 +565,6 @@ public abstract class MemoryFPlayer implements FPlayer {
         }
         player.setHealth(player.getHealth() + amnt);
     }
-
 
     //----------------------------------------------//
     // Power
@@ -734,10 +719,6 @@ public abstract class MemoryFPlayer implements FPlayer {
         this.showScoreboard = show;
     }
 
-    // -------------------------------
-    // Actions
-    // -------------------------------
-
     public void leave(boolean makePay) {
         Faction myFaction = this.getFaction();
         boolean econMakePay = makePay && Econ.shouldBeUsed() && !this.isAdminBypassing();
@@ -811,6 +792,10 @@ public abstract class MemoryFPlayer implements FPlayer {
             }
         }
     }
+
+    // -------------------------------
+    // Actions
+    // -------------------------------
 
     public boolean canClaimForFaction(Faction forFaction) {
         return this.isAdminBypassing() || !forFaction.isWilderness() && (forFaction == this.getFaction() && this.getFaction().hasAccess(this, PermissibleActions.TERRITORY, null)) || (forFaction.isSafeZone() && Permission.MANAGE_SAFE_ZONE.has(getPlayer())) || (forFaction.isWarZone() && Permission.MANAGE_WAR_ZONE.has(getPlayer()));
@@ -1250,10 +1235,6 @@ public abstract class MemoryFPlayer implements FPlayer {
         msg(TL.COMMAND_FLYTRAILS_PARTICLE_CHANGE, effect);
     }
 
-    // -------------------------------------------- //
-    // Message Sending Helpers
-    // -------------------------------------------- //
-
     public void sendMessage(String msg) {
         if (msg.contains("{null}")) {
             return; // user wants this message to not send
@@ -1270,6 +1251,10 @@ public abstract class MemoryFPlayer implements FPlayer {
         }
         player.sendMessage(msg);
     }
+
+    // -------------------------------------------- //
+    // Message Sending Helpers
+    // -------------------------------------------- //
 
     public void sendMessage(List<String> msgs) {
         for (String msg : msgs) {
@@ -1353,5 +1338,9 @@ public abstract class MemoryFPlayer implements FPlayer {
         }
         this.warmup = warmup;
         this.warmupTask = taskId;
+    }
+
+    private static class NameLookup {
+        String name;
     }
 }

@@ -121,7 +121,8 @@ public class Persist {
 
         try {
             return plugin.getGson().fromJson(content, clazz);
-        } catch (Exception ex) {    // output the error message rather than full stack trace; error parsing the file, most likely
+        } catch (
+                Exception ex) {    // output the error message rather than full stack trace; error parsing the file, most likely
             plugin.log(Level.WARNING, ex.getMessage());
         }
 
@@ -142,7 +143,8 @@ public class Persist {
 
         try {
             return plugin.getGson().fromJson(content, typeOfT);
-        } catch (Exception ex) {    // output the error message rather than full stack trace; error parsing the file, most likely
+        } catch (
+                Exception ex) {    // output the error message rather than full stack trace; error parsing the file, most likely
             plugin.log(Level.WARNING, ex.getMessage());
         }
 

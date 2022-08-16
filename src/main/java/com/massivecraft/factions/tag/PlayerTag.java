@@ -55,16 +55,16 @@ public enum PlayerTag implements Tag {
     private final String tag;
     private final Function<FPlayer, String> function;
 
+    PlayerTag(String tag, Function<FPlayer, String> function) {
+        this.tag = '{' + tag + '}';
+        this.function = function;
+    }
+
     public static String parse(String text, FPlayer player) {
         for (PlayerTag tag : PlayerTag.values()) {
             text = tag.replace(text, player);
         }
         return text;
-    }
-
-    PlayerTag(String tag, Function<FPlayer, String> function) {
-        this.tag = '{' + tag + '}';
-        this.function = function;
     }
 
     @Override

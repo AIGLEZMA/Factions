@@ -1,11 +1,6 @@
 package com.massivecraft.factions.listeners;
 
-import com.massivecraft.factions.Board;
-import com.massivecraft.factions.FLocation;
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-import com.massivecraft.factions.Faction;
-import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.*;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.perms.PermissibleAction;
 import com.massivecraft.factions.perms.PermissibleActions;
@@ -21,14 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDamageEvent;
-import org.bukkit.event.block.BlockDispenseEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.EntityBlockFormEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Directional;
 
@@ -42,6 +30,104 @@ public class FactionsBlockListener implements Listener {
 
     public FactionsBlockListener(FactionsPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    public static boolean playerCanBuildDestroyBlock(Player player, Location location, PermissibleAction permissibleAction, boolean justCheck) {
+        String name = player.getName();
+        MainConfig conf = FactionsPlugin.getInstance().conf();
+        if (conf.factions().protection().getPlayersWhoBypassAllProtection().contains(name)) {
+            return true;
+        }
+
+        FPlayer me = FPlayers.getInstance().getById(player.getUniqueId().toString());
+        if (me.isAdminBypassing()) {
+            return true;
+        }
+
+        FLocation loc = new FLocation(location);
+        Faction otherFaction = Board.getInstance().getFactionAt(loc);
+
+        if (otherFaction.isWilderness()) {
+            if (conf.worldGuard().isBuildPriority() && FactionsPlugin.getInstance().getWorldguard() != null && FactionsPlugin.getInstance().getWorldguard().playerCanBuild(player, location)) {
+                return true;
+            }
+
+            if (!conf.factions().protection().isWildernessDenyBuild() || conf.factions().protection().getWorldsNoWildernessProtection().contains(location.getWorld().getName())) {
+                return true; // This is not faction territory. Use whatever you like here.
+            }
+
+            if (!justCheck) {
+                me.msg(TL.PERM_DENIED_WILDERNESS, permissibleAction.getShortDescription());
+            }
+
+            return false;
+        } else if (otherFaction.isSafeZone()) {
+            if (conf.worldGuard().isBuildPriority() && FactionsPlugin.getInstance().getWorldguard() != null && FactionsPlugin.getInstance().getWorldguard().playerCanBuild(player, location)) {
+                return true;
+            }
+
+            if (!conf.factions().protection().isSafeZoneDenyBuild() || Permission.MANAGE_SAFE_ZONE.has(player)) {
+                return true;
+            }
+
+            if (!justCheck) {
+                me.msg(TL.PERM_DENIED_SAFEZONE, permissibleAction.getShortDescription());
+            }
+
+            return false;
+        } else if (otherFaction.isWarZone()) {
+            if (conf.worldGuard().isBuildPriority() && FactionsPlugin.getInstance().getWorldguard() != null && FactionsPlugin.getInstance().getWorldguard().playerCanBuild(player, location)) {
+                return true;
+            }
+
+            if (!conf.factions().protection().isWarZoneDenyBuild() || Permission.MANAGE_WAR_ZONE.has(player)) {
+                return true;
+            }
+
+            if (!justCheck) {
+                me.msg(TL.PERM_DENIED_WARZONE, permissibleAction.getShortDescription());
+            }
+
+            return false;
+        }
+        if (FactionsPlugin.getInstance().getLandRaidControl().isRaidable(otherFaction)) {
+            return true;
+        }
+
+        Faction myFaction = me.getFaction();
+        boolean pain = !justCheck && otherFaction.hasAccess(me, PermissibleActions.PAINBUILD, loc);
+
+        // If the faction hasn't: defined access or denied, fallback to config values
+        if (!otherFaction.hasAccess(me, permissibleAction, loc)) {
+            if (pain && permissibleAction != PermissibleActions.FROSTWALK) {
+                player.damage(conf.factions().other().getActionDeniedPainAmount());
+                me.msg(TL.PERM_DENIED_PAINTERRITORY, permissibleAction.getShortDescription(), otherFaction.getTag(myFaction));
+                return true;
+            } else if (!justCheck) {
+                me.msg(TL.PERM_DENIED_TERRITORY, permissibleAction.getShortDescription(), otherFaction.getTag(myFaction));
+            }
+            return false;
+        }
+
+        // Also cancel and/or cause pain if player doesn't have ownership rights for this claim
+        if (conf.factions().ownedArea().isEnabled() && (conf.factions().ownedArea().isDenyBuild() || conf.factions().ownedArea().isPainBuild()) && !otherFaction.playerHasOwnershipRights(me, loc)) {
+            if (pain && conf.factions().ownedArea().isPainBuild()) {
+                player.damage(conf.factions().other().getActionDeniedPainAmount());
+
+                if (!conf.factions().ownedArea().isDenyBuild()) {
+                    me.msg(TL.PERM_DENIED_PAINOWNED, permissibleAction.getShortDescription(), otherFaction.getOwnerListString(loc));
+                }
+            }
+            if (conf.factions().ownedArea().isDenyBuild()) {
+                if (!justCheck) {
+                    me.msg(TL.PERM_DENIED_OWNED, permissibleAction.getShortDescription(), otherFaction.getOwnerListString(loc));
+                }
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -296,103 +382,5 @@ public class FactionsBlockListener implements Listener {
         if (!playerCanBuildDestroyBlock(player, location, PermissibleActions.FROSTWALK, justCheck)) {
             event.setCancelled(true);
         }
-    }
-
-    public static boolean playerCanBuildDestroyBlock(Player player, Location location, PermissibleAction permissibleAction, boolean justCheck) {
-        String name = player.getName();
-        MainConfig conf = FactionsPlugin.getInstance().conf();
-        if (conf.factions().protection().getPlayersWhoBypassAllProtection().contains(name)) {
-            return true;
-        }
-
-        FPlayer me = FPlayers.getInstance().getById(player.getUniqueId().toString());
-        if (me.isAdminBypassing()) {
-            return true;
-        }
-
-        FLocation loc = new FLocation(location);
-        Faction otherFaction = Board.getInstance().getFactionAt(loc);
-
-        if (otherFaction.isWilderness()) {
-            if (conf.worldGuard().isBuildPriority() && FactionsPlugin.getInstance().getWorldguard() != null && FactionsPlugin.getInstance().getWorldguard().playerCanBuild(player, location)) {
-                return true;
-            }
-
-            if (!conf.factions().protection().isWildernessDenyBuild() || conf.factions().protection().getWorldsNoWildernessProtection().contains(location.getWorld().getName())) {
-                return true; // This is not faction territory. Use whatever you like here.
-            }
-
-            if (!justCheck) {
-                me.msg(TL.PERM_DENIED_WILDERNESS, permissibleAction.getShortDescription());
-            }
-
-            return false;
-        } else if (otherFaction.isSafeZone()) {
-            if (conf.worldGuard().isBuildPriority() && FactionsPlugin.getInstance().getWorldguard() != null && FactionsPlugin.getInstance().getWorldguard().playerCanBuild(player, location)) {
-                return true;
-            }
-
-            if (!conf.factions().protection().isSafeZoneDenyBuild() || Permission.MANAGE_SAFE_ZONE.has(player)) {
-                return true;
-            }
-
-            if (!justCheck) {
-                me.msg(TL.PERM_DENIED_SAFEZONE, permissibleAction.getShortDescription());
-            }
-
-            return false;
-        } else if (otherFaction.isWarZone()) {
-            if (conf.worldGuard().isBuildPriority() && FactionsPlugin.getInstance().getWorldguard() != null && FactionsPlugin.getInstance().getWorldguard().playerCanBuild(player, location)) {
-                return true;
-            }
-
-            if (!conf.factions().protection().isWarZoneDenyBuild() || Permission.MANAGE_WAR_ZONE.has(player)) {
-                return true;
-            }
-
-            if (!justCheck) {
-                me.msg(TL.PERM_DENIED_WARZONE, permissibleAction.getShortDescription());
-            }
-
-            return false;
-        }
-        if (FactionsPlugin.getInstance().getLandRaidControl().isRaidable(otherFaction)) {
-            return true;
-        }
-
-        Faction myFaction = me.getFaction();
-        boolean pain = !justCheck && otherFaction.hasAccess(me, PermissibleActions.PAINBUILD, loc);
-
-        // If the faction hasn't: defined access or denied, fallback to config values
-        if (!otherFaction.hasAccess(me, permissibleAction, loc)) {
-            if (pain && permissibleAction != PermissibleActions.FROSTWALK) {
-                player.damage(conf.factions().other().getActionDeniedPainAmount());
-                me.msg(TL.PERM_DENIED_PAINTERRITORY, permissibleAction.getShortDescription(), otherFaction.getTag(myFaction));
-                return true;
-            } else if (!justCheck) {
-                me.msg(TL.PERM_DENIED_TERRITORY, permissibleAction.getShortDescription(), otherFaction.getTag(myFaction));
-            }
-            return false;
-        }
-
-        // Also cancel and/or cause pain if player doesn't have ownership rights for this claim
-        if (conf.factions().ownedArea().isEnabled() && (conf.factions().ownedArea().isDenyBuild() || conf.factions().ownedArea().isPainBuild()) && !otherFaction.playerHasOwnershipRights(me, loc)) {
-            if (pain && conf.factions().ownedArea().isPainBuild()) {
-                player.damage(conf.factions().other().getActionDeniedPainAmount());
-
-                if (!conf.factions().ownedArea().isDenyBuild()) {
-                    me.msg(TL.PERM_DENIED_PAINOWNED, permissibleAction.getShortDescription(), otherFaction.getOwnerListString(loc));
-                }
-            }
-            if (conf.factions().ownedArea().isDenyBuild()) {
-                if (!justCheck) {
-                    me.msg(TL.PERM_DENIED_OWNED, permissibleAction.getShortDescription(), otherFaction.getOwnerListString(loc));
-                }
-
-                return false;
-            }
-        }
-
-        return true;
     }
 }

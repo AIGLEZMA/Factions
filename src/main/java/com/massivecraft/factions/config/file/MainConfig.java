@@ -13,17 +13,121 @@ import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "InnerClassMayBeStatic", "BooleanMethodIsAlwaysInverted", "MismatchedQueryAndUpdateOfCollection"})
 public class MainConfig {
+    @Comment("The command base (by default f, making the command /f)")
+    private List<String> commandBase = new ArrayList<String>() {
+        {
+            this.add("f");
+        }
+    };
+    @Comment("FactionsUUID by drtshock\n" +
+            "Support and documentation https://factions.support\n" +
+            "Updates https://www.spigotmc.org/resources/factionsuuid.1035/\n" +
+            "\n" +
+            "Made with love <3")
+    private AVeryFriendlyFactionsConfig aVeryFriendlyFactionsConfig = new AVeryFriendlyFactionsConfig();
+    @Comment("Colors for relationships and default factions")
+    private Colors colors = new Colors();
+    private Commands commands = new Commands();
+    private Factions factions = new Factions();
+    @Comment("What should be logged?")
+    private Logging logging = new Logging();
+    @Comment("Controls certain exploit preventions")
+    private Exploits exploits = new Exploits();
+    @Comment("Economy support requires Vault and a compatible economy plugin\n" +
+            "If you wish to use economy features, be sure to set 'enabled' in this section to true!")
+    private Economy economy = new Economy();
+    @Comment("Control for the default settings of /f map")
+    private MapSettings map = new MapSettings();
+    @Comment("Data storage settings")
+    private Data data = new Data();
+    private RestrictWorlds restrictWorlds = new RestrictWorlds();
+    private Scoreboard scoreboard = new Scoreboard();
+    @Comment("Paper features, when accessible.")
+    private Paper paper = new Paper();
+    @Comment("Lists plugin integrations. Some other plugins (PVX, LWC, Magic, WG, WB) are currently\n" +
+            " elsewhere but will migrate here in the future")
+    private Plugins plugins = new Plugins();
+    @Comment("PlayerVaults faction vault settings.\n" +
+            "Enable faction-owned vaults!\n" +
+            "https://www.spigotmc.org/resources/playervaultsx.51204/")
+    private PlayerVaults playerVaults = new PlayerVaults();
+    @Comment("WorldGuard settings.\n" +
+            "Note that flag stuff only works on WG 7")
+    private WorldGuard worldGuard = new WorldGuard();
+    private WorldBorder worldBorder = new WorldBorder();
+
+    public List<String> getCommandBase() {
+        return commandBase == null ? (commandBase = Collections.singletonList("f")) : commandBase;
+    }
+
+    public AVeryFriendlyFactionsConfig getaVeryFriendlyFactionsConfig() {
+        return aVeryFriendlyFactionsConfig;
+    }
+
+    public Colors colors() {
+        return colors;
+    }
+
+    public Commands commands() {
+        return commands;
+    }
+
+    public Factions factions() {
+        return factions;
+    }
+
+    public Logging logging() {
+        return logging;
+    }
+
+    public Exploits exploits() {
+        return exploits;
+    }
+
+    public Economy economy() {
+        return economy;
+    }
+
+    public MapSettings map() {
+        return map;
+    }
+
+    public RestrictWorlds restrictWorlds() {
+        return restrictWorlds;
+    }
+
+    public Scoreboard scoreboard() {
+        return scoreboard;
+    }
+
+    public Paper paper() {
+        return paper;
+    }
+
+    public PlayerVaults playerVaults() {
+        return playerVaults;
+    }
+
+    public Plugins plugins() {
+        return plugins;
+    }
+
+    public WorldGuard worldGuard() {
+        return worldGuard;
+    }
+
+    public WorldBorder worldBorder() {
+        return worldBorder;
+    }
+
+    public Data data() {
+        return data;
+    }
+
     public static class AVeryFriendlyFactionsConfig {
         @Comment("Don't change this value yourself, unless you WANT a broken config!")
         private int version = 6;
@@ -40,6 +144,30 @@ public class MainConfig {
     }
 
     public class Colors {
+        private Factions factions = new Factions();
+        private Relations relations = new Relations();
+
+        private ChatColor getColor(String name, ChatColor current, ChatColor defaultColor) {
+            if (current != null) {
+                return current;
+            }
+            ChatColor ret;
+            try {
+                ret = ChatColor.valueOf(name);
+            } catch (IllegalArgumentException e) {
+                ret = defaultColor;
+            }
+            return ret;
+        }
+
+        public Factions factions() {
+            return factions;
+        }
+
+        public Relations relations() {
+            return relations;
+        }
+
         public class Relations {
             private String member = "GREEN";
             @WipeOnReload
@@ -108,33 +236,86 @@ public class MainConfig {
                 return warzoneColor = Colors.this.getColor(this.warzone, this.warzoneColor, ChatColor.DARK_RED);
             }
         }
-
-        private Factions factions = new Factions();
-        private Relations relations = new Relations();
-
-        private ChatColor getColor(String name, ChatColor current, ChatColor defaultColor) {
-            if (current != null) {
-                return current;
-            }
-            ChatColor ret;
-            try {
-                ret = ChatColor.valueOf(name);
-            } catch (IllegalArgumentException e) {
-                ret = defaultColor;
-            }
-            return ret;
-        }
-
-        public Factions factions() {
-            return factions;
-        }
-
-        public Relations relations() {
-            return relations;
-        }
     }
 
     public class Commands {
+        private Description description = new Description();
+        private Kick kick = new Kick();
+        private Fly fly = new Fly();
+        private Help help = new Help();
+        private Home home = new Home();
+        private Link link = new Link();
+        private ListCmd list = new ListCmd();
+        private MapCmd map = new MapCmd();
+        private Near near = new Near();
+        private SeeChunk seeChunk = new SeeChunk();
+        private Show show = new Show();
+        private Stuck stuck = new Stuck();
+        @Comment("TNT bank!")
+        private TNT tnt = new TNT();
+        private ToolTips toolTips = new ToolTips();
+        private Warp warp = new Warp();
+
+        public Description description() {
+            return description;
+        }
+
+        public Kick kick() {
+            return kick;
+        }
+
+        public Fly fly() {
+            return fly;
+        }
+
+        public Help help() {
+            return help;
+        }
+
+        public Home home() {
+            return home;
+        }
+
+        public Link link() {
+            return link;
+        }
+
+        public ListCmd list() {
+            return list;
+        }
+
+        public MapCmd map() {
+            return map;
+        }
+
+        public Near near() {
+            return near;
+        }
+
+        public SeeChunk seeChunk() {
+            return seeChunk;
+        }
+
+        public Show show() {
+            return show;
+        }
+
+        public Stuck stuck() {
+            return stuck;
+        }
+
+        public TNT tnt() {
+            return tnt;
+        }
+
+        public ToolTips toolTips() {
+            return toolTips;
+        }
+
+        public Warp warp() {
+            return warp;
+        }
+
         public class Description {
             @Comment("If -1, no limit.")
             private int maxLength = -1;
@@ -154,28 +335,6 @@ public class MainConfig {
         }
 
         public class Fly {
-            public class Particles {
-                @Comment("Speed of the particles, can be decimal value")
-                private double speed = 0.02;
-                @Comment("Amount spawned")
-                private int amount = 20;
-                @Comment("How often should we spawn these particles?\n" +
-                        "0 disables this completely")
-                private double spawnRate = 0.2;
-
-                public double getSpeed() {
-                    return speed;
-                }
-
-                public int getAmount() {
-                    return amount;
-                }
-
-                public double getSpawnRate() {
-                    return spawnRate;
-                }
-            }
-
             @Comment("Warmup seconds before command executes. Set to 0 for no warmup.")
             private int delay = 0;
             @Comment("True to enable the fly command, false to disable")
@@ -200,7 +359,6 @@ public class MainConfig {
             private boolean disableFlightDuringAutoclaim = false;
             @Comment("Should flight be disabled if the player is hurt by mobs?")
             private boolean disableOnHurtByMobs = true;
-
             @Comment("Trails show below the players foot when flying, faction.fly.trails\n" +
                     "Players can enable them with /f trail on/off\n" +
                     "Players can also set which effect to show /f trail effect <particle> only if they have faction.fly.trails.<particle>")
@@ -248,6 +406,28 @@ public class MainConfig {
 
             public Particles particles() {
                 return particles;
+            }
+
+            public class Particles {
+                @Comment("Speed of the particles, can be decimal value")
+                private double speed = 0.02;
+                @Comment("Amount spawned")
+                private int amount = 20;
+                @Comment("How often should we spawn these particles?\n" +
+                        "0 disables this completely")
+                private double spawnRate = 0.2;
+
+                public double getSpeed() {
+                    return speed;
+                }
+
+                public int getAmount() {
+                    return amount;
+                }
+
+                public double getSpawnRate() {
+                    return spawnRate;
+                }
             }
         }
 
@@ -538,87 +718,115 @@ public class MainConfig {
                 return player != null ? Collections.unmodifiableList(player) : Collections.emptyList();
             }
         }
-
-        private Description description = new Description();
-        private Kick kick = new Kick();
-        private Fly fly = new Fly();
-        private Help help = new Help();
-        private Home home = new Home();
-        private Link link = new Link();
-        private ListCmd list = new ListCmd();
-        private MapCmd map = new MapCmd();
-        private Near near = new Near();
-        private SeeChunk seeChunk = new SeeChunk();
-        private Show show = new Show();
-        private Stuck stuck = new Stuck();
-        @Comment("TNT bank!")
-        private TNT tnt = new TNT();
-        private ToolTips toolTips = new ToolTips();
-        private Warp warp = new Warp();
-
-        public Description description() {
-            return description;
-        }
-
-        public Kick kick() {
-            return kick;
-        }
-
-        public Fly fly() {
-            return fly;
-        }
-
-        public Help help() {
-            return help;
-        }
-
-        public Home home() {
-            return home;
-        }
-
-        public Link link() {
-            return link;
-        }
-
-        public ListCmd list() {
-            return list;
-        }
-
-        public MapCmd map() {
-            return map;
-        }
-
-        public Near near() {
-            return near;
-        }
-
-        public SeeChunk seeChunk() {
-            return seeChunk;
-        }
-
-        public Show show() {
-            return show;
-        }
-
-        public Stuck stuck() {
-            return stuck;
-        }
-
-        public TNT tnt() {
-            return tnt;
-        }
-
-        public ToolTips toolTips() {
-            return toolTips;
-        }
-
-        public Warp warp() {
-            return warp;
-        }
     }
 
     public class Factions {
+        private Chat chat = new Chat();
+        private Homes homes = new Homes();
+        @Comment("Limits factions to having a max number of each relation.\n" +
+                "Setting to 0 means none allowed. -1 for disabled.\n" +
+                "This will have no effect on default or existing relations, only when relations are changed.\n" +
+                "It is advised that you set the default relation to -1 so they can always go back to that.\n" +
+                "Otherwise Factions could be stuck with not being able to unenemy other Factions.")
+        private MaxRelations maxRelations = new MaxRelations();
+        private PVP pvp = new PVP();
+        private SpecialCase specialCase = new SpecialCase();
+        private Claims claims = new Claims();
+        @Comment("Do you want to limit portal creation?")
+        private Portals portals = new Portals();
+        private Protection protection = new Protection();
+        @Comment("For claimed areas where further faction-member ownership can be defined")
+        private OwnedArea ownedArea = new OwnedArea();
+        @Comment("Displayed prefixes for different roles within a faction")
+        private Prefix prefixes = new Prefix();
+        private LandRaidControl landRaidControl = new LandRaidControl();
+        @Comment("Remaining settings not categorized")
+        private Other other = new Other();
+        @Comment("Should we send titles when players enter Factions? Durations are in ticks (20 ticks every second)")
+        private EnterTitles enterTitles = new EnterTitles();
+        @Comment("Spawn control.\n" +
+                "Exception names are entity type names as seen at the below URL.\n" +
+                "Note that any name with an underscore MUST have quotes around it.\n" +
+                "https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html\n" +
+                "Spawn types are those at the below URL:\n" +
+                "https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/entity/CreatureSpawnEvent.SpawnReason.html")
+        private Spawning spawning = new Spawning();
+
+        public EnterTitles enterTitles() {
+            return enterTitles;
+        }
+
+        public Chat chat() {
+            return chat;
+        }
+
+        public Homes homes() {
+            return homes;
+        }
+
+        public MaxRelations maxRelations() {
+            return maxRelations;
+        }
+
+        public PVP pvp() {
+            return pvp;
+        }
+
+        public SpecialCase specialCase() {
+            return specialCase;
+        }
+
+        public Claims claims() {
+            return claims;
+        }
+
+        public Portals portals() {
+            return portals;
+        }
+
+        public Protection protection() {
+            return protection;
+        }
+
+        public Other other() {
+            return other;
+        }
+
+        public OwnedArea ownedArea() {
+            return ownedArea;
+        }
+
+        public Prefix prefixes() {
+            return prefixes;
+        }
+
+        public LandRaidControl landRaidControl() {
+            return landRaidControl;
+        }
+
+        public Spawning spawning() {
+            return spawning;
+        }
+
         public class LandRaidControl {
+            @Comment("Sets the mode of land/raid control")
+            private String system = "power";
+            private DTR dtr = new DTR();
+            @Comment("Controls the power system of land/raid control\nSet the 'system' value to 'power' to use this system")
+            private Power power = new Power();
+
+            public String getSystem() {
+                return system;
+            }
+
+            public DTR dtr() {
+                return this.dtr;
+            }
+
+            public Power power() {
+                return power;
+            }
+
             public class DTR {
                 private double startingDTR = 2.0;
                 private double maxDTR = 10.0;
@@ -846,24 +1054,6 @@ public class MainConfig {
                 public double getVampirism() {
                     return vampirism;
                 }
-            }
-
-            @Comment("Sets the mode of land/raid control")
-            private String system = "power";
-            private DTR dtr = new DTR();
-            @Comment("Controls the power system of land/raid control\nSet the 'system' value to 'power' to use this system")
-            private Power power = new Power();
-
-            public String getSystem() {
-                return system;
-            }
-
-            public DTR dtr() {
-                return this.dtr;
-            }
-
-            public Power power() {
-                return power;
             }
         }
 
@@ -1284,80 +1474,15 @@ public class MainConfig {
         }
 
         public class Protection {
-            public class TerritoryTeleport {
-                private boolean enable = false;
-
-                @Comment("Time, in seconds, since last on the server to trigger this feature.")
-                private long timeSinceLastSignedIn = 300;
-                @Comment("Destination options. Order them, separated by commas, for priority.\n" +
-                        "For example, if a faction home does not exist then the next option is chosen.\n" +
-                        "Absolute fallback is the spawn of the first world loaded\n" +
-                        "Options:\n" +
-                        "  home: Faction home\n" +
-                        "  bed: Bed")
-                private String destination = "home, bed, spawn";
-                @Comment("The world in which the spawn exists")
-                private String destinationSpawnWorld = "world";
-
-                @Comment("Options: MEMBER, ALLY, TRUCE, NEUTRAL, ENEMY\n" +
-                        "Incorrectly spelled entries default to NEUTRAL")
-                private Set<String> relationsToTeleportOut = new HashSet<String>() {
-                    {
-                        this.add("ENEMY");
-                        this.add("NEUTRAL");
-                        this.add("TRUCE");
-                    }
-                };
-
-                @WipeOnReload
-                private transient Set<Relation> relations = null;
-
-                public boolean isEnabled() {
-                    return enable;
-                }
-
-                public long getTimeSinceLastSignedIn() {
-                    return timeSinceLastSignedIn;
-                }
-
-                public String getDestination() {
-                    return destination;
-                }
-
-                public String getDestinationSpawnWorld() {
-                    return destinationSpawnWorld;
-                }
-
-                @SuppressWarnings("unused")
-                public Set<String> getRelationsToTeleportOut() {
-                    return relationsToTeleportOut;
-                }
-
-                public boolean isRelationToTeleportOut(Relation relation) {
-                    if (relations == null) {
-                        relations = new HashSet<>();
-                        for (String rel : relationsToTeleportOut) {
-                            Relation r = Relation.fromString(rel);
-                            if (r != null) {
-                                relations.add(r);
-                            }
-                        }
-                    }
-                    return relations.contains(relation);
-                }
-            }
-
             @Comment("Teleport joining players (or arriving from a plugin-disabled world) out of\n" +
                     "territories (such as enemy territory) back to a designated location.")
             private TerritoryTeleport territoryTeleport = new TerritoryTeleport();
-
             @Comment("Commands which will be prevented if the player is a member of a permanent faction")
             private Set<String> permanentFactionMemberDenyCommands = new HashSet<String>() {
                 {
                     this.add("exampleCommand");
                 }
             };
-
             @Comment("Commands which will be prevented when in claimed territory of a neutral faction")
             private Set<String> territoryNeutralDenyCommands = new HashSet<String>() {
                 {
@@ -1399,7 +1524,6 @@ public class MainConfig {
                     this.add("exampleCommand");
                 }
             };
-
             private boolean territoryBlockCreepers = false;
             private boolean territoryBlockCreepersWhenOffline = false;
             private boolean territoryBlockFireballs = false;
@@ -1413,7 +1537,6 @@ public class MainConfig {
             private boolean territoryBlockEntityDamageMatchingPerms = false;
             @Comment("If true, lecterns can be interacted with, but taking the book will still be protected by CONTAINER perm")
             private boolean territoryAllowLecternReading = false;
-
             private boolean safeZoneDenyBuild = true;
             private boolean safeZoneDenyUsage = true;
             private boolean safeZoneBlockTNT = true;
@@ -1422,9 +1545,7 @@ public class MainConfig {
             private boolean safeZonePreventLiquidFlowIn = true;
             private boolean safeZoneDenyEndermanBlocks = true;
             private boolean safeZoneBlockAllEntityDamage = false;
-
             private boolean peacefulBlockAllEntityDamage = false;
-
             private boolean warZoneDenyBuild = true;
             private boolean warZoneDenyUsage = true;
             private boolean warZoneBlockCreepers = true;
@@ -1434,7 +1555,6 @@ public class MainConfig {
             private boolean warZoneFriendlyFire = false;
             private boolean warZonePreventLiquidFlowIn = true;
             private boolean warZoneDenyEndermanBlocks = true;
-
             private boolean wildernessDenyBuild = false;
             private boolean wildernessDenyUsage = false;
             private boolean wildernessBlockCreepers = false;
@@ -1442,30 +1562,24 @@ public class MainConfig {
             private boolean wildernessBlockTNT = false;
             private boolean wildernessBlockOtherExplosions = false;
             private boolean wildernessDenyEndermanBlocks = false;
-
             private boolean pistonProtectionThroughDenyBuild = true;
-
             private Set<String> territoryDenyUsageMaterials = new HashSet<>();
             private Set<String> territoryDenyUsageMaterialsWhenOffline = new HashSet<>();
             @WipeOnReload
             private transient Set<Material> territoryDenyUsageMaterialsMat;
             @WipeOnReload
             private transient Set<Material> territoryDenyUsageMaterialsWhenOfflineMat;
-
             @Comment("Exceptions to consideration for container perms.\n" +
                     "For example, putting \"TRAPPED_CHEST\" into here would allow anyone to open trapped chests anywhere.")
             private Set<String> containerExceptions = new HashSet<>();
             @WipeOnReload
             private transient Set<Material> containerExceptionsMat;
-
             @Comment("Exceptions to consideration for breaking perms. Can always be broken.")
             private Set<String> breakExceptions = new HashSet<>();
             @WipeOnReload
             private transient Set<Material> breakExceptionsMat;
-
             @Comment("Exceptions for protections of interacting with entities, such as mounting horses")
             private Set<String> entityInteractExceptions = new HashSet<>();
-
             @Comment("Mainly for other plugins/mods that use a fake player to take actions, which shouldn't be subject to our protections.")
             private Set<String> playersWhoBypassAllProtection = new HashSet<String>() {
                 {
@@ -1477,12 +1591,10 @@ public class MainConfig {
                     this.add("exampleWorld");
                 }
             };
-
             @Comment("Add material names here that you wish to see treated as containers for interaction.")
             private Set<String> customContainers = new HashSet<>();
             @WipeOnReload
             private transient Set<Material> customContainersMat;
-
             private Protection() {
                 protectUsage("FIRE_CHARGE");
                 protectUsage("FLINT_AND_STEEL");
@@ -1740,6 +1852,69 @@ public class MainConfig {
                     customContainersMat = Collections.unmodifiableSet(customContainersMat);
                 }
                 return customContainersMat;
+            }
+
+            public class TerritoryTeleport {
+                private boolean enable = false;
+
+                @Comment("Time, in seconds, since last on the server to trigger this feature.")
+                private long timeSinceLastSignedIn = 300;
+                @Comment("Destination options. Order them, separated by commas, for priority.\n" +
+                        "For example, if a faction home does not exist then the next option is chosen.\n" +
+                        "Absolute fallback is the spawn of the first world loaded\n" +
+                        "Options:\n" +
+                        "  home: Faction home\n" +
+                        "  bed: Bed")
+                private String destination = "home, bed, spawn";
+                @Comment("The world in which the spawn exists")
+                private String destinationSpawnWorld = "world";
+
+                @Comment("Options: MEMBER, ALLY, TRUCE, NEUTRAL, ENEMY\n" +
+                        "Incorrectly spelled entries default to NEUTRAL")
+                private Set<String> relationsToTeleportOut = new HashSet<String>() {
+                    {
+                        this.add("ENEMY");
+                        this.add("NEUTRAL");
+                        this.add("TRUCE");
+                    }
+                };
+
+                @WipeOnReload
+                private transient Set<Relation> relations = null;
+
+                public boolean isEnabled() {
+                    return enable;
+                }
+
+                public long getTimeSinceLastSignedIn() {
+                    return timeSinceLastSignedIn;
+                }
+
+                public String getDestination() {
+                    return destination;
+                }
+
+                public String getDestinationSpawnWorld() {
+                    return destinationSpawnWorld;
+                }
+
+                @SuppressWarnings("unused")
+                public Set<String> getRelationsToTeleportOut() {
+                    return relationsToTeleportOut;
+                }
+
+                public boolean isRelationToTeleportOut(Relation relation) {
+                    if (relations == null) {
+                        relations = new HashSet<>();
+                        for (String rel : relationsToTeleportOut) {
+                            Relation r = Relation.fromString(rel);
+                            if (r != null) {
+                                relations.add(r);
+                            }
+                        }
+                    }
+                    return relations.contains(relation);
+                }
             }
         }
 
@@ -2162,93 +2337,6 @@ public class MainConfig {
                 return subtitle;
             }
         }
-
-        private Chat chat = new Chat();
-        private Homes homes = new Homes();
-        @Comment("Limits factions to having a max number of each relation.\n" +
-                "Setting to 0 means none allowed. -1 for disabled.\n" +
-                "This will have no effect on default or existing relations, only when relations are changed.\n" +
-                "It is advised that you set the default relation to -1 so they can always go back to that.\n" +
-                "Otherwise Factions could be stuck with not being able to unenemy other Factions.")
-        private MaxRelations maxRelations = new MaxRelations();
-        private PVP pvp = new PVP();
-        private SpecialCase specialCase = new SpecialCase();
-        private Claims claims = new Claims();
-        @Comment("Do you want to limit portal creation?")
-        private Portals portals = new Portals();
-        private Protection protection = new Protection();
-        @Comment("For claimed areas where further faction-member ownership can be defined")
-        private OwnedArea ownedArea = new OwnedArea();
-        @Comment("Displayed prefixes for different roles within a faction")
-        private Prefix prefixes = new Prefix();
-        private LandRaidControl landRaidControl = new LandRaidControl();
-        @Comment("Remaining settings not categorized")
-        private Other other = new Other();
-        @Comment("Should we send titles when players enter Factions? Durations are in ticks (20 ticks every second)")
-        private EnterTitles enterTitles = new EnterTitles();
-        @Comment("Spawn control.\n" +
-                "Exception names are entity type names as seen at the below URL.\n" +
-                "Note that any name with an underscore MUST have quotes around it.\n" +
-                "https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html\n" +
-                "Spawn types are those at the below URL:\n" +
-                "https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/entity/CreatureSpawnEvent.SpawnReason.html")
-        private Spawning spawning = new Spawning();
-
-        public EnterTitles enterTitles() {
-            return enterTitles;
-        }
-
-        public Chat chat() {
-            return chat;
-        }
-
-        public Homes homes() {
-            return homes;
-        }
-
-        public MaxRelations maxRelations() {
-            return maxRelations;
-        }
-
-        public PVP pvp() {
-            return pvp;
-        }
-
-        public SpecialCase specialCase() {
-            return specialCase;
-        }
-
-        public Claims claims() {
-            return claims;
-        }
-
-        public Portals portals() {
-            return portals;
-        }
-
-        public Protection protection() {
-            return protection;
-        }
-
-        public Other other() {
-            return other;
-        }
-
-        public OwnedArea ownedArea() {
-            return ownedArea;
-        }
-
-        public Prefix prefixes() {
-            return prefixes;
-        }
-
-        public LandRaidControl landRaidControl() {
-            return landRaidControl;
-        }
-
-        public Spawning spawning() {
-            return spawning;
-        }
     }
 
     public class Logging {
@@ -2588,6 +2676,15 @@ public class MainConfig {
     }
 
     public class Data {
+        @SuppressWarnings("unused")
+        @Comment("Presently, the only option is JSON.")
+        private String storage = "JSON";
+        private Json json = new Json();
+
+        public Json json() {
+            return json;
+        }
+
         public class Json {
             @Comment("If true, data files will be stored without extra whitespace and linebreaks.\n" +
                     "This becomes less readable, but can cut storage use in half.")
@@ -2602,15 +2699,6 @@ public class MainConfig {
             public boolean useEfficientStorage() {
                 return efficientStorage;
             }
-        }
-
-        @SuppressWarnings("unused")
-        @Comment("Presently, the only option is JSON.")
-        private String storage = "JSON";
-        private Json json = new Json();
-
-        public Json json() {
-            return json;
         }
     }
 
@@ -2640,6 +2728,21 @@ public class MainConfig {
     }
 
     public class Scoreboard {
+        @Comment("Constant scoreboard stays around all the time, displaying status info.\n" +
+                "Also, if prefixes are enabled while it is enabled, will show prefixes on nametags and tab")
+        private Constant constant = new Constant();
+        @Comment("Info scoreboard is displayed when a player walks into a new Faction's territory.\n" +
+                "Scoreboard disappears after <expiration> seconds.")
+        private Info info = new Info();
+
+        public Constant constant() {
+            return constant;
+        }
+
+        public Info info() {
+            return info;
+        }
+
         public class Constant {
             private boolean enabled = false;
             @Comment("Can use any placeholders, but does not update once set")
@@ -2769,21 +2872,6 @@ public class MainConfig {
                 return title;
             }
         }
-
-        @Comment("Constant scoreboard stays around all the time, displaying status info.\n" +
-                "Also, if prefixes are enabled while it is enabled, will show prefixes on nametags and tab")
-        private Constant constant = new Constant();
-        @Comment("Info scoreboard is displayed when a player walks into a new Faction's territory.\n" +
-                "Scoreboard disappears after <expiration> seconds.")
-        private Info info = new Info();
-
-        public Constant constant() {
-            return constant;
-        }
-
-        public Info info() {
-            return info;
-        }
     }
 
     public class Paper {
@@ -2856,118 +2944,5 @@ public class MainConfig {
         public int getBuffer() {
             return buffer;
         }
-    }
-
-    @Comment("The command base (by default f, making the command /f)")
-    private List<String> commandBase = new ArrayList<String>() {
-        {
-            this.add("f");
-        }
-    };
-
-    @Comment("FactionsUUID by drtshock\n" +
-            "Support and documentation https://factions.support\n" +
-            "Updates https://www.spigotmc.org/resources/factionsuuid.1035/\n" +
-            "\n" +
-            "Made with love <3")
-    private AVeryFriendlyFactionsConfig aVeryFriendlyFactionsConfig = new AVeryFriendlyFactionsConfig();
-
-    @Comment("Colors for relationships and default factions")
-    private Colors colors = new Colors();
-    private Commands commands = new Commands();
-    private Factions factions = new Factions();
-    @Comment("What should be logged?")
-    private Logging logging = new Logging();
-    @Comment("Controls certain exploit preventions")
-    private Exploits exploits = new Exploits();
-    @Comment("Economy support requires Vault and a compatible economy plugin\n" +
-            "If you wish to use economy features, be sure to set 'enabled' in this section to true!")
-    private Economy economy = new Economy();
-    @Comment("Control for the default settings of /f map")
-    private MapSettings map = new MapSettings();
-    @Comment("Data storage settings")
-    private Data data = new Data();
-    private RestrictWorlds restrictWorlds = new RestrictWorlds();
-    private Scoreboard scoreboard = new Scoreboard();
-    @Comment("Paper features, when accessible.")
-    private Paper paper = new Paper();
-    @Comment("Lists plugin integrations. Some other plugins (PVX, LWC, Magic, WG, WB) are currently\n" +
-            " elsewhere but will migrate here in the future")
-    private Plugins plugins = new Plugins();
-    @Comment("PlayerVaults faction vault settings.\n" +
-            "Enable faction-owned vaults!\n" +
-            "https://www.spigotmc.org/resources/playervaultsx.51204/")
-    private PlayerVaults playerVaults = new PlayerVaults();
-    @Comment("WorldGuard settings.\n" +
-            "Note that flag stuff only works on WG 7")
-    private WorldGuard worldGuard = new WorldGuard();
-    private WorldBorder worldBorder = new WorldBorder();
-
-    public List<String> getCommandBase() {
-        return commandBase == null ? (commandBase = Collections.singletonList("f")) : commandBase;
-    }
-
-    public AVeryFriendlyFactionsConfig getaVeryFriendlyFactionsConfig() {
-        return aVeryFriendlyFactionsConfig;
-    }
-
-    public Colors colors() {
-        return colors;
-    }
-
-    public Commands commands() {
-        return commands;
-    }
-
-    public Factions factions() {
-        return factions;
-    }
-
-    public Logging logging() {
-        return logging;
-    }
-
-    public Exploits exploits() {
-        return exploits;
-    }
-
-    public Economy economy() {
-        return economy;
-    }
-
-    public MapSettings map() {
-        return map;
-    }
-
-    public RestrictWorlds restrictWorlds() {
-        return restrictWorlds;
-    }
-
-    public Scoreboard scoreboard() {
-        return scoreboard;
-    }
-
-    public Paper paper() {
-        return paper;
-    }
-
-    public PlayerVaults playerVaults() {
-        return playerVaults;
-    }
-
-    public Plugins plugins() {
-        return plugins;
-    }
-
-    public WorldGuard worldGuard() {
-        return worldGuard;
-    }
-
-    public WorldBorder worldBorder() {
-        return worldBorder;
-    }
-
-    public Data data() {
-        return data;
     }
 }

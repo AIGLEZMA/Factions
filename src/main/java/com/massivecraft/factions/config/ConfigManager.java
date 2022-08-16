@@ -11,9 +11,9 @@ import java.util.logging.Level;
 
 public class ConfigManager {
     private final FactionsPlugin plugin;
-    private PermissionsConfig permissionsConfig = null;
     private final MainConfig mainConfig = new MainConfig();
     private final TranslationsConfig translationsConfig = new TranslationsConfig();
+    private PermissionsConfig permissionsConfig = null;
 
     public ConfigManager(FactionsPlugin plugin) {
         this.plugin = plugin;

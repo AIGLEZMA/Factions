@@ -18,12 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CmdShow extends FCommand {
@@ -108,7 +103,7 @@ public class CmdShow extends FCommand {
             if (!parsed.contains("{notFrozen}") && !parsed.contains("{notPermanent}")) {
                 if (parsed.contains("{ig}")) {
                     // replaces all variables with no home TL
-                    parsed = parsed.substring(0, parsed.indexOf("{ig}")) + TL.COMMAND_SHOW_NOHOME.toString();
+                    parsed = parsed.substring(0, parsed.indexOf("{ig}")) + TL.COMMAND_SHOW_NOHOME;
                 }
                 parsed = parsed.replace("%", ""); // Just in case it got in there before we disallowed it.
                 messageList.add(parsed);
@@ -196,6 +191,11 @@ public class CmdShow extends FCommand {
         return false;
     }
 
+    @Override
+    public TL getUsageTranslation() {
+        return TL.COMMAND_SHOW_COMMANDDESCRIPTION;
+    }
+
     private class GroupGetter extends BukkitRunnable {
         private final List<String> messageList;
         private final FPlayer sender;
@@ -239,11 +239,6 @@ public class CmdShow extends FCommand {
                 CmdShow.this.sendMessages(messageList, player, faction, sender, map);
             }
         }
-    }
-
-    @Override
-    public TL getUsageTranslation() {
-        return TL.COMMAND_SHOW_COMMANDDESCRIPTION;
     }
 
 }

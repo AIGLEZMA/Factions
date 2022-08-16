@@ -64,7 +64,7 @@ public class NewMemoryFaction {
         old.permissions.forEach((permiss, map) -> {
             Map<String, Boolean> newMap = new HashMap<>();
             map.forEach((permact, access) -> {
-                switch(permact.toUpperCase()) {
+                switch (permact.toUpperCase()) {
                     case "FROST_WALK":
                         permact = "FROSTWALK";
                         break;

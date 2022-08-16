@@ -13,29 +13,12 @@ import com.massivecraft.factions.util.UUIDFetcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 
 public class JSONFactions extends MemoryFactions {
-    public Gson getGson() {
-        return FactionsPlugin.getInstance().getGson();
-    }
-
     private final File file;
-
-    public File getFile() {
-        return file;
-    }
-
-    // -------------------------------------------- //
-    // CONSTRUCTORS
-    // -------------------------------------------- //
 
     public JSONFactions() {
         if (FactionsPlugin.getInstance().getServerUUID() == null) {
@@ -43,6 +26,18 @@ public class JSONFactions extends MemoryFactions {
         }
         this.file = new File(FactionsPlugin.getInstance().getDataFolder(), "data/factions.json");
         this.nextId = 1;
+    }
+
+    public Gson getGson() {
+        return FactionsPlugin.getInstance().getGson();
+    }
+
+    // -------------------------------------------- //
+    // CONSTRUCTORS
+    // -------------------------------------------- //
+
+    public File getFile() {
+        return file;
     }
 
     public void forceSave() {
