@@ -63,6 +63,7 @@ permissions:
   factions.kit.halfplayer:
     description: Can do all but create factions.
     children:
+      factions.heartset: true
       factions.admin: true
       factions.autoclaim: true
       factions.chat: true
@@ -168,6 +169,8 @@ permissions:
     description: see or set the faction's link
   factions.lock:
     description: lock all write stuff
+  factions.heartset:
+    description: set your faction's heart
   factions.managesafezone:
     description: claim land as a safe zone and build/destroy within safe zones
   factions.managewarzone:

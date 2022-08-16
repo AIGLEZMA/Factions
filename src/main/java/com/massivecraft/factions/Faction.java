@@ -1,5 +1,6 @@
 package com.massivecraft.factions;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.massivecraft.factions.iface.EconomyParticipator;
 import com.massivecraft.factions.perms.PermissibleAction;
 import com.massivecraft.factions.perms.Relation;
@@ -104,6 +105,22 @@ public interface Faction extends EconomyParticipator, Selectable {
      * @param lastHeartAttack last heart attack
      */
     void setLastHeartAttack(final long lastHeartAttack);
+
+    /**
+     * Returns the hologram above the heart.
+     * Maybe null if the heart is no placed see {@link Faction#isHeartPlaced()}
+     *
+     * @return the hologram above the heart
+     */
+    @Nullable
+    Hologram getHeartHologram();
+
+    /**
+     * Sets the hologram above the heart.
+     *
+     * @param hologram the hologram above the heart
+     */
+    void setHeartHologram(@Nullable final Hologram hologram);
 
     Map<String, List<String>> getAnnouncements();
 

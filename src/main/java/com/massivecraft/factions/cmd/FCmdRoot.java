@@ -12,6 +12,7 @@ import com.massivecraft.factions.cmd.claim.CmdUnclaim;
 import com.massivecraft.factions.cmd.claim.CmdUnclaimall;
 import com.massivecraft.factions.cmd.claim.CmdUnclaimfill;
 import com.massivecraft.factions.cmd.claim.CmdWarunclaimall;
+import com.massivecraft.factions.cmd.heart.CmdHeart;
 import com.massivecraft.factions.cmd.money.CmdMoney;
 import com.massivecraft.factions.cmd.relations.CmdRelationAlly;
 import com.massivecraft.factions.cmd.relations.CmdRelationEnemy;
@@ -33,6 +34,7 @@ import java.util.Collections;
 public class FCmdRoot extends FCommand implements CommandExecutor {
 
     private static FCmdRoot cmdBase;
+    public final CmdHeart cmdHeart = new CmdHeart();
     public final CmdAutoHelp cmdAutoHelp = new CmdAutoHelp();
     public final CmdAdmin cmdAdmin = new CmdAdmin();
     public final CmdAutoClaim cmdAutoClaim = new CmdAutoClaim();
@@ -128,6 +130,7 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
         this.helpLong.add(FactionsPlugin.getInstance().txt().parseTags("<i>This command contains all faction stuff."));
 
         this.addSubCommand(this.cmdAdmin);
+        this.addSubCommand(this.cmdHeart);
         this.addSubCommand(this.cmdAutoUnclaim);
         this.addSubCommand(this.cmdAutoClaim);
         this.addSubCommand(this.cmdBoom);

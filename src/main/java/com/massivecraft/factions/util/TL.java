@@ -378,6 +378,16 @@ public enum TL {
     COMMAND_MODIFYPOWER_ADDED("&eAdded &6%1$f &epower to &6%2$s. &eNew total rounded power: &6%3$d"),
     COMMAND_MODIFYPOWER_DESCRIPTION("Modify the power of a faction/player"),
 
+    COMMAND_HEART_LONG("&eThe faction heart commands"),
+    COMMAND_HEART_DESCRIPTION("Faction heart commands"),
+
+    COMMAND_HEARTSET_DESCRIPTION("Set your faction's heart"),
+    COMMAND_HEARTSET_HEARTALREADYPLACED("&cYour faction's heart is already placed!"),
+    COMMAND_HEARTSET_LOCATIONNOTCLAIMED("&cThe location you are at is not claimed by your faction!"),
+    COMMAND_HEARTSET_SURROUNDINGNOTCLEAR("&cPlease make sure the surrounding is clear!"),
+    COMMAND_HEARTSET_SUCCESSFUL("&aYou have successfully placed your faction's heart."),
+    COMMAND_HEARTSET_MEMBERS("&c%s placed your faction's heart."),
+
     COMMAND_MONEY_LONG("&eThe faction money commands."),
     COMMAND_MONEY_DESCRIPTION("Faction money commands"),
 

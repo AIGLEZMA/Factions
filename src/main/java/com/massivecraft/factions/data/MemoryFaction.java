@@ -1,5 +1,6 @@
 package com.massivecraft.factions.data;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.google.common.collect.Sets;
 import com.massivecraft.factions.Board;
 import com.massivecraft.factions.FLocation;
@@ -54,6 +55,7 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     protected double heartHealth;
     protected transient boolean heartRecentlyPlaced;
     protected transient long lastHeartAttack;
+    protected transient Hologram heartHologram;
     // FORK - end
     protected String id = null;
     protected boolean peacefulExplosionsEnabled;
@@ -121,6 +123,7 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         this.heartHealth = old.heartHealth;
         this.heartRecentlyPlaced = old.heartRecentlyPlaced;
         this.lastHeartAttack = old.lastHeartAttack;
+        this.heartHologram = old.heartHologram;
         // FORK - end
 
         id = old.id;
@@ -173,7 +176,7 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     @Override
-    public void setHeartProtectedRegion(@NotNull Set<Location> region) {
+    public void setHeartProtectedRegion(@NotNull final Set<Location> region) {
         this.heartProtectedRegion = region.stream().map(LazyLocation::new).collect(Collectors.toSet());
     }
 
@@ -203,8 +206,19 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     @Override
-    public void setLastHeartAttack(long lastHeartAttack) {
+    public void setLastHeartAttack(final long lastHeartAttack) {
         this.lastHeartAttack = lastHeartAttack;
+    }
+
+    @Nullable
+    @Override
+    public Hologram getHeartHologram() {
+        return this.heartHologram;
+    }
+
+    @Override
+    public void setHeartHologram(@Nullable final Hologram hologram) {
+        this.heartHologram = hologram;
     }
 
     public HashMap<String, List<String>> getAnnouncements() {
