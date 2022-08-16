@@ -1,6 +1,5 @@
 package com.massivecraft.factions.config.file;
 
-import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.config.annotation.Comment;
 import com.massivecraft.factions.config.annotation.WipeOnReload;
 import com.massivecraft.factions.perms.Relation;
@@ -52,7 +51,6 @@ public class MainConfig {
     @Comment("Data storage settings")
     private Data data = new Data();
     private RestrictWorlds restrictWorlds = new RestrictWorlds();
-    private Scoreboard scoreboard = new Scoreboard();
     @Comment("Paper features, when accessible.")
     private Paper paper = new Paper();
     @Comment("Lists plugin integrations. Some other plugins (PVX, LWC, Magic, WG, WB) are currently\n" +
@@ -105,10 +103,6 @@ public class MainConfig {
 
     public RestrictWorlds restrictWorlds() {
         return restrictWorlds;
-    }
-
-    public Scoreboard scoreboard() {
-        return scoreboard;
     }
 
     public Paper paper() {
@@ -2732,153 +2726,6 @@ public class MainConfig {
 
         public Set<String> getWorldList() {
             return worldList == null ? Collections.emptySet() : Collections.unmodifiableSet(worldList);
-        }
-    }
-
-    public class Scoreboard {
-        @Comment("Constant scoreboard stays around all the time, displaying status info.\n" +
-                "Also, if prefixes are enabled while it is enabled, will show prefixes on nametags and tab")
-        private Constant constant = new Constant();
-        @Comment("Info scoreboard is displayed when a player walks into a new Faction's territory.\n" +
-                "Scoreboard disappears after <expiration> seconds.")
-        private Info info = new Info();
-
-        public Constant constant() {
-            return constant;
-        }
-
-        public Info info() {
-            return info;
-        }
-
-        public class Constant {
-            private boolean enabled = false;
-            @Comment("Can use any placeholders, but does not update once set")
-            private String title = "Faction Status";
-            @Comment("If true, show faction prefixes on nametags and in tab list if scoreboard is enabled")
-            private boolean prefixes = true;
-            @Comment("Set the length limit for prefixes.\n" +
-                    "If 0, will use a sane default for your Minecraft version (16 for pre-1.13, 32 for 1.13+).")
-            private int prefixLength = 0;
-            @Comment("Takes {relationcolor}, {faction}, player-specific tags, &-prefixed color codes")
-            private String prefixTemplate = "{relationcolor}[{faction}] &r";
-
-            @Comment("If true, show suffixes on nametags and in tab list if scoreboard is enabled")
-            private boolean suffixes = false;
-            @Comment("Set the length limit for suffixes.\n" +
-                    "If 0, will use a sane default for your Minecraft version (16 for pre-1.13, 32 for 1.13+).")
-            private int suffixLength = 0;
-            @Comment("Takes {relationcolor}, {faction}, player-specific tags, &-prefixed color codes")
-            private String suffixTemplate = " {relationcolor}[{faction}]";
-
-            private List<String> content = new ArrayList<String>() {
-                {
-                    this.add("&6Your Faction");
-                    this.add("{faction}");
-                    this.add("&3Your Power");
-                    this.add("{power}");
-                    this.add("&aBalance");
-                    this.add("${balance}");
-                }
-            };
-            private boolean factionlessEnabled = false;
-            private List<String> factionlessContent = new ArrayList<String>() {
-                {
-                    this.add("Make a new Faction");
-                    this.add("Use /f create");
-                }
-            };
-            private String factionlessTitle = "Status";
-
-            public boolean isEnabled() {
-                return enabled;
-            }
-
-            public String getTitle() {
-                return title;
-            }
-
-            public boolean isPrefixes() {
-                return prefixes;
-            }
-
-            public int getPrefixLength() {
-                return prefixLength < 1 ? (FactionsPlugin.getMCVersion() < 1300 ? 16 : 32) : prefixLength;
-            }
-
-            public String getPrefixTemplate() {
-                return prefixTemplate;
-            }
-
-            public boolean isSuffixes() {
-                return suffixes;
-            }
-
-            public int getSuffixLength() {
-                return suffixLength < 1 ? (FactionsPlugin.getMCVersion() < 1300 ? 16 : 32) : suffixLength;
-            }
-
-            public String getSuffixTemplate() {
-                return suffixTemplate;
-            }
-
-            public List<String> getContent() {
-                return content != null ? Collections.unmodifiableList(content) : Collections.emptyList();
-            }
-
-            public boolean isFactionlessEnabled() {
-                return factionlessEnabled;
-            }
-
-            public List<String> getFactionlessContent() {
-                return factionlessContent != null ? Collections.unmodifiableList(factionlessContent) : Collections.emptyList();
-            }
-
-            public String getFactionlessTitle() {
-                return factionlessTitle;
-            }
-        }
-
-        public class Info {
-            @Comment("send faction change message as well when scoreboard is up?")
-            private boolean alsoSendChat = true;
-            @Comment("How long do we want scoreboards to stay")
-            private int expiration = 7;
-            private boolean enabled = false;
-            @Comment("Supports placeholders")
-            private List<String> content = new ArrayList<String>() {
-                {
-                    this.add("&6Power");
-                    this.add("{power}");
-                    this.add("&3Members");
-                    this.add("{online}/{members}");
-                    this.add("&4Leader");
-                    this.add("{leader}");
-                    this.add("&bTerritory");
-                    this.add("{chunks}");
-                }
-            };
-            private String title = "{faction-relation-color}{faction}";
-
-            public boolean isAlsoSendChat() {
-                return alsoSendChat;
-            }
-
-            public int getExpiration() {
-                return expiration;
-            }
-
-            public boolean isEnabled() {
-                return enabled;
-            }
-
-            public List<String> getContent() {
-                return content != null ? Collections.unmodifiableList(content) : Collections.emptyList();
-            }
-
-            public String getTitle() {
-                return title;
-            }
         }
     }
 

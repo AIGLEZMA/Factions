@@ -513,8 +513,6 @@ public enum TL {
     COMMAND_SAVEALL_SUCCESS("&eFactions saved to disk!"),
     COMMAND_SAVEALL_DESCRIPTION("Save all data to disk"),
 
-    COMMAND_SCOREBOARD_DESCRIPTION("Scoreboardy things"),
-
     COMMAND_SETDEFAULTROLE_DESCRIPTION("/f defaultrole <role> - set your Faction's default role."),
     COMMAND_SETDEFAULTROLE_NOTTHATROLE("You cannot set the default to admin."),
     COMMAND_SETDEFAULTROLE_SUCCESS("Set default role of your faction to %1$s"),
@@ -630,8 +628,6 @@ public enum TL {
     COMMAND_TOGGLEALLIANCECHAT_DESCRIPTION("Toggles whether or not you will see alliance chat"),
     COMMAND_TOGGLEALLIANCECHAT_IGNORE("Alliance chat is now ignored"),
     COMMAND_TOGGLEALLIANCECHAT_UNIGNORE("Alliance chat is no longer ignored"),
-
-    COMMAND_TOGGLESB_DISABLED("You can't toggle scoreboards while they are disabled."),
 
     COMMAND_TOP_DESCRIPTION("Sort Factions to see the top of some criteria."),
     COMMAND_TOP_TOP("Top Factions by %s. Page %d/%d"),
@@ -987,7 +983,6 @@ public enum TL {
     WARZONE_DESCRIPTION("warzone-description", "Not the safest place to be."),
     SAFEZONE("safezone", "&6Safezone"),
     SAFEZONE_DESCRIPTION("safezone-description", "Free from pvp and monsters."),
-    TOGGLE_SB("toggle-sb", "You now have scoreboards set to {value}"),
     FACTION_LEAVE("faction-leave", "&6Leaving %1$s, &6Entering %2$s"),
     FACTIONS_ANNOUNCEMENT_TOP("faction-announcement-top", "&d--Unread Faction Announcements--"),
     FACTIONS_ANNOUNCEMENT_BOTTOM("faction-announcement-bottom", "&d--Unread Faction Announcements--"),

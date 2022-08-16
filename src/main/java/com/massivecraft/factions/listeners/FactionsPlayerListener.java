@@ -8,15 +8,10 @@ import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.data.MemoryFPlayer;
-import com.massivecraft.factions.event.FPlayerJoinEvent;
-import com.massivecraft.factions.event.FPlayerLeaveEvent;
 import com.massivecraft.factions.gui.GUI;
 import com.massivecraft.factions.perms.PermissibleActions;
 import com.massivecraft.factions.perms.Relation;
 import com.massivecraft.factions.perms.Role;
-import com.massivecraft.factions.scoreboards.FScoreboard;
-import com.massivecraft.factions.scoreboards.FTeamWrapper;
-import com.massivecraft.factions.scoreboards.sidebar.FDefaultSidebar;
 import com.massivecraft.factions.struct.ChatMode;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.util.TL;
@@ -243,12 +238,6 @@ public class FactionsPlayerListener extends AbstractListener {
             }
         }.runTaskLater(FactionsPlugin.getInstance(), 33L); // Don't ask me why.
 
-        if (FactionsPlugin.getInstance().conf().scoreboard().constant().isEnabled()) {
-            FScoreboard.init(me);
-            FScoreboard.get(me).setDefaultSidebar(new FDefaultSidebar());
-            FScoreboard.get(me).setSidebarVisibility(me.showScoreboard());
-        }
-
         Faction myFaction = me.getFaction();
         if (!myFaction.isWilderness()) {
             for (FPlayer other : myFaction.getFPlayersWhereOnline(true)) {
@@ -301,8 +290,6 @@ public class FactionsPlayerListener extends AbstractListener {
                 }
             }
         }
-
-        FScoreboard.remove(me, event.getPlayer());
 
         if (FactionsPlugin.getInstance().getSeeChunkUtil() != null) {
             FactionsPlugin.getInstance().getSeeChunkUtil().updatePlayerInfo(UUID.fromString(me.getId()), false);
@@ -644,7 +631,6 @@ public class FactionsPlayerListener extends AbstractListener {
         FPlayer me = FPlayers.getInstance().getByPlayer(event.getPlayer());
         boolean isEnabled = plugin.worldUtil().isEnabled(event.getPlayer().getWorld());
         if (!isEnabled) {
-            FScoreboard.remove(me, event.getPlayer());
             if (me.isFlying()) {
                 me.setFlying(false);
             }
@@ -745,16 +731,6 @@ public class FactionsPlayerListener extends AbstractListener {
             badGuy.leave(false);
             badGuy.remove();
         }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    final public void onFactionJoin(FPlayerJoinEvent event) {
-        FTeamWrapper.applyUpdatesLater(event.getFaction());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onFactionLeave(FPlayerLeaveEvent event) {
-        FTeamWrapper.applyUpdatesLater(event.getFaction());
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
