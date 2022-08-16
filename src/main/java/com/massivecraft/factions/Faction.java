@@ -9,12 +9,102 @@ import com.massivecraft.factions.struct.BanInfo;
 import com.massivecraft.factions.util.LazyLocation;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface Faction extends EconomyParticipator, Selectable {
+
+    /**
+     * Gets whether this faction has placed it's heart or not.
+     *
+     * @return whether this faction has placed it's heart or not
+     */
+    boolean isHeartPlaced();
+
+    /**
+     * Sets whether this faction has placed it's heart or not.
+     *
+     * @param value whether this faction has placed it's heart or not
+     */
+    void setHeartPlaced(final boolean value);
+
+    /**
+     * Gets the faction's heart location.
+     * This method may not return null if the faction hasn't placed a heart.
+     *
+     * @return the faction's heart location
+     */
+    @Nullable
+    Location getHeartLocation();
+
+    /**
+     * Sets the faction's heart location.
+     *
+     * @param location heart location
+     */
+    void setHeartLocation(@Nullable final Location location);
+
+    /**
+     * Gets the locations of blocks that should not be destroyed or replaced
+     *
+     * @return heart protected region
+     */
+    @NotNull
+    Set<Location> getHeartProtectedRegion();
+
+    /**
+     * Sets the locations of blocks that should not be destroyed or replaced
+     *
+     * @param region heart protected region
+     */
+    void setHeartProtectedRegion(@NotNull final Set<Location> region);
+
+    /**
+     * Gets the heart health. On a scale of 100.
+     *
+     * @return heart health
+     */
+    double getHeartHealth();
+
+    /**
+     * Sets the heart health.
+     *
+     * @param value heart health
+     */
+    void setHeartHealth(final double value);
+
+    /**
+     * Gets whether the heart has recently been placed or not see the regen task
+     *
+     * @return true if the heart has recently been placed, otherwise this will return false
+     */
+    boolean isHeartRecentlyPlaced();
+
+    /**
+     * Sets whether the heart has recently been placed or not.
+     *
+     * @param value true if it has recently been placed otherwise false
+     */
+    void setHeartRecentlyPlaced(final boolean value);
+
+    /**
+     * Returns the last time the heart has been attacked.
+     *
+     * @return last heart attack
+     */
+    long getLastHeartAttack();
+
+    /**
+     * Sets the last time the heart has been attacked.
+     *
+     * @param lastHeartAttack last heart attack
+     */
+    void setLastHeartAttack(final long lastHeartAttack);
+
     Map<String, List<String>> getAnnouncements();
 
     Map<String, LazyLocation> getWarps();

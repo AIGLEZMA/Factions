@@ -1,5 +1,6 @@
 package com.massivecraft.factions.data;
 
+import com.google.common.collect.Sets;
 import com.massivecraft.factions.Board;
 import com.massivecraft.factions.FLocation;
 import com.massivecraft.factions.FPlayer;
@@ -31,6 +32,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +48,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public abstract class MemoryFaction implements Faction, EconomyParticipator {
+
+    // FORK
+    protected boolean heartPlaced;
+    protected LazyLocation heartLocation;
+    protected Set<LazyLocation> heartProtectedRegion = Sets.newHashSet();
+    protected double heartHealth;
+    protected transient boolean heartRecentlyPlaced;
+    protected transient long lastHeartAttack;
+    // FORK - end
     protected String id = null;
     protected boolean peacefulExplosionsEnabled;
     protected boolean permanent;
@@ -83,6 +95,13 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     public MemoryFaction(String id) {
+        // FORK
+        this.heartPlaced = false;
+        this.heartHealth = 0.0;
+        this.heartRecentlyPlaced = false;
+        this.lastHeartAttack = 0L;
+        // FORK - end
+
         this.id = id;
         this.open = FactionsPlugin.getInstance().conf().factions().other().isNewFactionsDefaultOpen();
         this.tag = "???";
@@ -101,6 +120,15 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     public MemoryFaction(MemoryFaction old) {
+        // FORK
+        this.heartPlaced = old.heartPlaced;
+        this.heartLocation = old.heartLocation;
+        this.heartProtectedRegion = Sets.newHashSet(old.heartProtectedRegion);
+        this.heartHealth = old.heartHealth;
+        this.heartRecentlyPlaced = old.heartRecentlyPlaced;
+        this.lastHeartAttack = old.lastHeartAttack;
+        // FORK - end
+
         id = old.id;
         peacefulExplosionsEnabled = old.peacefulExplosionsEnabled;
         permanent = old.permanent;
@@ -122,6 +150,68 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         this.dtr = old.dtr;
 
         resetPerms(); // Reset on new Faction so it has default values.
+    }
+
+    @Override
+    public boolean isHeartPlaced() {
+        return this.heartPlaced;
+    }
+
+    @Override
+    public void setHeartPlaced(final boolean value) {
+        this.heartPlaced = value;
+    }
+
+    @Nullable
+    @Override
+    public Location getHeartLocation() {
+        return this.heartLocation != null ? this.heartLocation.getLocation() : null;
+    }
+
+    @Override
+    public void setHeartLocation(@Nullable final Location location) {
+        this.heartLocation = location != null ? new LazyLocation(location) : null;
+    }
+
+    @NotNull
+    @Override
+    public Set<Location> getHeartProtectedRegion() {
+        return this.heartProtectedRegion.stream().map(LazyLocation::getLocation).collect(Collectors.toUnmodifiableSet());
+    }
+
+    @Override
+    public void setHeartProtectedRegion(@NotNull Set<Location> region) {
+        this.heartProtectedRegion = region.stream().map(LazyLocation::new).collect(Collectors.toSet());
+    }
+
+    @Override
+    public double getHeartHealth() {
+        return this.heartHealth;
+    }
+
+    @Override
+    public void setHeartHealth(final double value) {
+        this.heartHealth = Math.max(value, 0.0);
+    }
+
+    @Override
+    public boolean isHeartRecentlyPlaced() {
+        return this.heartRecentlyPlaced;
+    }
+
+    @Override
+    public void setHeartRecentlyPlaced(final boolean value) {
+        this.heartRecentlyPlaced = value;
+    }
+
+    @Override
+    public long getLastHeartAttack() {
+        return this.lastHeartAttack;
+    }
+
+    @Override
+    public void setLastHeartAttack(long lastHeartAttack) {
+        this.lastHeartAttack = lastHeartAttack;
     }
 
     public HashMap<String, List<String>> getAnnouncements() {
