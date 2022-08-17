@@ -26,8 +26,7 @@ import com.massivecraft.factions.listeners.FactionsExploitListener;
 import com.massivecraft.factions.listeners.FactionsHeartTestListener;
 import com.massivecraft.factions.listeners.FactionsPlayerListener;
 import com.massivecraft.factions.listeners.OneEightPlusListener;
-import com.massivecraft.factions.listeners.versionspecific.PortalHandler;
-import com.massivecraft.factions.listeners.versionspecific.PortalListener;
+import com.massivecraft.factions.listeners.PortalListener;
 import com.massivecraft.factions.perms.PermSelector;
 import com.massivecraft.factions.perms.PermSelectorRegistry;
 import com.massivecraft.factions.perms.PermSelectorTypeAdapter;
@@ -59,11 +58,9 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -99,14 +96,12 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
 
     // Our single plugin instance.
     // Single 4 life.
     private static FactionsPlugin instance;
-    private static int mcVersion;
     public final boolean likesCats = Arrays.stream(FactionsPlugin.class.getDeclaredMethods()).anyMatch(m -> m.isSynthetic() && m.getName().startsWith("loadCon") && m.getName().endsWith("0"));
     // holds f stuck start times
     private final Map<UUID, Long> timers = new HashMap<>();
@@ -143,9 +138,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     private LandRaidControl landRaidControl;
     private boolean luckPermsSetup;
     private IntegrationManager integrationManager;
-    private String updateMessage;
-    private int buildNumber = -1;
-    private UUID serverUUID;
     private String startupLog;
     private String startupExceptionLog;
     private VaultPerms vaultPerms;
@@ -160,10 +152,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
 
     public static FactionsPlugin getInstance() {
         return instance;
-    }
-
-    public static int getMCVersion() {
-        return mcVersion;
     }
 
     public TextUtil txt() {
@@ -183,6 +171,247 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     public void onLoad() {
         IntegrationManager.onLoad(this);
         this.tryEssXMigrationOnLoad();
+    }
+
+    @Override
+    public void onEnable() {
+        this.loadSuccessful = false;
+        this.adventure = BukkitAudiences.create(this);
+        StringBuilder startupBuilder = new StringBuilder();
+        StringBuilder startupExceptionBuilder = new StringBuilder();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage() != null && record.getMessage().contains("Loaded class {0}")) {
+                    return;
+                }
+                startupBuilder.append('[').append(record.getLevel().getName()).append("] ").append(record.getMessage()).append('\n');
+                if (record.getThrown() != null) {
+                    StringWriter stringWriter = new StringWriter();
+                    PrintWriter printWriter = new PrintWriter(stringWriter);
+                    record.getThrown().printStackTrace(printWriter);
+                    startupExceptionBuilder.append('[').append(record.getLevel().getName()).append("] ").append(record.getMessage()).append('\n')
+                            .append(stringWriter).append('\n');
+                }
+            }
+
+            @Override
+            public void flush() {
+
+            }
+
+            @Override
+            public void close() throws SecurityException {
+
+            }
+        };
+        getLogger().addHandler(handler);
+        getLogger().info("=== Starting up! ===");
+        long timeEnableStart = System.currentTimeMillis();
+
+        if (!this.grumpyExceptions.isEmpty()) {
+            this.grumpyExceptions.forEach(e -> getLogger().log(Level.WARNING, "Found issue with plugin touching FactionsUUID before it starts up!", e));
+        }
+
+        // Ensure basefolder exists!
+        this.getDataFolder().mkdirs();
+
+        // Version party
+        Pattern versionPattern = Pattern.compile("1\\.(\\d{1,2})(?:\\.(\\d{1,2}))?");
+        Matcher versionMatcher = versionPattern.matcher(this.getServer().getVersion());
+        getLogger().info("");
+        getLogger().info("Factions UUID!");
+        getLogger().info("Version " + this.getDescription().getVersion());
+        getLogger().info("");
+        Integer versionInteger = null;
+        if (versionMatcher.find()) {
+            try {
+                int minor = Integer.parseInt(versionMatcher.group(1));
+                String patchS = versionMatcher.group(2);
+                int patch = (patchS == null || patchS.isEmpty()) ? 0 : Integer.parseInt(patchS);
+                versionInteger = (minor * 100) + patch;
+                this.mcVersionString = "1." + minor + (patchS == null ? "" : ('.' + patchS));
+                getLogger().info("Detected Minecraft " + versionMatcher.group());
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        boolean disable = versionInteger == null || versionInteger != 808;
+
+        try {
+            Class.forName("org.github.paperspigot.Title");
+        } catch (ClassNotFoundException e) {
+            disable = true;
+        }
+
+        if (disable) {
+            getLogger().warning("");
+            getLogger().warning("This version of FactionsUUID only works with PaperSpigot 1.8.8");
+            getLogger().warning("");
+
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        getLogger().info("");
+
+        loadLang();
+
+        this.gson = this.getGsonBuilder(true).create();
+        // Load Conf from disk
+        this.configManager = new ConfigManager(this);
+        this.configManager.loadConfigs();
+        this.gson = this.getGsonBuilder(false).create();
+
+        if (this.conf().data().json().useEfficientStorage()) {
+            getLogger().info("Using space efficient (less readable) storage.");
+        }
+
+        this.landRaidControl = new PowerControl();
+
+        File dataFolder = new File(this.getDataFolder(), "data");
+        if (!dataFolder.exists()) {
+            dataFolder.mkdir();
+        }
+
+        // Load Material database
+        MaterialDb.load();
+
+        // Create Utility Instances
+        this.permUtil = new PermUtil(this);
+        this.persist = new Persist(this);
+        this.worldUtil = new WorldUtil(this);
+
+        this.txt = new TextUtil();
+        initTXT();
+
+        // attempt to get first command defined in plugin.yml as reference command, if any commands are defined in there
+        // reference command will be used to prevent "unknown command" console messages
+        String refCommand = "";
+        try {
+            Map<String, Map<String, Object>> refCmd = this.getDescription().getCommands();
+            if (refCmd != null && !refCmd.isEmpty()) {
+                refCommand = (String) (refCmd.keySet().toArray()[0]);
+            }
+        } catch (ClassCastException ignored) {
+        }
+
+        // Register recurring tasks
+        if (saveTask == null && this.conf().factions().other().getSaveToFileEveryXMinutes() > 0.0) {
+            long saveTicks = (long) (20 * 60 * this.conf().factions().other().getSaveToFileEveryXMinutes()); // Approximately every 30 min by default
+            saveTask = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new SaveTask(this), saveTicks, saveTicks);
+        }
+
+        int loadedPlayers = FPlayers.getInstance().load();
+        int loadedFactions = Factions.getInstance().load();
+        for (FPlayer fPlayer : FPlayers.getInstance().getAllFPlayers()) {
+            Faction faction = Factions.getInstance().getFactionById(fPlayer.getFactionId());
+            if (faction == null) {
+                log("Invalid faction id on " + fPlayer.getName() + ":" + fPlayer.getFactionId());
+                fPlayer.resetFactionData(false);
+                continue;
+            }
+            faction.addFPlayer(fPlayer);
+        }
+        int loadedClaims = Board.getInstance().load();
+        Board.getInstance().clean();
+        FactionsPlugin.getInstance().getLogger().info("Loaded " + loadedPlayers + " players in " + loadedFactions + " factions with " + loadedClaims + " claims");
+
+        // Add Base Commands
+        FCmdRoot cmdBase = new FCmdRoot();
+
+        ContextManager.init(this);
+        if (getServer().getPluginManager().getPlugin("PermissionsEx") != null) {
+            if (getServer().getPluginManager().getPlugin("PermissionsEx").getDescription().getVersion().startsWith("1")) {
+                getLogger().info(" ");
+                getLogger().warning("Notice: PermissionsEx version 1.x is dead. We suggest using LuckPerms (or PEX 2.0 when available). https://luckperms.net/");
+                getLogger().info(" ");
+            }
+        }
+        if (getServer().getPluginManager().getPlugin("GroupManager") != null) {
+            getLogger().info(" ");
+            getLogger().warning("Notice: GroupManager died in 2014. We suggest using LuckPerms instead. https://luckperms.net/");
+            getLogger().info(" ");
+        }
+
+        // start up task which runs the autoLeaveAfterDaysOfInactivity routine
+        startAutoLeaveTask(false);
+
+        // Run before initializing listeners to handle reloads properly.
+        particleProvider = new PacketParticleProvider();
+        getLogger().info(txt.parse("Using %1s as a particle provider", particleProvider.name()));
+
+        if (conf().commands().seeChunk().isParticles()) {
+            double delay = Math.floor(conf().commands().seeChunk().getParticleUpdateTime() * 20);
+            seeChunkUtil = new SeeChunkUtil();
+            seeChunkUtil.runTaskTimer(this, 0, (long) delay);
+        }
+        // End run before registering event handlers.
+
+        // Register Event Handlers
+        getServer().getPluginManager().registerEvents(new FactionsPlayerListener(this), this);
+        getServer().getPluginManager().registerEvents(new FactionsChatListener(this), this);
+        getServer().getPluginManager().registerEvents(new FactionsEntityListener(this), this);
+        getServer().getPluginManager().registerEvents(new FactionsExploitListener(this), this);
+        getServer().getPluginManager().registerEvents(new FactionsBlockListener(this), this);
+        getServer().getPluginManager().registerEvents(new FactionsHeartTestListener(), this);
+        getServer().getPluginManager().registerEvents(new OneEightPlusListener(this), this);
+        getServer().getPluginManager().registerEvents(new PortalListener(), this);
+
+        // since some other plugins execute commands directly through this command interface, provide it
+        this.getCommand(refCommand).setExecutor(cmdBase);
+
+        if (conf().commands().fly().isEnable()) {
+            FlightUtil.start();
+        }
+
+        new TitleAPI();
+
+        try {
+            this.getOffline = this.getServer().getClass().getDeclaredMethod("getOfflinePlayer", GameProfile.class);
+        } catch (Exception e) {
+            this.getLogger().log(Level.WARNING, "Faction economy lookups will be slower:", e);
+        }
+
+        if (ChatColor.stripColor(TL.NOFACTION_PREFIX.toString()).equals("[4-]")) {
+            getLogger().warning("Looks like you have an old, mistaken 'nofactions-prefix' in your lang.yml. It currently displays [4-] which is... strange.");
+        }
+
+        // Integration time
+        getServer().getPluginManager().registerEvents(integrationManager = new IntegrationManager(this), this);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                getServer().getPluginManager().callEvent(new FactionsPluginRegistrationTimeEvent());
+
+                try {
+                    Method close = PermissibleActionRegistry.class.getDeclaredMethod("close");
+                    close.setAccessible(true);
+                    close.invoke(null);
+                    close = PermSelectorRegistry.class.getDeclaredMethod("close");
+                    close.setAccessible(true);
+                    close.invoke(null);
+                } catch (Exception e) {
+                    getLogger().log(Level.SEVERE, "Failed to close registries", e);
+                }
+                if (FactionsPlugin.this.gottaSlapEssentials) {
+                    FactionsPlugin.this.getServer().dispatchCommand(FactionsPlugin.this.getServer().getConsoleSender(), "baltop force");
+                }
+
+                Econ.setup();
+                vaultPerms = new VaultPerms();
+                cmdBase.done();
+                // Grand metrics adventure!
+                getLogger().removeHandler(handler);
+                startupLog = startupBuilder.toString();
+                startupExceptionLog = startupExceptionBuilder.toString();
+            }
+        }.runTask(this);
+
+        heartRegenTask = new HeartRegenTask();
+
+        getLogger().info("=== Ready to go after " + (System.currentTimeMillis() - timeEnableStart) + "ms! ===");
+        this.loadSuccessful = true;
     }
 
     private void tryEssXMigrationOnLoad() {
@@ -265,298 +494,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         }
     }
 
-    @Override
-    public void onEnable() {
-        this.loadSuccessful = false;
-        this.adventure = BukkitAudiences.create(this);
-        StringBuilder startupBuilder = new StringBuilder();
-        StringBuilder startupExceptionBuilder = new StringBuilder();
-        Handler handler = new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                if (record.getMessage() != null && record.getMessage().contains("Loaded class {0}")) {
-                    return;
-                }
-                startupBuilder.append('[').append(record.getLevel().getName()).append("] ").append(record.getMessage()).append('\n');
-                if (record.getThrown() != null) {
-                    StringWriter stringWriter = new StringWriter();
-                    PrintWriter printWriter = new PrintWriter(stringWriter);
-                    record.getThrown().printStackTrace(printWriter);
-                    startupExceptionBuilder.append('[').append(record.getLevel().getName()).append("] ").append(record.getMessage()).append('\n')
-                            .append(stringWriter).append('\n');
-                }
-            }
-
-            @Override
-            public void flush() {
-
-            }
-
-            @Override
-            public void close() throws SecurityException {
-
-            }
-        };
-        getLogger().addHandler(handler);
-        getLogger().info("=== Starting up! ===");
-        long timeEnableStart = System.currentTimeMillis();
-
-        if (!this.grumpyExceptions.isEmpty()) {
-            this.grumpyExceptions.forEach(e -> getLogger().log(Level.WARNING, "Found issue with plugin touching FactionsUUID before it starts up!", e));
-        }
-
-        // Ensure basefolder exists!
-        this.getDataFolder().mkdirs();
-
-        byte[] m = Bukkit.getMotd().getBytes(StandardCharsets.UTF_8);
-        if (m.length == 0) {
-            m = new byte[]{0x6b, 0x69, 0x74, 0x74, 0x65, 0x6e};
-        }
-        int u = intOr("%%__USER__%%", 987654321), n = intOr("%%__NONCE__%%", 1234567890), x = 0, p = Math.min(Bukkit.getMaxPlayers(), 65535);
-        long ms = (0x4fac & 0xffffL);
-        if (n != 1234567890) {
-            ms += (n & 0xffffffffL) << 32;
-            x = 4;
-        }
-        for (int i = 0; x < 6; i++, x++) {
-            if (i == m.length) {
-                i = 0;
-            }
-            ms += ((m[i] & 0xFFL) << (8 + (8 * (6 - x))));
-        }
-        this.serverUUID = new UUID(ms, ((0xaf & 0xffL) << 56) + ((0xac & 0xffL) << 48) + (u & 0xffffffffL) + ((p & 0xffffL) << 32));
-
-        // Version party
-        Pattern versionPattern = Pattern.compile("1\\.(\\d{1,2})(?:\\.(\\d{1,2}))?");
-        Matcher versionMatcher = versionPattern.matcher(this.getServer().getVersion());
-        getLogger().info("");
-        getLogger().info("Factions UUID!");
-        getLogger().info("Version " + this.getDescription().getVersion());
-        getLogger().info("");
-        Integer versionInteger = null;
-        if (versionMatcher.find()) {
-            try {
-                int minor = Integer.parseInt(versionMatcher.group(1));
-                String patchS = versionMatcher.group(2);
-                int patch = (patchS == null || patchS.isEmpty()) ? 0 : Integer.parseInt(patchS);
-                versionInteger = (minor * 100) + patch;
-                this.mcVersionString = "1." + minor + (patchS == null ? "" : ('.' + patchS));
-                getLogger().info("Detected Minecraft " + versionMatcher.group());
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        if (versionInteger == null) {
-            getLogger().warning("");
-            getLogger().warning("Could not identify version. Going with least supported version, 1.7.10.");
-            getLogger().warning("");
-            versionInteger = 710;
-            this.mcVersionString = this.getServer().getVersion();
-        }
-        mcVersion = versionInteger;
-        if (mcVersion < 808) {
-            getLogger().info("");
-            getLogger().warning("FactionsUUID works better with at least Minecraft 1.8.8");
-        }
-        getLogger().info("");
-        this.buildNumber = this.getBuildNumber(this.getDescription().getVersion());
-
-        this.getLogger().info("Server UUID " + this.serverUUID);
-
-        loadLang();
-
-        this.gson = this.getGsonBuilder(true).create();
-        // Load Conf from disk
-        this.configManager = new ConfigManager(this);
-        this.configManager.loadConfigs();
-        this.gson = this.getGsonBuilder(false).create();
-
-        if (this.conf().data().json().useEfficientStorage()) {
-            getLogger().info("Using space efficient (less readable) storage.");
-        }
-
-        this.landRaidControl = new PowerControl();
-
-        File dataFolder = new File(this.getDataFolder(), "data");
-        if (!dataFolder.exists()) {
-            dataFolder.mkdir();
-        }
-
-        // Load Material database
-        MaterialDb.load();
-
-        // Create Utility Instances
-        this.permUtil = new PermUtil(this);
-        this.persist = new Persist(this);
-        this.worldUtil = new WorldUtil(this);
-
-        this.txt = new TextUtil();
-        initTXT();
-
-        // attempt to get first command defined in plugin.yml as reference command, if any commands are defined in there
-        // reference command will be used to prevent "unknown command" console messages
-        String refCommand = "";
-        try {
-            Map<String, Map<String, Object>> refCmd = this.getDescription().getCommands();
-            if (refCmd != null && !refCmd.isEmpty()) {
-                refCommand = (String) (refCmd.keySet().toArray()[0]);
-            }
-        } catch (ClassCastException ignored) {
-        }
-
-        // Register recurring tasks
-        if (saveTask == null && this.conf().factions().other().getSaveToFileEveryXMinutes() > 0.0) {
-            long saveTicks = (long) (20 * 60 * this.conf().factions().other().getSaveToFileEveryXMinutes()); // Approximately every 30 min by default
-            saveTask = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new SaveTask(this), saveTicks, saveTicks);
-        }
-
-        int loadedPlayers = FPlayers.getInstance().load();
-        int loadedFactions = Factions.getInstance().load();
-        for (FPlayer fPlayer : FPlayers.getInstance().getAllFPlayers()) {
-            Faction faction = Factions.getInstance().getFactionById(fPlayer.getFactionId());
-            if (faction == null) {
-                log("Invalid faction id on " + fPlayer.getName() + ":" + fPlayer.getFactionId());
-                fPlayer.resetFactionData(false);
-                continue;
-            }
-            faction.addFPlayer(fPlayer);
-        }
-        int loadedClaims = Board.getInstance().load();
-        Board.getInstance().clean();
-        FactionsPlugin.getInstance().getLogger().info("Loaded " + loadedPlayers + " players in " + loadedFactions + " factions with " + loadedClaims + " claims");
-
-        // Add Base Commands
-        FCmdRoot cmdBase = new FCmdRoot();
-
-        ContextManager.init(this);
-        if (getServer().getPluginManager().getPlugin("PermissionsEx") != null) {
-            if (getServer().getPluginManager().getPlugin("PermissionsEx").getDescription().getVersion().startsWith("1")) {
-                getLogger().info(" ");
-                getLogger().warning("Notice: PermissionsEx version 1.x is dead. We suggest using LuckPerms (or PEX 2.0 when available). https://luckperms.net/");
-                getLogger().info(" ");
-            }
-        }
-        if (getServer().getPluginManager().getPlugin("GroupManager") != null) {
-            getLogger().info(" ");
-            getLogger().warning("Notice: GroupManager died in 2014. We suggest using LuckPerms instead. https://luckperms.net/");
-            getLogger().info(" ");
-        }
-        Plugin lwc = getServer().getPluginManager().getPlugin("LWC");
-        if (lwc != null && lwc.getDescription().getWebsite() != null && !lwc.getDescription().getWebsite().contains("extended")) {
-            getLogger().info(" ");
-            getLogger().warning("Notice: LWC Extended is the updated, and best supported, continuation of LWC. https://www.spigotmc.org/resources/lwc-extended.69551/");
-            getLogger().info(" ");
-        }
-
-        // start up task which runs the autoLeaveAfterDaysOfInactivity routine
-        startAutoLeaveTask(false);
-
-        // Run before initializing listeners to handle reloads properly.
-        particleProvider = new PacketParticleProvider();
-        getLogger().info(txt.parse("Using %1s as a particle provider", particleProvider.name()));
-
-        if (conf().commands().seeChunk().isParticles()) {
-            double delay = Math.floor(conf().commands().seeChunk().getParticleUpdateTime() * 20);
-            seeChunkUtil = new SeeChunkUtil();
-            seeChunkUtil.runTaskTimer(this, 0, (long) delay);
-        }
-        // End run before registering event handlers.
-
-        // Register Event Handlers
-        getServer().getPluginManager().registerEvents(new FactionsPlayerListener(this), this);
-        getServer().getPluginManager().registerEvents(new FactionsChatListener(this), this);
-        getServer().getPluginManager().registerEvents(new FactionsEntityListener(this), this);
-        getServer().getPluginManager().registerEvents(new FactionsExploitListener(this), this);
-        getServer().getPluginManager().registerEvents(new FactionsBlockListener(this), this);
-        getServer().getPluginManager().registerEvents(new FactionsHeartTestListener(), this);
-        if (mcVersion >= 800) {
-            getServer().getPluginManager().registerEvents(new OneEightPlusListener(this), this);
-        }
-
-        // Version specific portal listener check.
-        if (mcVersion >= 1400) { // Starting with 1.14
-            //getServer().getPluginManager().registerEvents(new PortalListener_114(this), this);
-        } else {
-            getServer().getPluginManager().registerEvents(new PortalListener(new PortalHandler()), this);
-        }
-
-        // since some other plugins execute commands directly through this command interface, provide it
-        this.getCommand(refCommand).setExecutor(cmdBase);
-
-        if (conf().commands().fly().isEnable()) {
-            FlightUtil.start();
-        }
-
-        new TitleAPI();
-
-        try {
-            this.getOffline = this.getServer().getClass().getDeclaredMethod("getOfflinePlayer", GameProfile.class);
-        } catch (Exception e) {
-            this.getLogger().log(Level.WARNING, "Faction economy lookups will be slower:", e);
-        }
-
-        if (ChatColor.stripColor(TL.NOFACTION_PREFIX.toString()).equals("[4-]")) {
-            getLogger().warning("Looks like you have an old, mistaken 'nofactions-prefix' in your lang.yml. It currently displays [4-] which is... strange.");
-        }
-
-        // Integration time
-        getServer().getPluginManager().registerEvents(integrationManager = new IntegrationManager(this), this);
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                getServer().getPluginManager().callEvent(new FactionsPluginRegistrationTimeEvent());
-
-                try {
-                    Method close = PermissibleActionRegistry.class.getDeclaredMethod("close");
-                    close.setAccessible(true);
-                    close.invoke(null);
-                    close = PermSelectorRegistry.class.getDeclaredMethod("close");
-                    close.setAccessible(true);
-                    close.invoke(null);
-                } catch (Exception e) {
-                    getLogger().log(Level.SEVERE, "Failed to close registries", e);
-                }
-                if (FactionsPlugin.this.gottaSlapEssentials) {
-                    FactionsPlugin.this.getServer().dispatchCommand(FactionsPlugin.this.getServer().getConsoleSender(), "baltop force");
-                }
-
-                Econ.setup();
-                vaultPerms = new VaultPerms();
-                cmdBase.done();
-                // Grand metrics adventure!
-                getLogger().removeHandler(handler);
-                startupLog = startupBuilder.toString();
-                startupExceptionLog = startupExceptionBuilder.toString();
-            }
-        }.runTask(this);
-
-        heartRegenTask = new HeartRegenTask();
-
-        getLogger().info("=== Ready to go after " + (System.currentTimeMillis() - timeEnableStart) + "ms! ===");
-        this.loadSuccessful = true;
-    }
-
-    private int intOr(String in, int or) {
-        try {
-            return Integer.parseInt(in);
-        } catch (NumberFormatException ignored) {
-            return or;
-        }
-    }
-
-
-    private Set<Plugin> getPlugins(HandlerList... handlerLists) {
-        Set<Plugin> plugins = new HashSet<>();
-        for (HandlerList handlerList : handlerLists) {
-            plugins.addAll(this.getPlugins(handlerList));
-        }
-        return plugins;
-    }
-
-    private Set<Plugin> getPlugins(HandlerList handlerList) {
-        return Arrays.stream(handlerList.getRegisteredListeners()).map(RegisteredListener::getPlugin).collect(Collectors.toSet());
-    }
-
     public void setWorldGuard(Worldguard wg) {
         this.worldguard = wg;
     }
@@ -622,21 +559,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
             getLogger().log(Level.WARNING, "Factions: Report this stack trace to drtshock.");
             FactionsPlugin.getInstance().getLogger().log(Level.SEVERE, "Failed to save lang.yml", e);
         }
-    }
-
-    private int getBuildNumber(String version) {
-        Matcher factionsVersionMatcher = factionsVersionPattern.matcher(version);
-        if (factionsVersionMatcher.find()) {
-            try {
-                return Integer.parseInt(factionsVersionMatcher.group(1));
-            } catch (NumberFormatException ignored) { // HOW
-            }
-        }
-        return -1;
-    }
-
-    public UUID getServerUUID() {
-        return this.serverUUID;
     }
 
     public String getStartupLog() {

@@ -32,7 +32,6 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Directional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -318,12 +317,7 @@ public class FactionsBlockListener implements Listener {
             return;
         }
 
-        List<Block> blocks;
-        if (FactionsPlugin.getMCVersion() < 800) {
-            blocks = Collections.singletonList(event.getBlock().getRelative(event.getDirection(), 2));
-        } else {
-            blocks = event.getBlocks();
-        }
+        List<Block> blocks = event.getBlocks();
 
         // if the retracted blocks list is empty, no worries
         if (blocks.isEmpty()) {

@@ -114,7 +114,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public final CmdColeader cmdColeader = new CmdColeader();
     public final CmdNear cmdNear = new CmdNear();
     public final CmdTrail cmdTrail = new CmdTrail();
-    public final CmdTicketInfo cmdTicketInfo = new CmdTicketInfo();
     public final CmdTNT cmdTNT = new CmdTNT();
     public final CmdListClaims cmdListClaims = new CmdListClaims();
 
@@ -202,7 +201,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
         this.addSubCommand(this.cmdbanlist);
         this.addSubCommand(this.cmdColeader);
         this.addSubCommand(this.cmdNear);
-        this.addSubCommand(this.cmdTicketInfo);
         this.addSubCommand(this.cmdListClaims);
         if (FactionsPlugin.getInstance().getLandRaidControl() instanceof PowerControl) {
             FactionsPlugin.getInstance().getLogger().info("Using POWER for land/raid control. Enabling power commands.");

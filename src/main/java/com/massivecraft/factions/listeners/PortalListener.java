@@ -1,4 +1,4 @@
-package com.massivecraft.factions.listeners.versionspecific;
+package com.massivecraft.factions.listeners;
 
 import com.massivecraft.factions.Board;
 import com.massivecraft.factions.FLocation;
@@ -8,11 +8,30 @@ import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.perms.Relation;
 import org.bukkit.Location;
+import org.bukkit.TravelAgent;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerPortalEvent;
 
-public class PortalHandler implements PortalListenerBase {
-    @Override
-    public boolean shouldCancel(Location location, Player player) {
+/*
+   Supports versions older than 1.14 with TravelAgent.
+ */
+public class PortalListener implements Listener {
+
+    @EventHandler
+    public void onTravel(PlayerPortalEvent event) {
+        TravelAgent agent = event.getPortalTravelAgent();
+
+        // If they aren't able to find a portal, it'll try to create one.
+        if (event.useTravelAgent() && agent.getCanCreatePortal() && agent.findPortal(event.getTo()) == null) {
+            if (shouldCancel(event.getTo(), event.getPlayer())) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    private boolean shouldCancel(Location location, Player player) {
         if (!FactionsPlugin.getInstance().worldUtil().isEnabled(player.getWorld())) {
             return true;
         }
