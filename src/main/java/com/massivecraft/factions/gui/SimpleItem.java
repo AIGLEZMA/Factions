@@ -28,6 +28,7 @@ public class SimpleItem {
         this.lore = builder.lore;
         this.material = builder.material;
         this.color = builder.color;
+        this.enchant = builder.enchant;
     }
 
     public SimpleItem(SimpleItem item) {
@@ -138,6 +139,7 @@ public class SimpleItem {
         private String name;
         private List<String> lore;
         private DyeColor color;
+        private boolean enchant;
 
         private Builder() {
         }
@@ -159,6 +161,11 @@ public class SimpleItem {
 
         public Builder setMaterial(Material material) {
             this.material = material;
+            return this;
+        }
+
+        public Builder setEnchant(boolean enchant) {
+            this.enchant = enchant;
             return this;
         }
 

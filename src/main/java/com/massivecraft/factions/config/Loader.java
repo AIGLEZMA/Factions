@@ -6,6 +6,8 @@ import com.massivecraft.factions.config.annotation.Comment;
 import com.massivecraft.factions.config.annotation.ConfigName;
 import com.massivecraft.factions.config.annotation.DefinedType;
 import com.massivecraft.factions.config.annotation.WipeOnReload;
+import com.massivecraft.factions.gui.SimpleItem;
+import com.massivecraft.factions.util.SimpleItemSerializer;
 import com.typesafe.config.ConfigRenderOptions;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -98,6 +100,20 @@ public class Loader {
                 newNewNode.setComment(comment.value());
             }
             Object defaultValue = field.get(object);
+            if (field.getType() == SimpleItem.class) {
+                if (needsValue) {
+                    //newNewNode.setValue((SimpleItem) defaultValue);
+                    SimpleItemSerializer.INSTANCE.serialize((SimpleItem) defaultValue, newNewNode);
+                } else {
+                    final SimpleItem value = SimpleItemSerializer.INSTANCE.deserialize(curNode);
+                    field.set(object, value);
+
+                    //newNewNode.setValue(curNode.getValue());
+                    SimpleItemSerializer.INSTANCE.serialize(value, newNewNode);
+                }
+
+                continue;
+            }
             if (types.contains(field.getType())) {
                 if (needsValue) {
                     if (definedType == null) {
