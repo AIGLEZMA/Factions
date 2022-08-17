@@ -948,6 +948,10 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         return this.getServer().getOfflinePlayer(name);
     }
 
+    public HeartRegenTask getHeartRegenTask() {
+        return this.heartRegenTask;
+    }
+
     public BukkitAudiences getAdventure() {
         return this.adventure;
     }

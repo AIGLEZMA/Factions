@@ -14,6 +14,7 @@ import java.util.function.Function;
 public enum FactionTag implements Tag {
     @SuppressWarnings("Convert2MethodRef")
     HEART_HEALTH("heart-health", (fac) -> String.valueOf(fac.getHeartHealth())),
+    HEART_REGEN_TIME("heart-regen", (fac) -> FactionsPlugin.getInstance().getHeartRegenTask().remainingTime(fac)),
     HEART_FORMATTED_HEALTH("heart-fo-health", (fac) -> HolographicDisplays.INSTANCE.formatHeartHealthBar(fac.getHeartHealth(), 100)),
     INTERNAL_ID("faction-internal-id", (fac) -> fac.getId()),
     HOME_X("x", (fac) -> fac.hasHome() ? String.valueOf(fac.getHome().getBlockX()) : Tag.isMinimalShow() ? null : "{ig}"),
