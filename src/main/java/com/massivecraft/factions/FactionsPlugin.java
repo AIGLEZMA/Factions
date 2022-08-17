@@ -79,8 +79,6 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -531,20 +529,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
                 startupExceptionLog = startupExceptionBuilder.toString();
             }
         }.runTask(this);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (checkForUpdates()) {
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            Bukkit.broadcast(updateMessage, com.massivecraft.factions.struct.Permission.UPDATES.toString());
-                        }
-                    }.runTask(FactionsPlugin.this);
-                    this.cancel();
-                }
-            }
-        }.runTaskTimerAsynchronously(this, 0, 20 * 60 * 10); // ten minutes
 
         heartRegenTask = new HeartRegenTask();
 
@@ -649,33 +633,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
             }
         }
         return -1;
-    }
-
-    private boolean checkForUpdates() {
-        try {
-            URL url = new URL("https://api.spigotmc.org/legacy/update.php?resource=1035");
-            HttpURLConnection con = ((HttpURLConnection) url.openConnection());
-            int status = con.getResponseCode();
-            if (status == 200) {
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        if (line.startsWith("1.6.9.5-U") && !this.getDescription().getVersion().equals(line)) {
-                            if (this.buildNumber > 0) {
-                                int build = this.getBuildNumber(line);
-                                if (build > 0 && build <= this.buildNumber) {
-                                    return false;
-                                }
-                            }
-                            this.updateMessage = ChatColor.GREEN + "New version of " + ChatColor.DARK_AQUA + "Factions" + ChatColor.GREEN + " available: " + ChatColor.DARK_AQUA + line;
-                            return true;
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return false;
     }
 
     public UUID getServerUUID() {
