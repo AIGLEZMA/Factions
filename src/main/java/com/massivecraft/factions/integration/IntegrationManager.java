@@ -49,6 +49,9 @@ public class IntegrationManager implements Listener {
 
     @SuppressWarnings("Convert2MethodRef")
     private enum Integration {
+        HOLOGRAPHICDISPLAYS("HolographicDisplays", (plugin) -> {
+            FactionsPlugin.getInstance().log("Hooked into HolographicDisplays v" + plugin.getDescription().getVersion());
+        }),
         ESS("Essentials", Essentials::setup),
         LUCKPERMS("LuckPerms", (plugin) -> {
             String[] version = plugin.getDescription().getVersion().split("\\.");

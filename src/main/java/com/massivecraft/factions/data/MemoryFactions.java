@@ -2,6 +2,8 @@ package com.massivecraft.factions.data;
 
 import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.Factions;
+import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.integration.HolographicDisplays;
 import com.massivecraft.factions.util.MiscUtil;
 import com.massivecraft.factions.util.TL;
 import org.bukkit.ChatColor;
@@ -72,6 +74,20 @@ public abstract class MemoryFactions extends Factions {
                 faction.setTag(TL.WARZONE.toString());
             }
         }
+
+        // create the hologram since holograms are not persistent
+        for (final Faction faction : factions.values()) {
+            if (faction.isHeartPlaced()) {
+                if (faction.getHeartLocation() == null) {
+                    FactionsPlugin.getInstance().getLogger().warning("There is a problem with data (HEART PLACED BUT ITS LOCATION IS NULL)");
+                    continue;
+                }
+
+                FactionsPlugin.getInstance().getLogger().info("Created Hologram for " + faction.getTag());
+                faction.setHeartHologram(HolographicDisplays.INSTANCE.createHologram(faction));
+            }
+        }
+
         return 0;
     }
 

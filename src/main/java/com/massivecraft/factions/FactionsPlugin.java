@@ -35,6 +35,7 @@ import com.massivecraft.factions.struct.ChatMode;
 import com.massivecraft.factions.util.AutoLeaveTask;
 import com.massivecraft.factions.util.EnumTypeAdapter;
 import com.massivecraft.factions.util.FlightUtil;
+import com.massivecraft.factions.util.HeartRegenTask;
 import com.massivecraft.factions.util.LazyLocation;
 import com.massivecraft.factions.util.MapFLocToStringSetTypeAdapter;
 import com.massivecraft.factions.util.MyLocationTypeAdapter;
@@ -122,6 +123,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     private Integer saveTask = null;
     private boolean autoSave = true;
     private boolean loadSuccessful = false;
+    private HeartRegenTask heartRegenTask;
     // Some utils
     private Persist persist;
     private TextUtil txt;
@@ -541,6 +543,8 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
                 }
             }
         }.runTaskTimerAsynchronously(this, 0, 20 * 60 * 10); // ten minutes
+
+        heartRegenTask = new HeartRegenTask();
 
         getLogger().info("=== Ready to go after " + (System.currentTimeMillis() - timeEnableStart) + "ms! ===");
         this.loadSuccessful = true;

@@ -1,6 +1,7 @@
 package com.massivecraft.factions.config;
 
 import com.massivecraft.factions.FactionsPlugin;
+import com.massivecraft.factions.config.file.HeartConfig;
 import com.massivecraft.factions.config.file.MainConfig;
 import com.massivecraft.factions.config.file.PermissionsConfig;
 import com.massivecraft.factions.config.file.TranslationsConfig;
@@ -13,6 +14,7 @@ public class ConfigManager {
     private final FactionsPlugin plugin;
     private final MainConfig mainConfig = new MainConfig();
     private final TranslationsConfig translationsConfig = new TranslationsConfig();
+    private final HeartConfig heartConfig = new HeartConfig();
     private PermissionsConfig permissionsConfig = null;
 
     public ConfigManager(FactionsPlugin plugin) {
@@ -28,6 +30,7 @@ public class ConfigManager {
         this.loadConfig("translations", this.translationsConfig);
         this.loadConfig("permissions", this.permissionsConfig);
         this.loadConfig("main", this.mainConfig);
+        this.loadConfig("heart", this.heartConfig);
     }
 
     private void loadConfig(String name, Object config) {
@@ -48,5 +51,9 @@ public class ConfigManager {
 
     public TranslationsConfig getTranslationsConfig() {
         return this.translationsConfig;
+    }
+
+    public HeartConfig getHeartConfig() {
+        return this.heartConfig;
     }
 }

@@ -4,6 +4,7 @@ import com.massivecraft.factions.FPlayer;
 import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.integration.Econ;
+import com.massivecraft.factions.integration.HolographicDisplays;
 import com.massivecraft.factions.perms.Relation;
 import com.massivecraft.factions.util.TL;
 
@@ -12,6 +13,8 @@ import java.util.function.Function;
 
 public enum FactionTag implements Tag {
     @SuppressWarnings("Convert2MethodRef")
+    HEART_HEALTH("heart-health", (fac) -> String.valueOf(fac.getHeartHealth())),
+    HEART_FORMATTED_HEALTH("heart-fo-health", (fac) -> HolographicDisplays.INSTANCE.formatHeartHealthBar(fac.getHeartHealth(), 100)),
     INTERNAL_ID("faction-internal-id", (fac) -> fac.getId()),
     HOME_X("x", (fac) -> fac.hasHome() ? String.valueOf(fac.getHome().getBlockX()) : Tag.isMinimalShow() ? null : "{ig}"),
     HOME_Y("y", (fac) -> fac.hasHome() ? String.valueOf(fac.getHome().getBlockY()) : Tag.isMinimalShow() ? null : "{ig}"),

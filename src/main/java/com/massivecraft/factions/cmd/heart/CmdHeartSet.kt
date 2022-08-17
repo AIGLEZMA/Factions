@@ -4,6 +4,7 @@ import com.massivecraft.factions.cmd.CommandContext
 import com.massivecraft.factions.cmd.CommandRequirements
 import com.massivecraft.factions.cmd.FCommand
 import com.massivecraft.factions.event.FactionHeartSetEvent
+import com.massivecraft.factions.integration.HolographicDisplays
 import com.massivecraft.factions.perms.Role
 import com.massivecraft.factions.struct.Permission
 import com.massivecraft.factions.util.TL
@@ -69,13 +70,12 @@ class CmdHeartSet : FCommand() {
         }
 
         location.world.spawnEntity(location, EntityType.ENDER_CRYSTAL)
-
+        context.faction.heartHologram = HolographicDisplays.createHologram(context.faction)
 
         context.msg(TL.COMMAND_HEARTSET_SUCCESSFUL)
         context.faction.fPlayers
             .filter { fPlayer -> fPlayer != context.fPlayer }
             .forEach { fPlayer -> fPlayer.msg(TL.COMMAND_HEARTSET_MEMBERS, context.fPlayer.tag) }
-
 
     }
 
