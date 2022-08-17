@@ -251,8 +251,6 @@ public class MainConfig {
         private SeeChunk seeChunk = new SeeChunk();
         private Show show = new Show();
         private Stuck stuck = new Stuck();
-        @Comment("TNT bank!")
-        private TNT tnt = new TNT();
         private ToolTips toolTips = new ToolTips();
         private Warp warp = new Warp();
 
@@ -302,10 +300,6 @@ public class MainConfig {
 
         public Stuck stuck() {
             return stuck;
-        }
-
-        public TNT tnt() {
-            return tnt;
         }
 
         public ToolTips toolTips() {
@@ -644,32 +638,6 @@ public class MainConfig {
 
             public int getSearchRadius() {
                 return searchRadius;
-            }
-        }
-
-        public class TNT {
-            private boolean enable = false;
-            @Comment("Maximum storage. Set to -1 (or lower) to disable")
-            private int maxStorage = -1;
-            private int maxRadius = 5;
-
-            public int getMaxRadius() {
-                return maxRadius;
-            }
-
-            public int getMaxStorage() {
-                return maxStorage;
-            }
-
-            public boolean isAboveMaxStorage(int amount) {
-                if (maxStorage < 0) {
-                    return false;
-                }
-                return amount > maxStorage;
-            }
-
-            public boolean isEnable() {
-                return enable;
             }
         }
 

@@ -114,7 +114,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public final CmdColeader cmdColeader = new CmdColeader();
     public final CmdNear cmdNear = new CmdNear();
     public final CmdTrail cmdTrail = new CmdTrail();
-    public final CmdTNT cmdTNT = new CmdTNT();
     public final CmdListClaims cmdListClaims = new CmdListClaims();
 
     public FCmdRoot() {
@@ -208,10 +207,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
             this.addSubCommand(this.cmdPower);
             this.addSubCommand(this.cmdPowerBoost);
             this.addSubCommand(this.cmdModifyPower);
-        }
-        if (FactionsPlugin.getInstance().conf().commands().tnt().isEnable()) {
-            this.addSubCommand(this.cmdTNT);
-            FactionsPlugin.getInstance().getLogger().info("Enabling TNT bank management");
         }
         if (FactionsPlugin.getInstance().conf().commands().fly().isEnable()) {
             this.addSubCommand(this.cmdFly);

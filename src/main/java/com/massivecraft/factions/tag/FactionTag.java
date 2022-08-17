@@ -62,15 +62,9 @@ public enum FactionTag implements Tag {
         return Tag.isMinimalShow() ? null : TL.ECON_OFF.format("balance");
     }),
     TNT_BALANCE("tnt-balance", (fac) -> {
-        if (FactionsPlugin.getInstance().conf().commands().tnt().isEnable()) {
-            return String.valueOf(fac.getTNTBank());
-        }
         return Tag.isMinimalShow() ? null : "";
     }),
     TNT_MAX("tnt-max-balance", (fac) -> {
-        if (FactionsPlugin.getInstance().conf().commands().tnt().isEnable()) {
-            return String.valueOf(FactionsPlugin.getInstance().conf().commands().tnt().getMaxStorage());
-        }
         return Tag.isMinimalShow() ? null : "";
     }),
     ALLIES_COUNT("allies", (fac) -> String.valueOf(fac.getRelationCount(Relation.ALLY))),

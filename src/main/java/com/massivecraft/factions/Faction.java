@@ -279,21 +279,15 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     int getLandRoundedInWorld(String worldName);
 
+    @Deprecated
     int getTNTBank();
 
-    // -------------------------------
-    // Relation and relation colors
-    // -------------------------------
-
+    @Deprecated
     void setTNTBank(int amount);
 
     Relation getRelationWish(Faction otherFaction);
 
     void setRelationWish(Faction otherFaction, Relation relation);
-
-    // ----------------------------------------------//
-    // DTR
-    // ----------------------------------------------//
 
     int getRelationCount(Relation relation);
 
@@ -318,9 +312,6 @@ public interface Faction extends EconomyParticipator, Selectable {
     @Deprecated
     void setFrozenDTR(long time);
 
-    // ----------------------------------------------//
-    // Power
-    // ----------------------------------------------//
     double getPower();
 
     double getPowerMax();
@@ -340,10 +331,6 @@ public interface Faction extends EconomyParticipator, Selectable {
     void setPowerBoost(double powerBoost);
 
     boolean hasLandInflation();
-
-    // -------------------------------
-    // FPlayers
-    // -------------------------------
 
     boolean isPowerFrozen();
 
@@ -384,10 +371,6 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     void sendMessage(String message);
 
-    // ----------------------------------------------//
-    // Ownership of specific claims
-    // ----------------------------------------------//
-
     void sendMessage(List<String> messages);
 
     Map<FLocation, Set<String>> getClaimOwnership();
@@ -414,9 +397,6 @@ public interface Faction extends EconomyParticipator, Selectable {
 
     boolean playerHasOwnershipRights(FPlayer fplayer, FLocation loc);
 
-    // ----------------------------------------------//
-    // Persistance and entity management
-    // ----------------------------------------------//
     void remove();
 
     Set<FLocation> getAllClaims();

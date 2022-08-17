@@ -81,7 +81,6 @@ public class PermissionsConfig {
                 .put(PermissibleActions.PROMOTE.name(), true)
                 .put(PermissibleActions.SETWARP.name(), true)
                 .put(PermissibleActions.TERRITORY.name(), true)
-                .put(PermissibleActions.TNTWITHDRAW.name(), true)
                 .build());
 
         this.defaultPermissionsOrder.add(new RoleAtLeastSelector(Role.RECRUIT).serialize());
@@ -97,7 +96,6 @@ public class PermissionsConfig {
                 .put(PermissibleActions.ITEM.name(), true)
                 .put(PermissibleActions.LEVER.name(), true)
                 .put(PermissibleActions.PLATE.name(), true)
-                .put(PermissibleActions.TNTDEPOSIT.name(), true)
                 .put(PermissibleActions.WARP.name(), true)
                 .build());
 

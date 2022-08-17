@@ -82,7 +82,6 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     protected Role defaultRole;
     protected LinkedHashMap<PermSelector, Map<String, Boolean>> permissions = new LinkedHashMap<>();
     protected Set<BanInfo> bans = new HashSet<>();
-    protected int tntBank;
     protected transient OfflinePlayer offlinePlayer;
     private long lastDeath;
 
@@ -803,11 +802,11 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     public int getTNTBank() {
-        return this.tntBank;
+        return 0;
     }
 
     public void setTNTBank(int amount) {
-        this.tntBank = amount;
+
     }
 
     // -------------------------------
