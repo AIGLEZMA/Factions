@@ -11,6 +11,7 @@ import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.config.file.PermissionsConfig;
 import com.massivecraft.factions.event.FactionAutoDisbandEvent;
+import com.massivecraft.factions.event.FactionHeartHealthChangeEvent;
 import com.massivecraft.factions.event.FactionNewAdminEvent;
 import com.massivecraft.factions.iface.EconomyParticipator;
 import com.massivecraft.factions.iface.RelationParticipator;
@@ -186,8 +187,18 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     }
 
     @Override
-    public void setHeartHealth(final double value) {
-        this.heartHealth = Math.max(value, 0.0);
+    public void setHeartHealth(final double value, final boolean fireEvent) {
+        if (fireEvent) {
+            final FactionHeartHealthChangeEvent event = new FactionHeartHealthChangeEvent(this, this.heartHealth, Math.max(value, 0.0), FactionHeartHealthChangeEvent.Cause.PLUGIN);
+            Bukkit.getServer().getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return;
+            }
+
+            this.heartHealth = Math.max(event.getNewValue(), 0.0);
+        } else {
+            this.heartHealth = Math.max(value, 0.0);
+        }
     }
 
     @Override

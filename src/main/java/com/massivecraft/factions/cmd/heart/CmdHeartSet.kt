@@ -3,6 +3,7 @@ package com.massivecraft.factions.cmd.heart
 import com.massivecraft.factions.cmd.CommandContext
 import com.massivecraft.factions.cmd.CommandRequirements
 import com.massivecraft.factions.cmd.FCommand
+import com.massivecraft.factions.event.FactionHeartPreSetEvent
 import com.massivecraft.factions.event.FactionHeartSetEvent
 import com.massivecraft.factions.integration.HolographicDisplays
 import com.massivecraft.factions.perms.Role
@@ -56,21 +57,28 @@ class CmdHeartSet : FCommand() {
             return
         }
 
-        val factionHeatSetEvent = FactionHeartSetEvent(context.faction, location, blocks)
-        Bukkit.getServer().pluginManager.callEvent(factionHeatSetEvent)
-        if (factionHeatSetEvent.isCancelled) {
+        val factionHeatPreSetEvent = FactionHeartPreSetEvent(context.faction, location, blocks)
+        Bukkit.getServer().pluginManager.callEvent(factionHeatPreSetEvent)
+        if (factionHeatPreSetEvent.isCancelled) {
             return
         }
 
         context.faction.apply {
             this.isHeartPlaced = true
             this.isHeartRecentlyPlaced = true
-            this.heartLocation = location
-            this.heartProtectedRegion = blocks.map { block -> block.location }.toSet()
+            this.heartLocation = factionHeatPreSetEvent.location
+            this.heartProtectedRegion = factionHeatPreSetEvent.protectedRegion.map { block -> block.location }.toSet()
         }
 
-        location.world.spawnEntity(location, EntityType.ENDER_CRYSTAL)
+        factionHeatPreSetEvent.location.world.spawnEntity(factionHeatPreSetEvent.location, EntityType.ENDER_CRYSTAL)
         context.faction.heartHologram = HolographicDisplays.createHologram(context.faction)
+
+        val factionHeatSetEvent = FactionHeartSetEvent(
+            context.faction,
+            factionHeatPreSetEvent.location,
+            factionHeatPreSetEvent.protectedRegion
+        )
+        Bukkit.getServer().pluginManager.callEvent(factionHeatSetEvent)
 
         context.msg(TL.COMMAND_HEARTSET_SUCCESSFUL)
         context.faction.fPlayers

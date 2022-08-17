@@ -3,7 +3,9 @@ package com.massivecraft.factions.util
 import com.massivecraft.factions.Faction
 import com.massivecraft.factions.Factions
 import com.massivecraft.factions.FactionsPlugin
+import com.massivecraft.factions.event.FactionHeartHealthChangeEvent
 import com.massivecraft.factions.integration.HolographicDisplays
+import org.bukkit.Bukkit
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.concurrent.TimeUnit
 
@@ -49,7 +51,18 @@ class HeartRegenTask : BukkitRunnable() {
             // if it's recently placed it's free
             if ((hasPaid || faction.isHeartRecentlyPlaced) && membersNearby && !attackedRecently) {
                 if (counter == PHASE) {
-                    faction.heartHealth += 25
+                    val event = FactionHeartHealthChangeEvent(
+                        faction,
+                        faction.heartHealth,
+                        (faction.heartHealth + 25),
+                        FactionHeartHealthChangeEvent.Cause.REGENERATION
+                    )
+                    Bukkit.getServer().pluginManager.callEvent(event)
+                    if (event.isCancelled) {
+                        continue
+                    }
+
+                    faction.heartHealth = event.newValue
                     remember[faction] = 0
 
                     println("Added 25HP to ${faction.tag}")

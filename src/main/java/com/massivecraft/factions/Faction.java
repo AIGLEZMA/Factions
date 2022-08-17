@@ -74,9 +74,19 @@ public interface Faction extends EconomyParticipator, Selectable {
     /**
      * Sets the heart health.
      *
+     * @param value     heart health
+     * @param fireEvent whether the plugin should fire {@link com.massivecraft.factions.event.FactionHeartHealthChangeEvent} or not
+     */
+    void setHeartHealth(final double value, final boolean fireEvent);
+
+    /**
+     * Sets the heart health.
+     *
      * @param value heart health
      */
-    void setHeartHealth(final double value);
+    default void setHeartHealth(final double value) {
+        setHeartHealth(value, false);
+    }
 
     /**
      * Gets whether the heart has recently been placed or not see the regen task
