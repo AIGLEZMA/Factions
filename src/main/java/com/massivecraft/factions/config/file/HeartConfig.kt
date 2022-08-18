@@ -36,8 +36,8 @@ class HeartConfig {
                     material: Material
                  */
         var items = mutableMapOf<Int, MutableMap<String, String>>(
-            5 to mutableMapOf("type" to "money[5000]", "name" to "&a5000$", "material" to "PAPER"),
-            6 to mutableMapOf("type" to "item", "name" to "&eÉmeraude", "material" to "EMERALD")
+            20 to mutableMapOf("type" to "money[5000]", "name" to "&a5000$", "material" to "PAPER"),
+            21 to mutableMapOf("type" to "item", "name" to "&eÉmeraude", "material" to "EMERALD")
         )
 
         @Comment("Regeneration GUI configuration")
@@ -59,7 +59,7 @@ class HeartConfig {
                         "https://images.app.goo.gl/7xPAZH7AwbLSnNDu8"
             )
             var staticItemSlots = mutableListOf(
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 45, 45, 46, 47, 48, 50, 51, 52, 53
+                0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 50, 51, 52, 53
             )
 
             @Comment("Static item")
@@ -69,11 +69,28 @@ class HeartConfig {
                 .setColor(DyeColor.GRAY)
                 .build()
 
-            @Comment("Return item")
-            var returnItem: SimpleItem = SimpleItem.builder()
+            @Comment("Leader item")
+            var leaderItem: SimpleItem = SimpleItem.builder()
+                .setMaterial(Material.SKULL_ITEM)
+                .setData(3)
+                .setName("Faction : {faction}")
+                .setLore(
+                    "&7» &fLeader: &b{leader}",
+                    "&7» &fCreation date: &b{create-date}",
+                    "&7",
+                    "&7» &fYour balance: &a\${balance}",
+                    "&7» &fYour role: &b{player-role-prefix}",
+                    "&7» &cTODO: upgrades etc"
+                )
+                .atSlot(4)
+                .build()
+
+            @Comment("Close item")
+            var closeItem: SimpleItem = SimpleItem.builder()
                 .setMaterial(Material.STAINED_GLASS_PANE)
-                .setName("&cRETURN")
+                .setName("&cCLOSE")
                 .setColor(DyeColor.RED)
+                .atSlot(49)
                 .build()
 
         }

@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -21,6 +22,8 @@ public class SimpleItem {
     private Material material;
     private DyeColor color;
     private boolean enchant;
+    private short data;
+    private int slot;
 
     SimpleItem(Builder builder) {
         this.name = builder.name;
@@ -28,6 +31,8 @@ public class SimpleItem {
         this.material = builder.material;
         this.color = builder.color;
         this.enchant = builder.enchant;
+        this.data = builder.data;
+        this.slot = builder.slot;
     }
 
     public SimpleItem(SimpleItem item) {
@@ -36,6 +41,8 @@ public class SimpleItem {
         this.material = item.material;
         this.color = item.color;
         this.enchant = item.enchant;
+        this.data = item.data;
+        this.slot = item.slot;
     }
 
     public static Builder builder() {
@@ -44,7 +51,7 @@ public class SimpleItem {
 
     public ItemStack get() {
         if (isValid()) {
-            ItemStack itemStack = new ItemStack(material);
+            ItemStack itemStack = new ItemStack(material, 1, data);
             ItemMeta meta = itemStack.getItemMeta();
 
             if (name != null) {
@@ -84,6 +91,9 @@ public class SimpleItem {
         if (!from.lore.isEmpty()) {
             lore = from.lore;
         }
+        enchant = from.enchant;
+        data = from.data;
+        slot = from.slot;
     }
 
     public boolean isValid() {
@@ -131,12 +141,33 @@ public class SimpleItem {
         this.enchant = enchant;
     }
 
+    public short getData() {
+        return data;
+    }
+
+    public void setData(short data) {
+        this.data = data;
+    }
+
+    public int getSlot() {
+        return slot;
+    }
+
+    public void setSlot(int slot) {
+        if (slot < 0 || slot > 53) {
+            throw new IllegalArgumentException("Slot must range between 0 and 53");
+        }
+        this.slot = slot;
+    }
+
     public static class Builder {
         private Material material;
         private String name;
         private List<String> lore;
         private DyeColor color;
         private boolean enchant;
+        private short data;
+        private int slot = -1;
 
         private Builder() {
         }
@@ -151,6 +182,10 @@ public class SimpleItem {
             return this;
         }
 
+        public Builder setLore(String... lore) {
+            return setLore(Arrays.stream(lore).toList());
+        }
+
         public Builder setName(String name) {
             this.name = name;
             return this;
@@ -163,6 +198,19 @@ public class SimpleItem {
 
         public Builder setEnchant(boolean enchant) {
             this.enchant = enchant;
+            return this;
+        }
+
+        public Builder setData(short data) {
+            this.data = data;
+            return this;
+        }
+
+        public Builder atSlot(int slot) {
+            if (slot < 0 || slot > 53) {
+                throw new IllegalArgumentException("Slot must range between 0 and 53");
+            }
+            this.slot = slot;
             return this;
         }
 

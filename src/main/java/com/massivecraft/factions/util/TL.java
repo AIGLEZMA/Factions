@@ -651,6 +651,12 @@ public enum TL {
     COMMAND_WARUNCLAIMALL_SUCCESS("&eYou unclaimed ALL war zone land."),
     COMMAND_WARUNCLAIMALL_LOG("%1$s unclaimed all war zones."),
 
+    /**
+     * Heart
+     */
+    HEART_RIGHTCLICK_ERROR("&cThe heart you are clicking at is not your faction's heart."),
+    HEART_GUI_NOTENOUGHMONEY("&cYou must have $%s to perform this action."),
+    HEART_GUI_TRANSACTIONFAILED("&cThe transaction failed please try later or contact an administrator."),
 
     /**
      * Leaving - This is accessed through a command, and so it MAY need a COMMAND_* slug :s
