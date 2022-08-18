@@ -23,6 +23,7 @@ import com.massivecraft.factions.listeners.FactionsBlockListener;
 import com.massivecraft.factions.listeners.FactionsChatListener;
 import com.massivecraft.factions.listeners.FactionsEntityListener;
 import com.massivecraft.factions.listeners.FactionsExploitListener;
+import com.massivecraft.factions.listeners.FactionsHeartListener;
 import com.massivecraft.factions.listeners.FactionsHeartTestListener;
 import com.massivecraft.factions.listeners.FactionsPlayerListener;
 import com.massivecraft.factions.listeners.OneEightPlusListener;
@@ -301,6 +302,9 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
             saveTask = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new SaveTask(this), saveTicks, saveTicks);
         }
 
+        // to avoid NPE in FPlayers#load
+        heartRegenTask = new HeartRegenTask();
+
         int loadedPlayers = FPlayers.getInstance().load();
         int loadedFactions = Factions.getInstance().load();
         for (FPlayer fPlayer : FPlayers.getInstance().getAllFPlayers()) {
@@ -356,6 +360,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         getServer().getPluginManager().registerEvents(new FactionsHeartTestListener(), this);
         getServer().getPluginManager().registerEvents(new OneEightPlusListener(this), this);
         getServer().getPluginManager().registerEvents(new PortalListener(), this);
+        getServer().getPluginManager().registerEvents(new FactionsHeartListener(), this);
 
         // since some other plugins execute commands directly through this command interface, provide it
         this.getCommand(refCommand).setExecutor(cmdBase);
@@ -407,8 +412,6 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
                 startupExceptionLog = startupExceptionBuilder.toString();
             }
         }.runTask(this);
-
-        heartRegenTask = new HeartRegenTask();
 
         getLogger().info("=== Ready to go after " + (System.currentTimeMillis() - timeEnableStart) + "ms! ===");
         this.loadSuccessful = true;
