@@ -26,10 +26,10 @@ class FactionsHeartListener : Listener {
             return
         }
 
-        // TODO: placing ? removing ? NO!
+        // TODO: placing ? removing ? you can't click
 
         // check location
-        val factionAtLocation = Board.getInstance().getFactionAt(FLocation(player.location))
+        val factionAtLocation = Board.getInstance().getFactionAt(FLocation(entity.location))
         if (factionAtLocation != fPlayer.faction) {
             fPlayer.msg(TL.HEART_RIGHTCLICK_ERROR)
             return
