@@ -2,10 +2,12 @@ package com.massivecraft.factions.gui;
 
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +27,8 @@ public class SimpleItem {
     private short data;
     private int slot;
 
+    private OfflinePlayer skullHolder;
+
     SimpleItem(Builder builder) {
         this.name = builder.name;
         this.lore = builder.lore;
@@ -43,6 +47,7 @@ public class SimpleItem {
         this.enchant = item.enchant;
         this.data = item.data;
         this.slot = item.slot;
+        this.skullHolder = item.skullHolder;
     }
 
     public static Builder builder() {
@@ -70,6 +75,10 @@ public class SimpleItem {
                 itemStack.setDurability(color.getWoolData());
             }
 
+            if (skullHolder != null && itemStack.getType() == Material.SKULL_ITEM) {
+                ((SkullMeta) meta).setOwner(skullHolder.getName());
+            }
+
             itemStack.setItemMeta(meta);
             return itemStack;
         } else {
@@ -90,6 +99,9 @@ public class SimpleItem {
         }
         if (!from.lore.isEmpty()) {
             lore = from.lore;
+        }
+        if (from.skullHolder != null) {
+            skullHolder = from.skullHolder;
         }
         enchant = from.enchant;
         data = from.data;
@@ -137,8 +149,12 @@ public class SimpleItem {
         return enchant;
     }
 
-    public void setEnchant(boolean enchant) {
-        this.enchant = enchant;
+    public OfflinePlayer getSkullHolder() {
+        return skullHolder;
+    }
+
+    public void setSkullHolder(OfflinePlayer skullHolder) {
+        this.skullHolder = skullHolder;
     }
 
     public short getData() {
@@ -167,7 +183,7 @@ public class SimpleItem {
         private DyeColor color;
         private boolean enchant;
         private short data;
-        private int slot = -1;
+        private int slot = 0;
 
         private Builder() {
         }

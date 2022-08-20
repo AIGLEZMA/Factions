@@ -1,6 +1,7 @@
 package com.massivecraft.factions.data;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.massivecraft.factions.Board;
 import com.massivecraft.factions.FLocation;
@@ -57,6 +58,7 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     protected transient boolean heartRecentlyPlaced;
     protected transient long lastHeartAttack;
     protected transient Hologram heartHologram;
+    protected Set<Integer> heartRegenPaidItems = Sets.newHashSet();
     // FORK - end
     protected String id = null;
     protected boolean peacefulExplosionsEnabled;
@@ -124,6 +126,7 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
         this.heartRecentlyPlaced = old.heartRecentlyPlaced;
         this.lastHeartAttack = old.lastHeartAttack;
         this.heartHologram = old.heartHologram;
+        this.heartRegenPaidItems = old.heartRegenPaidItems;
         // FORK - end
 
         id = old.id;
@@ -229,6 +232,22 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     @Override
     public void setHeartHologram(@Nullable final Hologram hologram) {
         this.heartHologram = hologram;
+    }
+
+    @NotNull
+    @Override
+    public Set<Integer> getHeartRegenPaidItems() {
+        return ImmutableSet.copyOf(this.heartRegenPaidItems);
+    }
+
+    @Override
+    public void setHeartRegenPaidItems(@NotNull final Set<Integer> set) {
+        this.heartRegenPaidItems = set;
+    }
+
+    @Override
+    public void addHeartRegenPaidItem(final int slot) {
+        this.heartRegenPaidItems.add(slot);
     }
 
     public HashMap<String, List<String>> getAnnouncements() {

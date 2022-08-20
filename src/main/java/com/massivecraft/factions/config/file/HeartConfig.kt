@@ -22,7 +22,7 @@ class HeartConfig {
 
     class Regeneration {
 
-        @Comment("Number of items chosen randomly from the list below")
+        @Comment("Number of items chosen randomly from the list above")
         var random = 4
 
         @Comment(
@@ -35,9 +35,15 @@ class HeartConfig {
                     name: String
                     material: Material
                  */
-        var items = mutableMapOf<Int, MutableMap<String, String>>(
-            20 to mutableMapOf("type" to "money[5000]", "name" to "&a5000$", "material" to "PAPER"),
-            21 to mutableMapOf("type" to "item", "name" to "&eÉmeraude", "material" to "EMERALD")
+        // BUG: we need to use String then parse it to Int later
+        var items = mutableMapOf<String, MutableMap<String, String>>(
+            "20" to mutableMapOf("type" to "money[5000]", "name" to "&a5000$", "material" to "PAPER"),
+            "21" to mutableMapOf("type" to "money[10000]", "name" to "&a10000$", "material" to "PAPER"),
+            "22" to mutableMapOf("type" to "money[10]", "name" to "&a10$", "material" to "PAPER"),
+            "23" to mutableMapOf("type" to "money[25]", "name" to "&a25$", "material" to "PAPER"),
+            "24" to mutableMapOf("type" to "item", "name" to "&eÉmeraude", "material" to "EMERALD"),
+            "29" to mutableMapOf("type" to "item", "name" to "&bDiamant", "material" to "DIAMOND_ORE"),
+            "30" to mutableMapOf("type" to "item", "name" to "&7Fer", "material" to "IRON_ORE")
         )
 
         @Comment("Regeneration GUI configuration")
@@ -95,7 +101,54 @@ class HeartConfig {
 
         }
 
-        class ConfirmGUI
+        class ConfirmGUI {
+
+            @Comment("Inventory size (1..6)")
+            var size = 3
+
+            @Comment("Inventory title")
+            var title = "Confirmation GUI"
+
+            @Comment(
+                "Slots that will be filled with static item \n" +
+                        "https://images.app.goo.gl/7xPAZH7AwbLSnNDu8"
+            )
+            var staticItemSlots = mutableListOf(
+                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 23, 24, 25, 26
+            )
+
+            @Comment("Static item")
+            var staticItem: SimpleItem = SimpleItem.builder()
+                .setMaterial(Material.STAINED_GLASS_PANE)
+                .setName("&7")
+                .setColor(DyeColor.GRAY)
+                .build()
+
+            @Comment("Yes item")
+            var yesItem: SimpleItem = SimpleItem.builder()
+                .setMaterial(Material.STAINED_GLASS_PANE)
+                .setColor(DyeColor.LIME)
+                .setName("&aYES !")
+                .atSlot(11)
+                .build()
+
+            @Comment("No item")
+            var noItem: SimpleItem = SimpleItem.builder()
+                .setMaterial(Material.STAINED_GLASS_PANE)
+                .setColor(DyeColor.RED)
+                .setName("&cNO !")
+                .atSlot(15)
+                .build()
+
+            @Comment("Back item")
+            var backItem: SimpleItem = SimpleItem.builder()
+                .setMaterial(Material.STAINED_GLASS_PANE)
+                .setName("&6BACK")
+                .setColor(DyeColor.RED)
+                .atSlot(22)
+                .build()
+
+        }
 
     }
 

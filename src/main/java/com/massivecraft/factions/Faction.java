@@ -132,6 +132,25 @@ public interface Faction extends EconomyParticipator, Selectable {
      */
     void setHeartHologram(@Nullable final Hologram hologram);
 
+    /**
+     * Returns an immutable set of items bought by members to regenerate the heart
+     * see {@link com.massivecraft.factions.config.file.HeartConfig.Regeneration}
+     *
+     * @return immutable set of items
+     */
+    @NotNull
+    Set<Integer> getHeartRegenPaidItems();
+
+    /**
+     * Sets the items bought by members to regenerate the heart
+     * see {@link Faction#getHeartRegenPaidItems()}
+     *
+     * @param set set of items
+     */
+    void setHeartRegenPaidItems(@NotNull Set<Integer> set);
+
+    void addHeartRegenPaidItem(final int slot);
+
     Map<String, List<String>> getAnnouncements();
 
     Map<String, LazyLocation> getWarps();
