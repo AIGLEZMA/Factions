@@ -2,6 +2,7 @@ package com.massivecraft.factions.gui
 
 import com.massivecraft.factions.FPlayer
 import com.massivecraft.factions.FactionsPlugin
+import com.massivecraft.factions.event.FactionHeartRegenItemBoughtEvent
 import com.massivecraft.factions.integration.Econ
 import com.massivecraft.factions.util.TL
 import com.massivecraft.factions.util.debug
@@ -64,30 +65,14 @@ class RegenerationGUI(val fPlayer: FPlayer) :
         }
 
         // TODO: put checks in a method to remove boilerplate code
-        val item = config.items[slot.toString()]
-        if (item == null) {
-            debug("[GUI] (GET) Item at slot $slot was not found in the config BUT found on the GUI what?")
-            return BLANK
-        }
+        val item = config.items[slot.toString()] ?: return BLANK
 
-        val materialName = item["material"]
-        if (materialName == null) {
-            debug("[GUI] (GET) Material name of item at slot $slot is null, check the config")
-            return BLANK
-        }
+        val materialName = item["material"] ?: return BLANK
 
-        val material = Material.getMaterial(materialName)
-        if (material == null) {
-            debug("[GUI] (GET) Material of item at slot $slot with material name $materialName was not found, check the config")
-            return BLANK
-        }
+        val material = Material.getMaterial(materialName) ?: return BLANK
 
         // we have material now check name, name is very important to check if the player has the said item in his inventory
-        val name = item["name"]
-        if (name == null) {
-            debug("[GUI] (GET) Display name of item at slot $slot is null, check the config")
-            return BLANK
-        }
+        val name = item["name"] ?: return BLANK
 
         // cache only items (not money)
         val type = item["type"]
@@ -113,26 +98,17 @@ class RegenerationGUI(val fPlayer: FPlayer) :
             val item = config.items[slot.toString()]!!
 
             if (fPlayer.faction.heartRegenPaidItems.contains(slot)) {
-                debug("[GUI] (CLICK) Type of item at slot $slot already bought by someone else from your faction")
-
                 fPlayer.msg(TL.HEART_REGENGUI_ITEMALREADYBOUGHT)
+
                 reopen()
                 return
             }
 
-            val type = item["type"]
-            if (type == null) {
-                debug("[GUI] (CLICK) Type of item at slot $slot is null, check the config")
-                return
-            }
+            val type = item["type"] ?: return
 
             // money $$$$$
             if (type.startsWith("money", true)) {
-                val amount = type.filter { it.isDigit() }.toDoubleOrNull()
-                if (amount == null) {
-                    debug("[GUI] (CLICK) Amount of item at slot $slot is not correct ($type) (${type.filter { it.isDigit() }})")
-                    return
-                }
+                val amount = type.filter { it.isDigit() }.toDoubleOrNull() ?: return
 
                 if (!Econ.has(fPlayer, amount)) {
                     fPlayer.msg(TL.HEART_REGENGUI_NOTENOUGHMONEY, amount)
@@ -145,6 +121,8 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                         val transaction = Econ.withdraw(fPlayer, amount)
                         if (!transaction) {
                             fPlayer.msg(TL.HEART_REGENGUI_TRANSACTIONFAILED)
+
+                            reopen()
                             return@RegenConfirmGUI
                         }
 
@@ -153,7 +131,8 @@ class RegenerationGUI(val fPlayer: FPlayer) :
 
                         fPlayer.faction.addHeartRegenPaidItem(slot)
                         fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, "$${amount}")
-                        debug("[GUI] (CLICK) Added item $slot to items bought to regen for ${fPlayer.faction.tag} (${fPlayer.faction.heartRegenPaidItems})")
+
+                        Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, slot))
 
                         reopen()
                     },
@@ -163,16 +142,11 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                         open()
                     }
             } else {
-                debug("[GUI] (CLICK) Found ${cache.size} cached items")
-                if (!cache.contains(slot)) {
-                    debug("[GUI] (CLICK) Cache doesn't contain item with slot $slot (${cache.keys})")
-                    return
-                }
+                if (!cache.contains(slot)) return
 
                 val material = cache[slot]!!.first
                 val name = cache[slot]!!.second
 
-                // TODO: clean this itemstack creation
                 val toRemove = ItemStack(material)
                 val toRemoveMeta =
                     toRemove.itemMeta.apply { displayName = ChatColor.translateAlternateColorCodes('&', name) }
@@ -182,10 +156,7 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                     val result = player.inventory.removeItem(toRemove)
 
                     if (result.isNotEmpty()) {
-                        for (re in result.values) {
-                            debug("[GUI] (CLICK) ${re.type} , ${re.itemMeta?.toString()}")
-                        }
-
+                        fPlayer.msg(TL.HEART_REGENGUI_ITEMNOTFOUND, name)
                         reopen()
 
                         return@RegenConfirmGUI
@@ -195,7 +166,8 @@ class RegenerationGUI(val fPlayer: FPlayer) :
 
                         fPlayer.faction.addHeartRegenPaidItem(slot)
                         fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, name)
-                        debug("[GUI] (CLICK) Added item $slot to items bought to regen for ${fPlayer.faction.tag} (${fPlayer.faction.heartRegenPaidItems})")
+
+                        Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, slot))
 
                         reopen()
                     }

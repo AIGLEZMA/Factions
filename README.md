@@ -9,3 +9,4 @@ I've added some events:
 - FactionHeartPreSetEvent: Fired when a faction heart is about to be placed
 - FactionHeartSetEvent: Fired when a faction heart is placed (Post FactionHeartPreSetEvent)
 - FactionHeartHealthChangeEvent: Fired when a faction heart's health has increased or decreased
+- FactionHeartRegenItemBoughtEvent

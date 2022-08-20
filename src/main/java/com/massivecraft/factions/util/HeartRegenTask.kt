@@ -37,7 +37,8 @@ class HeartRegenTask : BukkitRunnable() {
 
             val counter = remember.getOrPut(faction) { Pair(1, 0) }
 
-            val hasPaid = true
+            val hasPaid =
+                faction.heartRegenPaidItems.size == FactionsPlugin.getInstance().configManager.heartConfig.regeneration.items.size
             val membersNearby = faction.fPlayers
                 .filter { fPlayer -> fPlayer.isOnline }
                 .map { fPlayer -> fPlayer.player }
