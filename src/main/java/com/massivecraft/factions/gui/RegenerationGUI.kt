@@ -64,7 +64,6 @@ class RegenerationGUI(val fPlayer: FPlayer) :
             }
         }
 
-        // TODO: put checks in a method to remove boilerplate code
         val item = config.items[slot.toString()] ?: return BLANK
 
         val materialName = item["material"] ?: return BLANK
@@ -177,7 +176,6 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                     build()
                     open()
                 }
-                //TODO: fire event
             }
         }
     }
