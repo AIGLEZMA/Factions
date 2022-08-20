@@ -95,6 +95,7 @@ class RegenerationGUI(val fPlayer: FPlayer) :
 
         if (config.items.keys.contains(slot.toString())) {
             val item = config.items[slot.toString()]!!
+            val name = item["name"]!!
 
             if (fPlayer.faction.heartRegenPaidItems.contains(slot)) {
                 fPlayer.msg(TL.HEART_REGENGUI_ITEMALREADYBOUGHT)
@@ -129,7 +130,7 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                         slotMap.remove(slot) // remove from slot map to prevent it being clickable again
 
                         fPlayer.faction.addHeartRegenPaidItem(slot)
-                        fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, "$${amount}")
+                        fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, name)
 
                         Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, slot))
 
@@ -144,11 +145,13 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                 if (!cache.contains(slot)) return
 
                 val material = cache[slot]!!.first
-                val name = cache[slot]!!.second
+                val displayName = cache[slot]!!.second
 
                 val toRemove = ItemStack(material)
                 val toRemoveMeta =
-                    toRemove.itemMeta.apply { displayName = ChatColor.translateAlternateColorCodes('&', name) }
+                    toRemove.itemMeta.apply {
+                        this.displayName = ChatColor.translateAlternateColorCodes('&', displayName)
+                    }
                 toRemove.itemMeta = toRemoveMeta
 
                 RegenConfirmGUI(fPlayer, {
