@@ -34,6 +34,7 @@ import java.util.Collections;
 public class FCmdRoot extends FCommand implements CommandExecutor {
 
     private static FCmdRoot cmdBase;
+    public final CmdTest cmdTest = new CmdTest();
     public final CmdHeart cmdHeart = new CmdHeart();
     public final CmdAutoHelp cmdAutoHelp = new CmdAutoHelp();
     public final CmdAdmin cmdAdmin = new CmdAdmin();
@@ -129,6 +130,7 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
 
         this.addSubCommand(this.cmdAdmin);
         this.addSubCommand(this.cmdHeart);
+        this.addSubCommand(this.cmdTest);
         this.addSubCommand(this.cmdAutoUnclaim);
         this.addSubCommand(this.cmdAutoClaim);
         this.addSubCommand(this.cmdBoom);
