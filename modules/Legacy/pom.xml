@@ -156,7 +156,7 @@
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-core</artifactId>
-            <version>6.1.1-SNAPSHOT</version>
+            <version>7.2.12</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
