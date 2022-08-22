@@ -5,7 +5,6 @@ import com.massivecraft.factions.FactionsPlugin
 import com.massivecraft.factions.event.FactionHeartRegenItemBoughtEvent
 import com.massivecraft.factions.integration.Econ
 import com.massivecraft.factions.util.TL
-import com.massivecraft.factions.util.debug
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -30,14 +29,11 @@ class RegenerationGUI(val fPlayer: FPlayer) :
         val slotMap = mutableMapOf<Int, Int>()
         for ((slot, _) in config.items.mapKeys { it.key.toInt() }) {
             if (fPlayer.faction.heartRegenPaidItems.contains(slot)) {
-                debug("[GUI] (SLOT) Faction ${fPlayer.faction.tag} already bought item $slot, Skipping...")
                 continue
             }
 
             slotMap[slot] = slot
         }
-
-        debug("[GUI] (SLOT) Registered ${slotMap.size} slots (items only)")
 
         slotMap[config.gui.closeItem.slot] = -1
         slotMap[config.gui.leaderItem.slot] = -2
@@ -50,7 +46,6 @@ class RegenerationGUI(val fPlayer: FPlayer) :
             dummyItems[slot] = SimpleItem(config.gui.staticItem)
         }
 
-        debug("[GUI] Added ${dummyItems.size} dummy item")
         return dummyItems
     }
 
