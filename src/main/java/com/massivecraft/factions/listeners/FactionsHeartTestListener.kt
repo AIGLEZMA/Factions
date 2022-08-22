@@ -2,6 +2,7 @@ package com.massivecraft.factions.listeners
 
 import com.massivecraft.factions.event.FactionHeartHealthChangeEvent
 import com.massivecraft.factions.event.FactionHeartPreSetEvent
+import com.massivecraft.factions.event.FactionHeartRegenItemBoughtEvent
 import com.massivecraft.factions.event.FactionHeartSetEvent
 import org.bukkit.Location
 import org.bukkit.Material
@@ -27,6 +28,11 @@ class FactionsHeartTestListener : Listener {
     @EventHandler
     fun onHeartHealthChangeEvent(e: FactionHeartHealthChangeEvent) {
         //println("(FactionHeartHealthChangeEvent) INIT ${e.faction.tag} - ${e.oldValue} - ${e.newValue} - ${e.cause}")
+    }
+
+    @EventHandler
+    fun onFactionHeartRegenItemBoughtEvent(e: FactionHeartRegenItemBoughtEvent) {
+        com.massivecraft.factions.util.debug("[EVENT] (FactionHeartRegenItemBoughtEvent) ${e.faction.tag} - ${e.item} - ${e.buyer.tag}")
     }
 
     private fun debug(location: Location): String {

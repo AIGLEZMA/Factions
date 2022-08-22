@@ -26,6 +26,11 @@ class FactionHeartHealthChangeEvent(faction: Faction, val oldValue: Double, var 
         PLUGIN,
 
         /**
+         * Indicates the heart health change was caused by a player
+         */
+        DAMAGE,
+
+        /**
          * Indicates the heart health change was caused by the admin command
          */
         COMMAND,

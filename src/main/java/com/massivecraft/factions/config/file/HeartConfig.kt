@@ -14,6 +14,9 @@ import org.bukkit.Material
 )
 class HeartConfig {
 
+    @Comment("Amount of damaged the attacked faction heart will get")
+    var damage = 5.0
+
     @Comment("Holograms configuration")
     var holograms = Holograms()
 

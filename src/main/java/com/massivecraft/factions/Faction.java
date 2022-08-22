@@ -85,7 +85,7 @@ public interface Faction extends EconomyParticipator, Selectable {
      * @param value heart health
      */
     default void setHeartHealth(final double value) {
-        setHeartHealth(value, false);
+        setHeartHealth(value, true);
     }
 
     /**

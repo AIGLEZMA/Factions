@@ -11,12 +11,12 @@ import org.bukkit.scheduler.BukkitRunnable
 import java.util.concurrent.TimeUnit
 import kotlin.Pair
 
-class HeartRegenTask : BukkitRunnable() {
+class HeartRegenTask(val plugin: FactionsPlugin) : BukkitRunnable() {
 
     private val remember = mutableMapOf<Faction, Pair<Int, Long>>() // <Phase>, <Counter>
 
     init {
-        runTaskTimer(FactionsPlugin.getInstance(), 20L, 20L)
+        runTaskTimer(plugin, 20L, 20L)
     }
 
     override fun run() {
@@ -38,7 +38,7 @@ class HeartRegenTask : BukkitRunnable() {
             val counter = remember.getOrPut(faction) { Pair(1, 0) }
 
             val hasPaid =
-                faction.heartRegenPaidItems.size == FactionsPlugin.getInstance().configManager.heartConfig.regeneration.items.size
+                faction.heartRegenPaidItems.size == plugin.configManager.heartConfig.regeneration.items.size
             val membersNearby = faction.fPlayers
                 .filter { fPlayer -> fPlayer.isOnline }
                 .map { fPlayer -> fPlayer.player }
@@ -65,7 +65,7 @@ class HeartRegenTask : BukkitRunnable() {
                         continue
                     }
 
-                    faction.heartHealth = event.newValue
+                    faction.setHeartHealth(event.newValue, false)
                     remember[faction] = Pair(remember[faction]!!.first + 1, 0)
 
                     println("Added 25HP to ${faction.tag} | ${remember[faction]}")

@@ -655,11 +655,18 @@ public enum TL {
      * Heart
      */
     HEART_RIGHTCLICK_ERROR("&cThe heart you are clicking at is not your faction's heart."),
+    HEART_RIGHTCLICK_RECENTLYPLACED("&cYou must wait until the heart health is full! (Reason: recenlty placed)"),
     HEART_REGENGUI_NOTENOUGHMONEY("&cYou must have $%s to perform this action."),
     HEART_REGENGUI_TRANSACTIONFAILED("&cThe transaction failed please try later or contact an administrator."),
     HEART_REGENGUI_ITEMNOTFOUND("&cThe item with name %s was not found in your inventory."),
     HEART_REGENGUI_ITEMALREADYBOUGHT("&cThe item you clicked at is already bought."),
     HEART_REGENGUI_BOUGHT("&aYou bought item with name &r%s&r."),
+
+    HEART_DAMAGE_MEMBER("&cYou can not damage your faction's heart!"),
+    HEART_DAMAGE_ALLYORTRUCE("&cYou can not damage an ally's faction heart!"),
+    HEART_DAMAGE_NEUTRAL("&cYou can not damage a neutral's faction heart!"),
+    HEART_DAMAGE_WRONGITEM("&cYou can not damage a faction heart without a diamond sword!"),
+    HEART_DAMAGE_RECENTLYPLACED("&cYou can not damage a faction heart that is been placed recently!"),
 
     /**
      * Leaving - This is accessed through a command, and so it MAY need a COMMAND_* slug :s

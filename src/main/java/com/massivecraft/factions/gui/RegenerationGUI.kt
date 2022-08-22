@@ -130,7 +130,7 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                         slotMap.remove(slot) // remove from slot map to prevent it being clickable again
 
                         fPlayer.faction.addHeartRegenPaidItem(slot)
-                        fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, name)
+                        fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, ChatColor.translateAlternateColorCodes('&', name))
 
                         Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, slot))
 

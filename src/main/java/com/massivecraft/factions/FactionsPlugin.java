@@ -33,6 +33,8 @@ import com.massivecraft.factions.perms.PermSelectorRegistry;
 import com.massivecraft.factions.perms.PermSelectorTypeAdapter;
 import com.massivecraft.factions.perms.PermissibleActionRegistry;
 import com.massivecraft.factions.struct.ChatMode;
+import com.massivecraft.factions.struct.DefaultHeartDamageProvider;
+import com.massivecraft.factions.struct.HeartDamageProvider;
 import com.massivecraft.factions.util.AutoLeaveTask;
 import com.massivecraft.factions.util.EnumTypeAdapter;
 import com.massivecraft.factions.util.FlightUtil;
@@ -64,6 +66,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -119,6 +122,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
     private boolean autoSave = true;
     private boolean loadSuccessful = false;
     private HeartRegenTask heartRegenTask;
+    private HeartDamageProvider heartDamageProvider;
     // Some utils
     private Persist persist;
     private TextUtil txt;
@@ -303,7 +307,8 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         }
 
         // to avoid NPE in FPlayers#load
-        heartRegenTask = new HeartRegenTask();
+        heartRegenTask = new HeartRegenTask(this);
+        heartDamageProvider = new DefaultHeartDamageProvider(this);
 
         int loadedPlayers = FPlayers.getInstance().load();
         int loadedFactions = Factions.getInstance().load();
@@ -360,7 +365,7 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         getServer().getPluginManager().registerEvents(new FactionsHeartTestListener(), this);
         getServer().getPluginManager().registerEvents(new OneEightPlusListener(this), this);
         getServer().getPluginManager().registerEvents(new PortalListener(), this);
-        getServer().getPluginManager().registerEvents(new FactionsHeartListener(), this);
+        getServer().getPluginManager().registerEvents(new FactionsHeartListener(this), this);
 
         // since some other plugins execute commands directly through this command interface, provide it
         this.getCommand(refCommand).setExecutor(cmdBase);
@@ -951,8 +956,18 @@ public class FactionsPlugin extends JavaPlugin implements FactionsAPI {
         return this.getServer().getOfflinePlayer(name);
     }
 
+    @NotNull
     public HeartRegenTask getHeartRegenTask() {
         return this.heartRegenTask;
+    }
+
+    @NotNull
+    public HeartDamageProvider getHeartDamageProvider() {
+        return this.heartDamageProvider;
+    }
+
+    public void setHeartDamageProvider(@NotNull HeartDamageProvider heartDamageProvider) {
+        this.heartDamageProvider = heartDamageProvider;
     }
 
     public BukkitAudiences getAdventure() {
