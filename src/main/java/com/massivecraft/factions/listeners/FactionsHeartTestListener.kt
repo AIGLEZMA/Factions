@@ -32,7 +32,7 @@ class FactionsHeartTestListener : Listener {
 
     @EventHandler
     fun onFactionHeartRegenItemBoughtEvent(e: FactionHeartRegenItemBoughtEvent) {
-        com.massivecraft.factions.util.debug("[EVENT] (FactionHeartRegenItemBoughtEvent) ${e.faction.tag} - ${e.item} - ${e.buyer.tag}")
+        com.massivecraft.factions.util.debug("[EVENT] (FactionHeartRegenItemBoughtEvent) ${e.faction.tag} - ${e.itemId} - ${e.buyer.tag}")
     }
 
     private fun debug(location: Location): String {

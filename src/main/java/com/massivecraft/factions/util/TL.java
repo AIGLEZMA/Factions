@@ -655,10 +655,10 @@ public enum TL {
      * Heart
      */
     HEART_RIGHTCLICK_ERROR("&cThe heart you are clicking at is not your faction's heart."),
-    HEART_RIGHTCLICK_RECENTLYPLACED("&cYou must wait until the heart health is full! (Reason: recenlty placed)"),
+    HEART_RIGHTCLICK_FULLHEALTH("&cYour heart health is full."),
     HEART_REGENGUI_NOTENOUGHMONEY("&cYou must have $%s to perform this action."),
     HEART_REGENGUI_TRANSACTIONFAILED("&cThe transaction failed please try later or contact an administrator."),
-    HEART_REGENGUI_ITEMNOTFOUND("&cThe item with name %s was not found in your inventory."),
+    HEART_REGENGUI_ITEMNOTFOUND("&cThe item with name &r%s&r was not found in your inventory."),
     HEART_REGENGUI_ITEMALREADYBOUGHT("&cThe item you clicked at is already bought."),
     HEART_REGENGUI_BOUGHT("&aYou bought item with name &r%s&r."),
 

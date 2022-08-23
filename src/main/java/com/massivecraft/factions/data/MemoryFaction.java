@@ -58,7 +58,7 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
     protected transient boolean heartRecentlyPlaced;
     protected transient long lastHeartAttack;
     protected transient Hologram heartHologram;
-    protected Set<Integer> heartRegenPaidItems = Sets.newHashSet();
+    protected Set<String> heartRegenPaidItems = Sets.newHashSet();
     // FORK - end
     protected String id = null;
     protected boolean peacefulExplosionsEnabled;
@@ -236,18 +236,18 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
 
     @NotNull
     @Override
-    public Set<Integer> getHeartRegenPaidItems() {
+    public Set<String> getHeartRegenPaidItems() {
         return ImmutableSet.copyOf(this.heartRegenPaidItems);
     }
 
     @Override
-    public void setHeartRegenPaidItems(@NotNull final Set<Integer> set) {
+    public void setHeartRegenPaidItems(@NotNull final Set<String> set) {
         this.heartRegenPaidItems = set;
     }
 
     @Override
-    public void addHeartRegenPaidItem(final int slot) {
-        this.heartRegenPaidItems.add(slot);
+    public void addHeartRegenPaidItem(final String id) {
+        this.heartRegenPaidItems.add(id);
     }
 
     public HashMap<String, List<String>> getAnnouncements() {

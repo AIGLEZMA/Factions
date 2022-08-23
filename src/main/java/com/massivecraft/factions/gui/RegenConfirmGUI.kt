@@ -3,7 +3,6 @@ package com.massivecraft.factions.gui
 import com.massivecraft.factions.FPlayer
 import com.massivecraft.factions.FactionsPlugin
 import com.massivecraft.factions.gui.GUI.Backable
-import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.event.inventory.ClickType
 
@@ -65,12 +64,9 @@ class RegenConfirmGUI(val fPlayer: FPlayer, val yesConsumer: () -> Unit, val noC
 
     override fun onBack() {
         fPlayer.player.closeInventory()
-        // delay opening
-        Bukkit.getScheduler().runTaskLater(FactionsPlugin.getInstance(), {
-            RegenerationGUI(fPlayer).apply {
-                build()
-                open()
-            }
-        }, 1L)
+        RegenerationGUI(fPlayer).apply {
+            build()
+            open()
+        }
     }
 }

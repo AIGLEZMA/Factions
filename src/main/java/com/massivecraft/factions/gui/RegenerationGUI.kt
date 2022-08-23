@@ -5,6 +5,7 @@ import com.massivecraft.factions.FactionsPlugin
 import com.massivecraft.factions.event.FactionHeartRegenItemBoughtEvent
 import com.massivecraft.factions.integration.Econ
 import com.massivecraft.factions.util.TL
+import com.massivecraft.factions.util.debug
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -12,31 +13,32 @@ import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.ItemStack
 
 class RegenerationGUI(val fPlayer: FPlayer) :
-    GUI<Int>(fPlayer, FactionsPlugin.getInstance().configManager.heartConfig.regeneration.gui.size) {
+    GUI<String>(fPlayer, FactionsPlugin.getInstance().configManager.heartConfig.regeneration.gui.size) {
 
     private val config = FactionsPlugin.getInstance().configManager.heartConfig.regeneration
-    private val cache = mutableMapOf<Int, Pair<Material, String>>()
+    private val cache = mutableMapOf<String, Pair<Material, String>>()
     private val player = fPlayer.player
 
     // TODO: close when disband/leave
 
     override fun getName(): String = ChatColor.translateAlternateColorCodes('&', config.gui.title)
 
-    override fun parse(toParse: String, type: Int): String = parseDefault(toParse)
+    override fun parse(toParse: String, type: String): String = parseDefault(toParse)
 
-    override fun createSlotMap(): MutableMap<Int, Int> {
-        // TODO: chance
-        val slotMap = mutableMapOf<Int, Int>()
-        for ((slot, _) in config.items.mapKeys { it.key.toInt() }) {
-            if (fPlayer.faction.heartRegenPaidItems.contains(slot)) {
+    override fun createSlotMap(): MutableMap<Int, String> {
+        val slotMap = mutableMapOf<Int, String>()
+        for (item in config.items) {
+            val slot = item["slot"]?.toInt() ?: continue
+            val id = item["id"] ?: continue
+            if (fPlayer.faction.heartRegenPaidItems.contains(id)) {
                 continue
             }
 
-            slotMap[slot] = slot
+            slotMap[slot] = id
         }
 
-        slotMap[config.gui.closeItem.slot] = -1
-        slotMap[config.gui.leaderItem.slot] = -2
+        slotMap[config.gui.closeItem.slot] = "CLOSE"
+        slotMap[config.gui.leaderItem.slot] = "LEADER"
         return slotMap
     }
 
@@ -49,17 +51,23 @@ class RegenerationGUI(val fPlayer: FPlayer) :
         return dummyItems
     }
 
-    override fun getItem(slot: Int): SimpleItem {
-        if (slot == -1) {
+    override fun getItem(id: String): SimpleItem {
+        if (id == "CLOSE") {
             return config.gui.closeItem
         }
-        if (slot == -2) {
-            return SimpleItem(config.gui.leaderItem).apply {
-                skullHolder = fPlayer.faction.fPlayerAdmin.offlinePlayer
-            }
+        if (id == "LEADER") {
+            return SimpleItem(config.gui.leaderItem)
+                .apply {
+                    skullHolder = fPlayer.faction.fPlayerAdmin.offlinePlayer
+                }
         }
 
-        val item = config.items[slot.toString()] ?: return BLANK
+        val item = config.itemById(id)
+        if (item == null) {
+            debug("[GUI] Item with id $id not found")
+            debug(config.items.toString())
+            return BLANK
+        }
 
         val materialName = item["material"] ?: return BLANK
 
@@ -71,7 +79,7 @@ class RegenerationGUI(val fPlayer: FPlayer) :
         // cache only items (not money)
         val type = item["type"]
         if (type != null && type.equals("item", true)) {
-            cache[slot] = Pair(material, name)
+            cache[id] = Pair(material, name)
         }
 
         return SimpleItem.builder()
@@ -80,113 +88,102 @@ class RegenerationGUI(val fPlayer: FPlayer) :
             .build()
     }
 
-    override fun onClick(slot: Int, clickType: ClickType) {
+    override fun onClick(id: String, clickType: ClickType) {
         if (clickType != ClickType.LEFT) return
-
-        if (slot == -1) {
+        if (id == "CLOSE") {
             player.closeInventory()
             return
         }
 
-        if (config.items.keys.contains(slot.toString())) {
-            val item = config.items[slot.toString()]!!
-            val name = item["name"]!!
+        val item = config.itemById(id) ?: return
+        if (fPlayer.faction.heartRegenPaidItems.contains(id)) {
+            fPlayer.msg(TL.HEART_REGENGUI_ITEMALREADYBOUGHT)
+            reopen()
+            return
+        }
 
-            if (fPlayer.faction.heartRegenPaidItems.contains(slot)) {
-                fPlayer.msg(TL.HEART_REGENGUI_ITEMALREADYBOUGHT)
+        val name = item["name"] ?: return
+        val type = item["type"] ?: return
+        val slot = item["slot"]?.toInt() ?: return
 
-                reopen()
+        if (type == "money") {
+            val amount = item["amount"]?.toDouble() ?: return
+
+            if (!Econ.has(fPlayer, amount)) {
+                fPlayer.msg(TL.HEART_REGENGUI_NOTENOUGHMONEY, amount)
                 return
             }
 
-            val type = item["type"] ?: return
-
-            // money $$$$$
-            if (type.startsWith("money", true)) {
-                val amount = type.filter { it.isDigit() }.toDoubleOrNull() ?: return
-
-                if (!Econ.has(fPlayer, amount)) {
-                    fPlayer.msg(TL.HEART_REGENGUI_NOTENOUGHMONEY, amount)
-                    return
+            player.closeInventory()
+            RegenConfirmGUI(fPlayer, {
+                val transaction = Econ.withdraw(fPlayer, amount)
+                if (!transaction) {
+                    fPlayer.msg(TL.HEART_REGENGUI_TRANSACTIONFAILED)
+                    reopen()
+                    return@RegenConfirmGUI
                 }
 
-                player.closeInventory()
-                RegenConfirmGUI(fPlayer,
-                    {
-                        val transaction = Econ.withdraw(fPlayer, amount)
-                        if (!transaction) {
-                            fPlayer.msg(TL.HEART_REGENGUI_TRANSACTIONFAILED)
+                inventory.setItem(slot, ItemStack(Material.AIR))
+                slotMap.remove(slot) // remove from slot map to prevent it being clickable again
 
-                            reopen()
-                            return@RegenConfirmGUI
-                        }
+                fPlayer.faction.addHeartRegenPaidItem(id)
+                fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, name)
 
-                        inventory.setItem(slot, ItemStack(Material.AIR))
-                        slotMap.remove(slot) // remove from slot map to prevent it being clickable again
-
-                        fPlayer.faction.addHeartRegenPaidItem(slot)
-                        fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, ChatColor.translateAlternateColorCodes('&', name))
-
-                        Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, slot))
-
-                        reopen()
-                    },
-                    { reopen() })
-                    .apply {
-                        build()
-                        open()
-                    }
-            } else {
-                if (!cache.contains(slot)) return
-
-                val material = cache[slot]!!.first
-                val displayName = cache[slot]!!.second
-
-                val toRemove = ItemStack(material)
-                val toRemoveMeta =
-                    toRemove.itemMeta.apply {
-                        this.displayName = ChatColor.translateAlternateColorCodes('&', displayName)
-                    }
-                toRemove.itemMeta = toRemoveMeta
-
-                RegenConfirmGUI(fPlayer, {
-                    val result = player.inventory.removeItem(toRemove)
-
-                    if (result.isNotEmpty()) {
-                        fPlayer.msg(TL.HEART_REGENGUI_ITEMNOTFOUND, name)
-                        reopen()
-
-                        return@RegenConfirmGUI
-                    } else {
-                        inventory.setItem(slot, ItemStack(Material.AIR))
-                        slotMap.remove(slot) // remove from slot map to prevent it being clickable again
-
-                        fPlayer.faction.addHeartRegenPaidItem(slot)
-                        fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, name)
-
-                        Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, slot))
-
-                        reopen()
-                    }
-                },
-                    { reopen() }
-                ).apply {
+                Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, id))
+                reopen()
+            },
+                { reopen() })
+                .apply {
                     build()
                     open()
                 }
+        } else if (type == "item") {
+            if (!cache.contains(id)) return
+
+            val material = cache[id]!!.first
+            val displayName = cache[id]!!.second
+
+            val toRemove = ItemStack(material)
+            val toRemoveMeta =
+                toRemove.itemMeta.apply {
+                    this.displayName = ChatColor.translateAlternateColorCodes('&', displayName)
+                }
+            toRemove.itemMeta = toRemoveMeta
+
+            RegenConfirmGUI(fPlayer, {
+                val result = player.inventory.removeItem(toRemove)
+
+                if (result.isNotEmpty()) {
+                    fPlayer.msg(TL.HEART_REGENGUI_ITEMNOTFOUND, name)
+                    reopen()
+
+                    return@RegenConfirmGUI
+                } else {
+                    inventory.setItem(slot, ItemStack(Material.AIR))
+                    slotMap.remove(slot) // remove from slot map to prevent it being clickable again
+
+                    fPlayer.faction.addHeartRegenPaidItem(id)
+                    fPlayer.msg(TL.HEART_REGENGUI_BOUGHT, name)
+
+                    Bukkit.getServer().pluginManager.callEvent(FactionHeartRegenItemBoughtEvent(fPlayer, id))
+                    reopen()
+                }
+            },
+                { reopen() }
+            ).apply {
+                build()
+                open()
             }
         }
     }
 
     private fun reopen() {
         player.closeInventory()
-        // delay opening
-        Bukkit.getScheduler().runTaskLater(FactionsPlugin.getInstance(), {
-            RegenerationGUI(fPlayer).apply {
+        RegenerationGUI(fPlayer)
+            .apply {
                 build()
                 open()
             }
-        }, 1L)
     }
 
     companion object {

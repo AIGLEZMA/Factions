@@ -1231,7 +1231,7 @@ public abstract class MemoryFPlayer implements FPlayer {
         }
         if (msg.contains("/n/")) {
             for (String s : msg.split("/n/")) {
-                sendMessage(s);
+                sendMessage(ChatColor.translateAlternateColorCodes('&', s));
             }
             return;
         }
@@ -1239,7 +1239,7 @@ public abstract class MemoryFPlayer implements FPlayer {
         if (player == null) {
             return;
         }
-        player.sendMessage(msg);
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
     }
 
     // -------------------------------------------- //

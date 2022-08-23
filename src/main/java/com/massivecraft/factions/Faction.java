@@ -139,7 +139,7 @@ public interface Faction extends EconomyParticipator, Selectable {
      * @return immutable set of items
      */
     @NotNull
-    Set<Integer> getHeartRegenPaidItems();
+    Set<String> getHeartRegenPaidItems();
 
     /**
      * Sets the items bought by members to regenerate the heart
@@ -147,9 +147,9 @@ public interface Faction extends EconomyParticipator, Selectable {
      *
      * @param set set of items
      */
-    void setHeartRegenPaidItems(@NotNull Set<Integer> set);
+    void setHeartRegenPaidItems(@NotNull Set<String> set);
 
-    void addHeartRegenPaidItem(final int slot);
+    void addHeartRegenPaidItem(final String id);
 
     Map<String, List<String>> getAnnouncements();
 

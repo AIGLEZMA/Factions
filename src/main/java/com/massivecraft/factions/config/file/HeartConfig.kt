@@ -1,6 +1,7 @@
 package com.massivecraft.factions.config.file
 
 import com.massivecraft.factions.config.annotation.Comment
+import com.massivecraft.factions.config.annotation.ConfigName
 import com.massivecraft.factions.gui.SimpleItem
 import org.bukkit.DyeColor
 import org.bukkit.Material
@@ -26,28 +27,99 @@ class HeartConfig {
     class Regeneration {
 
         @Comment("Number of items chosen randomly from the list above")
-        var random = 4
+        var chance = 5
 
+        fun itemById(id: String): Map<String, String>? = items.find { map -> map["id"] == id }
+
+        @Suppress("PropertyName")
         @Comment(
-            "Items that will be show on the regeneration GUI \n" +
-                    "For the type your must specify either MONEY[amount] or ITEM"
+            """
+            Items that will be show on the regeneration GUI
+            id: unique identifier
+            slot: 0 < n < 54 (n must not be in static items slots
+            type: money/item
+            amount: x (only if type = money)
+            name: &cA cool name
+            material: BUKKITNAME (https://helpch.at/docs/1.8.8/org/bukkit/Material.html)
+            """
         )
-                /*
-                 <slot>:
-                    type: (item/money[amount])
-                    name: String
-                    material: Material
-                 */
-        // BUG: we need to use String then parse it to Int later
-        var items = mutableMapOf<String, MutableMap<String, String>>(
-            "20" to mutableMapOf("type" to "money[5000]", "name" to "&a5000$", "material" to "PAPER"),
-            "21" to mutableMapOf("type" to "money[10000]", "name" to "&a10000$", "material" to "PAPER"),
-            "22" to mutableMapOf("type" to "money[10]", "name" to "&a10$", "material" to "PAPER"),
-            "23" to mutableMapOf("type" to "money[25]", "name" to "&a25$", "material" to "PAPER"),
-            "24" to mutableMapOf("type" to "item", "name" to "&eÉmeraude", "material" to "EMERALD"),
-            "29" to mutableMapOf("type" to "item", "name" to "&bDiamant", "material" to "DIAMOND_ORE"),
-            "30" to mutableMapOf("type" to "item", "name" to "&7Fer", "material" to "IRON_ORE")
+
+        @ConfigName("items")
+        var _items = mutableListOf<Map<String, String>>(
+            mutableMapOf(
+                "id" to "item1",
+                "slot" to "20",
+                "type" to "money",
+                "amount" to "5000",
+                "name" to "&a$5000",
+                "material" to "PAPER"
+            ),
+            mutableMapOf(
+                "id" to "item2",
+                "slot" to "21",
+                "type" to "money",
+                "amount" to "500",
+                "name" to "&a$500",
+                "material" to "PAPER"
+            ),
+            mutableMapOf(
+                "id" to "item3",
+                "slot" to "22",
+                "type" to "money",
+                "amount" to "50",
+                "name" to "&a$50",
+                "material" to "PAPER"
+            ),
+            mutableMapOf(
+                "id" to "item4",
+                "slot" to "23",
+                "type" to "money",
+                "amount" to "5",
+                "name" to "&a$5",
+                "material" to "PAPER"
+            ),
+            mutableMapOf(
+                "id" to "item5",
+                "slot" to "24",
+                "type" to "money",
+                "amount" to "1",
+                "name" to "&a$1",
+                "material" to "PAPER"
+            ),
+
+            mutableMapOf(
+                "id" to "item6",
+                "slot" to "29",
+                "type" to "item",
+                "name" to "&aEmerald",
+                "material" to "EMERALD_ORE"
+            ),
+            mutableMapOf(
+                "id" to "item7",
+                "slot" to "30",
+                "type" to "item",
+                "name" to "&bDiamond",
+                "material" to "DIAMOND"
+            ),
+            mutableMapOf(
+                "id" to "item8",
+                "slot" to "31",
+                "type" to "item",
+                "name" to "&6Gold",
+                "material" to "GOLD_INGOT"
+            ),
+            mutableMapOf(
+                "id" to "item9",
+                "slot" to "32",
+                "type" to "item",
+                "name" to "&7Iron",
+                "material" to "IRON_INGOT"
+            ),
+            mutableMapOf("id" to "item10", "slot" to "33", "type" to "item", "name" to "&0Coal", "material" to "COAL"),
         )
+
+        @Transient
+        val items = _items.shuffled().take(chance)
 
         @Comment("Regeneration GUI configuration")
         var gui = GUI()
