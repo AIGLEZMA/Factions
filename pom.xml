@@ -24,7 +24,7 @@
         <dependency.vault.version>1.7</dependency.vault.version>
         <dependency.worldguard.version>6.1.1-SNAPSHOT</dependency.worldguard.version>
         <dependency.worldedit.version>6.1.1-SNAPSHOT</dependency.worldedit.version>
-        <dependency.essentialsx.version>2.19.4</dependency.essentialsx.version>
+        <dependency.essentialsx.version>2.19.7</dependency.essentialsx.version>
         <dependency.fanciful.version>0.4.0-SNAPSHOT</dependency.fanciful.version>
         <dependency.playervaultsx.version>4.2.3</dependency.playervaultsx.version>
         <dependency.placeholderapi.version>2.11.2</dependency.placeholderapi.version>
