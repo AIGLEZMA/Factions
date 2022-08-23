@@ -43,8 +43,8 @@ class FactionsHeartListener(val plugin: FactionsPlugin) : Listener {
             return
         }
 
-        if (factionAtLocation.isHeartRecentlyPlaced) {
-            fPlayer.msg(TL.HEART_RIGHTCLICK_RECENTLYPLACED)
+        if (factionAtLocation.heartHealth == 100.0) {
+            fPlayer.msg(TL.HEART_RIGHTCLICK_FULLHEALTH)
             return
         }
 
