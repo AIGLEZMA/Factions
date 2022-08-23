@@ -32,7 +32,7 @@
         <dependency.particleeffect.version>1.8.0-fuuid</dependency.particleeffect.version>
         <dependency.luckperms-api.version>5.4</dependency.luckperms-api.version>
         <dependency.holographicdisplays-api.version>2.4.9</dependency.holographicdisplays-api.version>
-        <dependency.adventure-platform-bukkit.version>4.1.1</dependency.adventure-platform-bukkit.version>
+        <dependency.adventure-platform-bukkit.version>4.1.2</dependency.adventure-platform-bukkit.version>
         <dependency.adventure-text-minimessage.version>4.11.0</dependency.adventure-text-minimessage.version>
         <dependency.authlib.version>1.5.21</dependency.authlib.version>
     </properties>
