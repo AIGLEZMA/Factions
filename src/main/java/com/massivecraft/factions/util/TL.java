@@ -658,9 +658,9 @@ public enum TL {
     HEART_RIGHTCLICK_FULLHEALTH("&cYour heart health is full."),
     HEART_REGENGUI_NOTENOUGHMONEY("&cYou must have $%s to perform this action."),
     HEART_REGENGUI_TRANSACTIONFAILED("&cThe transaction failed please try later or contact an administrator."),
-    HEART_REGENGUI_ITEMNOTFOUND("&cThe item with name &r%s&r was not found in your inventory."),
+    HEART_REGENGUI_ITEMNOTFOUND("&cThe item with name %s&c was not found in your inventory."),
     HEART_REGENGUI_ITEMALREADYBOUGHT("&cThe item you clicked at is already bought."),
-    HEART_REGENGUI_BOUGHT("&aYou bought item with name &r%s&r."),
+    HEART_REGENGUI_BOUGHT("&aYou bought item with name %s&c."),
 
     HEART_DAMAGE_MEMBER("&cYou can not damage your faction's heart!"),
     HEART_DAMAGE_ALLYORTRUCE("&cYou can not damage an ally's faction heart!"),

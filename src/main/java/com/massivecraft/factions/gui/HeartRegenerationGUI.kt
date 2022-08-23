@@ -12,7 +12,7 @@ import org.bukkit.Material
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.ItemStack
 
-class RegenerationGUI(val fPlayer: FPlayer) :
+class HeartRegenerationGUI(val fPlayer: FPlayer) :
     GUI<String>(fPlayer, FactionsPlugin.getInstance().configManager.heartConfig.regeneration.gui.size) {
 
     private val config = FactionsPlugin.getInstance().configManager.heartConfig.regeneration
@@ -115,12 +115,12 @@ class RegenerationGUI(val fPlayer: FPlayer) :
             }
 
             player.closeInventory()
-            RegenConfirmGUI(fPlayer, {
+            HeartRegenConfirmGUI(fPlayer, {
                 val transaction = Econ.withdraw(fPlayer, amount)
                 if (!transaction) {
                     fPlayer.msg(TL.HEART_REGENGUI_TRANSACTIONFAILED)
                     reopen()
-                    return@RegenConfirmGUI
+                    return@HeartRegenConfirmGUI
                 }
 
                 inventory.setItem(slot, ItemStack(Material.AIR))
@@ -150,14 +150,14 @@ class RegenerationGUI(val fPlayer: FPlayer) :
                 }
             toRemove.itemMeta = toRemoveMeta
 
-            RegenConfirmGUI(fPlayer, {
+            HeartRegenConfirmGUI(fPlayer, {
                 val result = player.inventory.removeItem(toRemove)
 
                 if (result.isNotEmpty()) {
                     fPlayer.msg(TL.HEART_REGENGUI_ITEMNOTFOUND, name)
                     reopen()
 
-                    return@RegenConfirmGUI
+                    return@HeartRegenConfirmGUI
                 } else {
                     inventory.setItem(slot, ItemStack(Material.AIR))
                     slotMap.remove(slot) // remove from slot map to prevent it being clickable again
@@ -179,7 +179,7 @@ class RegenerationGUI(val fPlayer: FPlayer) :
 
     private fun reopen() {
         player.closeInventory()
-        RegenerationGUI(fPlayer)
+        HeartRegenerationGUI(fPlayer)
             .apply {
                 build()
                 open()

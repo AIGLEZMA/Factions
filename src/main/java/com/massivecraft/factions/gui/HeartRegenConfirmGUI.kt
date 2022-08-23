@@ -6,7 +6,7 @@ import com.massivecraft.factions.gui.GUI.Backable
 import org.bukkit.ChatColor
 import org.bukkit.event.inventory.ClickType
 
-class RegenConfirmGUI(val fPlayer: FPlayer, val yesConsumer: () -> Unit, val noConsumer: () -> Unit) :
+class HeartRegenConfirmGUI(val fPlayer: FPlayer, val yesConsumer: () -> Unit, val noConsumer: () -> Unit) :
     GUI<Int>(fPlayer, FactionsPlugin.getInstance().configManager.heartConfig.regeneration.confirmGUI.size), Backable {
 
     private val config = FactionsPlugin.getInstance().configManager.heartConfig.regeneration
@@ -40,7 +40,7 @@ class RegenConfirmGUI(val fPlayer: FPlayer, val yesConsumer: () -> Unit, val noC
             -1 -> config.confirmGUI.yesItem
             -2 -> config.confirmGUI.noItem
             -3 -> config.confirmGUI.backItem
-            else -> RegenerationGUI.BLANK
+            else -> HeartRegenerationGUI.BLANK
         }
     }
 
@@ -64,7 +64,7 @@ class RegenConfirmGUI(val fPlayer: FPlayer, val yesConsumer: () -> Unit, val noC
 
     override fun onBack() {
         fPlayer.player.closeInventory()
-        RegenerationGUI(fPlayer).apply {
+        HeartRegenerationGUI(fPlayer).apply {
             build()
             open()
         }

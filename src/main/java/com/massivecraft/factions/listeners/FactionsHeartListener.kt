@@ -5,7 +5,7 @@ import com.massivecraft.factions.FLocation
 import com.massivecraft.factions.FPlayers
 import com.massivecraft.factions.FactionsPlugin
 import com.massivecraft.factions.event.FactionHeartHealthChangeEvent
-import com.massivecraft.factions.gui.RegenerationGUI
+import com.massivecraft.factions.gui.HeartRegenerationGUI
 import com.massivecraft.factions.perms.Relation
 import com.massivecraft.factions.util.TL
 import org.bukkit.Bukkit
@@ -48,7 +48,7 @@ class FactionsHeartListener(val plugin: FactionsPlugin) : Listener {
             return
         }
 
-        RegenerationGUI(fPlayer).apply {
+        HeartRegenerationGUI(fPlayer).apply {
             build()
             open()
         }
@@ -60,10 +60,11 @@ class FactionsHeartListener(val plugin: FactionsPlugin) : Listener {
         if (e.entityType != EntityType.ENDER_CRYSTAL) return
         val damaged = e.entity
 
-        if (e.cause != EntityDamageEvent.DamageCause.CONTACT) {
+        if (e !is EntityDamageByEntityEvent) {
+            println(e.cause)
             e.isCancelled = true
         } else {
-            val damager = (e as EntityDamageByEntityEvent).damager
+            val damager = e.damager
             if (damager !is Player) {
                 // if the heart is attacked by an entity we cancel
                 e.isCancelled = true
