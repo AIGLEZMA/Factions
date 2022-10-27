@@ -15,7 +15,7 @@
 
         <plugin.kotlin.version>1.7.10</plugin.kotlin.version>
         <plugin.compiler.version>3.10.1</plugin.compiler.version>
-        <plugin.shade.version>3.3.0</plugin.shade.version>
+        <plugin.shade.version>3.4.1</plugin.shade.version>
 
         <dependency.paperspigot.version>1.8.8-R0.1-SNAPSHOT</dependency.paperspigot.version>
         <dependency.guava.version>31.1-jre</dependency.guava.version>
